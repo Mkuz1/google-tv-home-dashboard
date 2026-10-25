@@ -1,8 +1,9 @@
 #!/bin/bash
-# Talk to a Google TV / Android TV over Wi-Fi with adb.
+# Talk to a Google TV / Android TV (or a car head unit) over Wi-Fi with adb.
+# For the car build put CAR=1 in front: CAR=1 ./tv.sh install, CAR=1 ./tv.sh albums add <link>...
 #   ./tv.sh connect <tv-ip> [port]      Connect (default port 5555) and remember the TV; accept the prompt on the TV
 #   ./tv.sh pair <tv-ip> <port> <code>  Pair first if the TV uses "Wireless debugging" with a pairing code
-#   ./tv.sh install [file.apk]          Install / update the app (default: out/homedash.apk, built if missing)
+#   ./tv.sh install [file.apk]          Install / update the app (default: out/mk-tv-launcher.apk, built if missing)
 #   ./tv.sh set-home                    Make it the Home screen (turns off the stock home screen)
 #   ./tv.sh restore                     Bring back the stock home screen and screensaver
 #   ./tv.sh screensaver [on|off|test]   Use it as the screensaver (off = the TV's default screensaver)
@@ -22,7 +23,8 @@ for c in "${ANDROID_HOME:-}/platform-tools/adb" "$HOME/Library/Android/sdk/platf
 done
 [ -n "$ADB" ] || { echo "adb not found. Install Android platform-tools (see README)." >&2; exit 1; }
 
-PKG=com.mk.homedash
+if [ -n "${CAR:-}" ]; then PKG=com.mk.carlauncher; APK_DEFAULT=out/mk-car-launcher.apk; FLAVOR=car
+else PKG=com.mk.homedash; APK_DEFAULT=out/mk-tv-launcher.apk; FLAVOR=tv; fi
 FILES=/sdcard/Android/data/$PKG/files
 PHOTO_DIR=$FILES/photos
 # Stock home screens and their setup fallbacks, on Google TV and older Android TV.
@@ -54,12 +56,12 @@ case "${1:-}" in
     "$ADB" pair "$TV_IP:${3:?missing port}" "${4:?missing code}"
     echo "Paired. Now run: ./tv.sh connect $TV_IP <port shown under Wireless debugging>" ;;
   install)
-    APK="${2:-out/homedash.apk}"
-    [ -f "$APK" ] || ./build.sh
+    APK="${2:-$APK_DEFAULT}"
+    [ -f "$APK" ] || ./build.sh "$FLAVOR"
     "$ADB" -s "$(target)" install -r "$APK"
     sh_tv mkdir -p "$PHOTO_DIR" ;;
   set-home)
-    sh_tv cmd package set-home-activity "$PKG/.MainActivity" || true
+    sh_tv cmd package set-home-activity "$PKG/com.mk.homedash.MainActivity" || true
     for p in "${STOCK_HOME[@]}"; do installed "$p" && sh_tv pm disable-user --user 0 "$p" || true; done
     sh_tv input keyevent KEYCODE_HOME
     echo "This is now the Home screen. Undo with: ./tv.sh restore" ;;
@@ -70,7 +72,7 @@ case "${1:-}" in
     echo "Stock home screen and screensaver restored. To remove the app too: adb uninstall $PKG" ;;
   screensaver)
     case "${2:-on}" in
-      on)   sh_tv settings put secure screensaver_components "$PKG/.DashboardDream"
+      on)   sh_tv settings put secure screensaver_components "$PKG/com.mk.homedash.DashboardDream"
             sh_tv settings put secure screensaver_enabled 1
             echo "Screensaver set." ;;
       off)  sh_tv settings put secure screensaver_components "$DEFAULT_SAVER"

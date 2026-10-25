@@ -15,7 +15,7 @@ done
 bash -n tv.sh || { echo "SYNTAX ERROR in tv.sh"; exit 1; }
 ./build.sh 2>&1 | grep -v "^Note" | tail -3 || exit 1
 "$ADB" connect "$IP:5555" | tail -1
-A install -r out/homedash.apk | tail -1
+A install -r out/mk-tv-launcher.apk | tail -1
 A logcat -c
 
 echo "== home"

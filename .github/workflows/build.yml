@@ -1,11 +1,11 @@
 name: Build
 
-# Builds the APK on every push and pull request. Pushing a tag like v1.2.0 also publishes
+# Builds both APKs (Google TV and car) on every push and pull request. Pushing a tag like v1.2.0 also publishes
 # a GitHub release with the APK, signed with the key stored in the repository secrets
 # (KEYSTORE_BASE64, KEYSTORE_PASSWORD, KEYSTORE_ALIAS) so updates install over earlier versions.
 on:
   push:
-    branches: [main]
+    branches: ["**"]
     tags: ["v*"]
   pull_request:
 
@@ -44,8 +44,10 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: homedash-apk
-          path: out/homedash.apk
+          name: mk-tv-car-launcher-apks
+          path: |
+            out/mk-tv-launcher.apk
+            out/mk-car-launcher.apk
 
       - name: Publish release
         if: startsWith(github.ref, 'refs/tags/v')
@@ -53,10 +55,12 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ github.ref_name }}
         run: |
-          cp out/homedash.apk "out/homedash-$TAG.apk"
-          SUM=$(sha256sum "out/homedash-$TAG.apk" | cut -d' ' -f1)
-          gh release create "$TAG" "out/homedash-$TAG.apk" --title "Home Dashboard ${TAG#v}" --notes "Install: download \`homedash-$TAG.apk\` below and follow the README (\`./tv.sh connect <tv-ip>\`, \`./tv.sh install homedash-$TAG.apk\`, \`./tv.sh set-home\`, \`./tv.sh screensaver on\`).
+          cp out/mk-tv-launcher.apk "out/mk-tv-launcher-$TAG.apk"
+          cp out/mk-car-launcher.apk "out/mk-car-launcher-$TAG.apk"
+          SUMS=$(cd out && sha256sum mk-*-launcher-$TAG.apk)
+          gh release create "$TAG" "out/mk-tv-launcher-$TAG.apk" "out/mk-car-launcher-$TAG.apk" --title "MK TV & Car Launcher ${TAG#v}" --notes "**Google TV / Android TV:** \`mk-tv-launcher-$TAG.apk\` (Android TV 9+). **Car head unit:** \`mk-car-launcher-$TAG.apk\` (Android 8+). Install steps are in the README.
 
-          Requires Android TV / Google TV 9+ (API 28).
-
-          SHA-256: \`$SUM\`"
+          SHA-256:
+          \`\`\`
+          $SUMS
+          \`\`\`"

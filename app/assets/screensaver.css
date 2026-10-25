@@ -42,7 +42,7 @@ html, body {
     linear-gradient(180deg, rgba(4,8,9,0.30) 0%, rgba(4,8,9,0) 25%);
 }
 
-/* ---------- stage: designed at 1920x1080, scaled to the screen ---------- */
+/* ---------- stage: designed at 1920x1080, stretched to the screen's shape by fit() ---------- */
 #stage { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; transform-origin: 0 0; }
 
 .glass {
@@ -108,7 +108,7 @@ body.night #night { opacity: var(--night-dim, 0.45); }
 /* ---------- azkar (bottom left) ---------- */
 #azkar {
   position: absolute; left: var(--edge); bottom: var(--edge);
-  width: calc(1920px - 2 * var(--edge) - var(--side-w) - 64px); height: 560px;
+  right: calc(var(--edge) + var(--side-w) + 64px); height: 560px;
   border-radius: 40px; padding: 34px 48px 32px;
   display: flex; flex-direction: column; outline: none;
 }
@@ -175,3 +175,18 @@ body.night #night { opacity: var(--night-dim, 0.45); }
 .wc-time span { font-size: 16px; font-weight: 400; color: var(--ink-2); margin-left: 5px; letter-spacing: 0; }
 .wc-diff { margin-top: 4px; font-size: 15px; color: var(--ink-3); }
 .wc-sep { width: 1px; background: linear-gradient(180deg, rgba(255,255,255,0), var(--hair), rgba(255,255,255,0)); }
+
+/* ---------- portrait screens: clock, then weather and prayer times side by side, then azkar ---------- */
+body.tall #clock { top: 150px; }
+body.tall #logo { top: 60px; }
+body.tall #alert { top: 470px; }
+body.tall #side {
+  top: 590px; bottom: auto; left: var(--edge); width: auto; height: 470px;
+  flex-direction: row; justify-content: flex-start; gap: 40px;
+}
+body.tall #side .divider, body.tall #world { display: none; }
+body.tall #weather { flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
+body.tall #wDays { grid-template-columns: repeat(5, 1fr); }
+body.tall #side #prayers { flex: 1.15; display: block; }
+body.tall #prList li { padding: 4px 14px; }
+body.tall #azkar { top: 1100px; height: auto; right: var(--edge); }

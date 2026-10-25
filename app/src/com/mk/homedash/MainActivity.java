@@ -6,7 +6,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.webkit.WebView;
 
-/** Home screen: a full-screen WebView showing assets/home.html. */
+/** Home screen: a full-screen WebView showing assets/home.html (TV) or assets/car.html (car). */
 public class MainActivity extends Activity {
 
     private WebView web;
@@ -15,7 +15,7 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         // No FLAG_KEEP_SCREEN_ON here: the screensaver must be able to start on top of Home.
-        web = Web.create(this, "home.html");
+        web = Web.create(this, "car".equals(Bridge.flavor(this)) ? "car.html" : "home.html");
         setContentView(web);
         hideSystemUi();
         web.requestFocus();
@@ -29,6 +29,13 @@ public class MainActivity extends Activity {
             web.requestFocus();
             js("window.onTvResume && window.onTvResume()");
         }
+    }
+
+    @Override
+    protected void onPause() {
+        // Another app is in front: the car home screen stops counting idle time for its screensaver.
+        js("window.onTvPause && window.onTvPause()");
+        super.onPause();
     }
 
     @Override

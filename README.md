@@ -1,6 +1,13 @@
-# Home Dashboard for Google TV
+# MK TV & Car Launcher
 
-An Apple TV–style home screen and an Islamic dashboard screensaver for Google TV and Android TV, in a Liquid Glass look.
+An Apple TV–style home screen for Google TV / Android TV, a CarPlay-style home screen for Android car head units, and the same Islamic dashboard screensaver (with the M&D logo) on both, in a Liquid Glass look.
+
+Two APKs are built from the same code:
+
+| APK | For | Home screen |
+|---|---|---|
+| `mk-tv-launcher.apk` | Google TV / Android TV 9+ | Apple TV style, remote control |
+| `mk-car-launcher.apk` | Android car head units 8+ (made for 12" screens, e.g. 1920×720) | CarPlay style, touch first |
 
 ![Home screen](docs/home.jpg)
 
@@ -29,6 +36,24 @@ An Apple TV–style home screen and an Islamic dashboard screensaver for Google 
 - Optional two-city world clock and your own logo text at the top.
 - Backgrounds: your **shared Google Photos albums** (new photos appear by themselves) mixed with 10 bundled nature scenes.
 
+## Car head unit (`mk-car-launcher.apk`)
+
+Same features as the TV version, laid out like CarPlay for a touch screen (previews at 1920×720, with placeholder app icons):
+
+![Car home](docs/car-home.jpg)
+![Car dashboard](docs/car-dashboard.jpg)
+![Car screensaver](docs/car-screensaver.jpg)
+
+- **Dock** on the left (at the bottom on a portrait screen): clock, Wi-Fi, your three most recent apps, Settings, and the **Home / Dashboard** button.
+- **Home**: pages of rounded app icons; **swipe** sideways to change page.
+- **Hold** an app for the glass menu: **Move**, **Add to Folder**, **Hide**, **Delete**. In Move mode every icon jiggles; drag the app (to the screen edge to change page) or tap where it should go, then **Done**. Folders open as a glass platter; hold a folder to Rename, Move or Remove it.
+- **Dashboard**: the M&D logo, big clock with Gregorian and Hijri dates, Friday / white days reminders, weather now and for 4 days, and today's prayer times with the next one highlighted.
+- **Screensaver**: the same one as on the TV (clock, weather, prayer times, azkar, silent prayer alert, night mode, M&D logo). Head units rarely have a screensaver setting, so the launcher opens it by itself after **5 idle minutes** on the home screen (`screensaverMinutes` in settings, `0` turns it off). Tap the clock in the dock to open it right away; any touch closes it. Where the head unit has a screensaver setting, *MK TV & Car Launcher* is also listed there.
+- The layout adapts to the screen: 1920×720 and other wide 12" panels, 1280×720, 1024×600 and portrait screens.
+- Steering-wheel / rotary buttons that send arrow and OK keys also work (hold OK for the menu).
+
+**Install**: copy `mk-car-launcher.apk` to a USB stick, open it with the head unit's file manager and allow installing from that source. Then press **Home** and choose *MK TV & Car Launcher* → **Always** (or Settings → Apps → Default apps → Home app). If the head unit has adb over Wi-Fi, the `tv.sh` commands below work with `CAR=1` in front, e.g. `CAR=1 ./tv.sh install`, `CAR=1 ./tv.sh settings settings.json`, `CAR=1 ./tv.sh albums add <link>`.
+
 ## What you need
 
 - A Google TV or Android TV running Android 9 or newer.
@@ -48,7 +73,7 @@ An Apple TV–style home screen and an Islamic dashboard screensaver for Google 
    If your TV shows *Wireless debugging* with a pairing code instead: `./tv.sh pair <tv-ip> <port> <code>`, then `./tv.sh connect <tv-ip> <port>`.
 4. **Install** the APK from the Releases page (or build it, see below):
    ```bash
-   ./tv.sh install homedash.apk
+   ./tv.sh install mk-tv-launcher.apk
    ./tv.sh set-home
    ./tv.sh screensaver on
    ./tv.sh delay 2
@@ -85,7 +110,7 @@ All keys are optional; anything left out uses the default in [`app/assets/config
 | `prayer.ishaMinutes` | Isha a fixed time after Maghrib (Umm al-Qura: 90) |
 | `prayer.asrFactor` | 1 = Shafi'i/Maliki/Hanbali, 2 = Hanafi |
 | `prayer.offsets` | Minutes added per prayer, to match your local authority |
-| `logoText` | Text at the top of the screensaver; `&` is drawn in gold; empty hides it |
+| `logoText` | Text at the top of the screensaver and on the car Dashboard (default `"M&D"`); `&` is drawn in gold; `""` hides it |
 | `worldClocks` | List of `{ "city", "zone" }` (IANA time zones) |
 | `prayerAlert` | `enabled`, `minutesBefore`, `minutesAfter` |
 | `nightMode` | `enabled`, `dim` (0–1) |
@@ -93,6 +118,8 @@ All keys are optional; anything left out uses the default in [`app/assets/config
 | `azkar` | `morningFrom`, `generalFrom`, `eveningFrom` (hours) |
 | `homeOrder`, `homeExclude` | Starting app order, and apps never shown |
 | `useAlbums`, `mixScenes`, `photoSeconds`, `albumRefreshHours`, `weatherMinutes` | Screensaver photos and refresh |
+| `screensaverMinutes` | Car only: idle minutes on the home screen before the screensaver opens (default 5, `0` = never) |
+| `homeView` | Car only: `"apps"` or `"dashboard"`, the view the Home button returns to |
 
 ## Remote
 
@@ -110,19 +137,19 @@ All keys are optional; anything left out uses the default in [`app/assets/config
 ./tv.sh restore
 ```
 
-Without a computer: Settings → Apps → See all apps → Show system apps → **Google TV Home** → Enable (and **Setup**), then press Home. Remove the app from Settings → Apps → **Home Dashboard** → Uninstall.
+Without a computer: Settings → Apps → See all apps → Show system apps → **Google TV Home** → Enable (and **Setup**), then press Home. Remove the app from Settings → Apps → **MK TV & Car Launcher** → Uninstall.
 
 ## Build from source
 
 ```bash
 tools/setup-sdk.sh
-./build.sh          # out/homedash.apk
+./build.sh          # out/mk-tv-launcher.apk and out/mk-car-launcher.apk (or ./build.sh tv / ./build.sh car)
 ./tv.sh install
 ```
 
-No Gradle: `build.sh` uses `aapt2`, `javac`, `d8` and `apksigner` directly. The UI is plain HTML/CSS/JS in [`app/assets/`](app/assets) shown in a WebView; [`Bridge.java`](app/src/com/mk/homedash/Bridge.java) is the small Android side (apps, launching, network, location, albums).
+No Gradle: `build.sh` uses `aapt2`, `javac`, `d8` and `apksigner` directly. The UI is plain HTML/CSS/JS in [`app/assets/`](app/assets) shown in a WebView (`home.html` on TV, `car.html` in the car, `screensaver.html` on both); the two APKs differ only in their manifest ([`app/AndroidManifest.xml`](app/AndroidManifest.xml), [`car/AndroidManifest.xml`](car/AndroidManifest.xml)), whose `flavor` picks the home screen; [`Bridge.java`](app/src/com/mk/homedash/Bridge.java) is the small Android side (apps, launching, network, location, albums).
 
-Releases are built by GitHub Actions: pushing a tag like `v1.2.0` builds the APK, signs it with the key kept in the repository's encrypted secrets, and publishes the release. Your own local builds use a key created in `keystore/`, so uninstall a release before installing your own build (or the other way round).
+Releases are built by GitHub Actions: every push builds both APKs (download them from the run's *Artifacts*); pushing a tag like `v2.0.0` builds them, signs it with the key kept in the repository's encrypted secrets, and publishes the release. Your own local builds use a key created in `keystore/`, so uninstall a release before installing your own build (or the other way round).
 
 Tested on a Sony BRAVIA 4K VH2 (Google TV, Android 12).
 

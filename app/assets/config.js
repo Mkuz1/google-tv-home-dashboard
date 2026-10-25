@@ -17,7 +17,7 @@ window.CONFIG = {
   prayer: { fajrAngle: 18, ishaAngle: 17, asrFactor: 1, offsets: {} },
 
   // Screensaver extras.
-  logoText: "",    // optional text at the top centre, e.g. "A&B" ("&" is drawn in gold)
+  logoText: "M&D", // text at the top centre ("&" is drawn in gold); "" hides it
   worldClocks: [], // e.g. [{ "city": "London", "zone": "Europe/London" }] (up to 2 fit)
   prayerAlert: { enabled: true, minutesBefore: 10, minutesAfter: 15 }, // silent banner, screensaver only
   nightMode: { enabled: true, dim: 0.45 },                              // dims from Isha until Fajr
@@ -35,7 +35,7 @@ window.CONFIG = {
   ],
   // Apps that never appear on the home screen (other launchers, this app).
   homeExclude: [
-    "com.mk.homedash", "com.spocky.projengmenu", "com.overdevs.at4k", "com.luegete28.appsdrawerfree",
+    "com.mk.homedash", "com.mk.carlauncher", "com.spocky.projengmenu", "com.overdevs.at4k", "com.luegete28.appsdrawerfree",
     "com.google.android.apps.tv.launcherx", "com.google.android.tvlauncher",
   ],
 
@@ -48,6 +48,17 @@ window.CONFIG = {
 
   photoSeconds: 45,   // how long each screensaver photo stays
   weatherMinutes: 30, // weather refresh interval
+};
+
+// Car build (car/AndroidManifest.xml): what differs from the TV defaults above.
+// settings.json overrides these the same way.
+window.CAR_CONFIG = {
+  homeOrder: [
+    "com.google.android.apps.maps", "com.waze", "com.spotify.music",
+    "com.google.android.apps.youtube.music", "com.google.android.dialer", "com.android.dialer",
+  ],
+  homeView: "apps",      // first view: "apps" (icon pages) or "dashboard" (time, weather, prayer)
+  screensaverMinutes: 5, // the screensaver opens after this many minutes on the home screen; 0 = never
 };
 
 // Official calculation per country (as used by the national religious authorities).
@@ -71,8 +82,12 @@ window.PRAYER_METHODS = (function () {
 // Per-TV overrides from settings.json (pushed with ./tv.sh settings), then the location.
 (function () {
   const C = window.CONFIG;
+  const TV = window.TV || window.MOCK_TV; // MOCK_TV: previewing in a desktop browser (bridge-mock.js)
+  // "tv" or "car", from the app's manifest (app/ or car/AndroidManifest.xml).
+  try { C.flavor = TV.flavor(); } catch (e) { C.flavor = "tv"; }
+  if (C.flavor === "car") Object.assign(C, window.CAR_CONFIG);
   let overrides = null;
-  try { overrides = window.TV && JSON.parse(window.TV.settings()); } catch (e) {}
+  try { overrides = TV && JSON.parse(TV.settings()); } catch (e) {}
   if (overrides) {
     const merge = (base, extra) => {
       for (const k of Object.keys(extra)) {
@@ -92,7 +107,7 @@ window.PRAYER_METHODS = (function () {
   }
   if (C.location === "auto") {
     let loc = null;
-    try { loc = window.TV && JSON.parse(window.TV.location()); } catch (e) {}
+    try { loc = TV && JSON.parse(TV.location()); } catch (e) {}
     C.located = !!loc;
     C.locationAt = loc ? loc.at : 0;
     if (loc) {

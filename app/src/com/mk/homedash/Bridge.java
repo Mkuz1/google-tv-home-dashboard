@@ -4,10 +4,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
+import android.os.Bundle;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.drawable.AdaptiveIconDrawable;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.ConnectivityManager;
@@ -55,7 +57,20 @@ import java.util.regex.Pattern;
 /** Methods the web pages call as TV.methodName(). Shared by the home screen and the screensaver. */
 public class Bridge {
 
+    /** "tv" or "car": the manifest's flavor meta-data (app/ or car/AndroidManifest.xml). */
+    static String flavor(Context context) {
+        try {
+            Bundle meta = context.getPackageManager()
+                    .getApplicationInfo(context.getPackageName(), PackageManager.GET_META_DATA).metaData;
+            String f = meta == null ? null : meta.getString("flavor");
+            return f == null ? "tv" : f;
+        } catch (Exception e) {
+            return "tv";
+        }
+    }
+
     private final Context context;
+    private final boolean car;
     private final Handler main = new Handler(Looper.getMainLooper());
     private static final Map<String, String> iconCache = new HashMap<>();
 
@@ -63,6 +78,18 @@ public class Bridge {
 
     public Bridge(Context context) {
         this.context = context;
+        this.car = "car".equals(flavor(context));
+    }
+
+    @JavascriptInterface
+    public String flavor() {
+        return car ? "car" : "tv";
+    }
+
+    /** Shows the screensaver now (the car home screen calls this after a few idle minutes). */
+    @JavascriptInterface
+    public void startScreensaver() {
+        start(new Intent(context, ScreensaverActivity.class).addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION));
     }
 
     /** The WebView this bridge serves; prompt answers are sent back to it. */
@@ -139,11 +166,15 @@ public class Bridge {
         String cached = iconCache.get(key);
         if (cached != null) return cached;
         PackageManager pm = context.getPackageManager();
-        Drawable d = info.loadBanner(pm);
+        // TV: the wide banner when there is one. Car: always the square icon (CarPlay style).
+        Drawable d = car ? null : info.loadBanner(pm);
         boolean banner = d != null;
         if (d == null) d = info.loadIcon(pm);
         String uri = "";
-        if (d != null) {
+        boolean adaptive = car && d instanceof AdaptiveIconDrawable;
+        if (adaptive) {
+            uri = fullBleed((AdaptiveIconDrawable) d);
+        } else if (d != null) {
             int w = banner ? 480 : 192;
             int h = banner ? 270 : 192;
             if (d instanceof BitmapDrawable && ((BitmapDrawable) d).getBitmap() != null) {
@@ -159,9 +190,28 @@ public class Bridge {
             bmp.compress(Bitmap.CompressFormat.PNG, 100, out);
             uri = "data:image/png;base64," + Base64.encodeToString(out.toByteArray(), Base64.NO_WRAP);
         }
-        String result = (banner ? "B" : "I") + uri;
+        // B = banner, F = full-bleed square icon, I = any other icon (shown smaller on a tile).
+        String result = (banner ? "B" : adaptive ? "F" : "I") + uri;
         iconCache.put(key, result);
         return result;
+    }
+
+    /**
+     * An adaptive icon's layers without the system mask (circle, teardrop...), so every icon
+     * gets the same rounded square in the page. The visible part is the middle 72 of 108 dp.
+     */
+    private static String fullBleed(AdaptiveIconDrawable d) {
+        int size = 192, pad = size / 4;
+        Bitmap bmp = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
+        Canvas c = new Canvas(bmp);
+        for (Drawable layer : new Drawable[] {d.getBackground(), d.getForeground()}) {
+            if (layer == null) continue;
+            layer.setBounds(-pad, -pad, size + pad, size + pad);
+            layer.draw(c);
+        }
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        bmp.compress(Bitmap.CompressFormat.PNG, 100, out);
+        return "data:image/png;base64," + Base64.encodeToString(out.toByteArray(), Base64.NO_WRAP);
     }
 
     /** All launchable TV apps: [{pkg, label, banner, system, icon}]. */
@@ -170,7 +220,9 @@ public class Bridge {
         PackageManager pm = context.getPackageManager();
         JSONArray arr = new JSONArray();
         Set<String> seen = new HashSet<>();
-        String[] categories = {Intent.CATEGORY_LEANBACK_LAUNCHER, Intent.CATEGORY_LAUNCHER};
+        String[] categories = car
+                ? new String[] {Intent.CATEGORY_LAUNCHER}
+                : new String[] {Intent.CATEGORY_LEANBACK_LAUNCHER, Intent.CATEGORY_LAUNCHER};
         for (String cat : categories) {
             Intent q = new Intent(Intent.ACTION_MAIN).addCategory(cat);
             List<ResolveInfo> list = pm.queryIntentActivities(q, 0);
@@ -184,6 +236,7 @@ public class Bridge {
                     o.put("pkg", pkg);
                     o.put("label", ri.loadLabel(pm).toString());
                     o.put("banner", icon.startsWith("B"));
+                    o.put("small", icon.startsWith("I"));
                     o.put("system", (ai.flags & ApplicationInfo.FLAG_SYSTEM) != 0);
                     o.put("category", ai.category); // used to name new folders, like Apple TV does
                     o.put("icon", icon.substring(1));
@@ -198,7 +251,7 @@ public class Bridge {
     @JavascriptInterface
     public boolean launch(String pkg) {
         PackageManager pm = context.getPackageManager();
-        Intent i = pm.getLeanbackLaunchIntentForPackage(pkg);
+        Intent i = car ? null : pm.getLeanbackLaunchIntentForPackage(pkg);
         if (i == null) i = pm.getLaunchIntentForPackage(pkg);
         if (i == null) return false;
         start(i);
