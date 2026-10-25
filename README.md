@@ -46,7 +46,11 @@ A smooth, touch-first home screen for the car (made for 12" screens such as 1920
 
 - **Home**: the time (and M&D logo, Gregorian and Hijri dates, Friday / white days reminders), an **azkar widget** (morning, general or evening azkar by the time of day; tap for the next one) and **prayer times for where the car is** (from its GPS, with the official method of that country), next prayer highlighted.
 - **Silent prayer banner**: 10 minutes before each prayer a soft glass banner ("Asr in 10 minutes"), then "It's time for Asr" in gold, in Arabic and English. No sound, no vibration. When another app is in front (navigation, music), the same words come as a silent notification banner that goes away by itself.
-- **Eye comfort** button (top right of the time card): tap for *Eye comfort* (warmer and dimmer), again for *Night* (warmest, darkest), again for normal. It lowers the screen brightness while the home screen is shown and lays a warm tint over it; other apps keep the system brightness.
+- **Day / Eye comfort / Night** buttons (top of the time card). **Night mode comes on by itself at Maghrib** and day mode at sunrise; tap ☀ to go back to day whenever you like (your choice holds until the next sunrise or Maghrib). The modes lower the screen brightness while the home screen is shown and lay a warm tint over it; other apps keep the system brightness.
+- **Favorite places** (under the azkar), opened in **Google Maps** only: **Home** and **Work** (tap to navigate; hold to set them to where the car is now, or type an address), **Mosque** and **Petrol** (the nearest ones around the car).
+- **Qibla** button: a compass with the Kaaba marked that turns with the car (from the head unit's compass, or the GPS direction once the car is moving), e.g. "Qibla 40° to your right", plus the distance to Makkah. Standing still without a compass it shows the direction from north.
+- **Travel dua** (دعاء السفر): when a trip starts — a navigation app opened from the home screen, sidebar, drawer or favorites — the azkar card shows the travel dua in Arabic for 15 minutes (tap it to go back to the azkar), and a silent banner shows it over the map. At most once an hour.
+- **Arabic interface**: the ع / EN button on the time card switches everything (menus, dates, prayer times, banners) to Arabic, with the layout mirrored.
 - **Sidebar**: time, **Wi-Fi**, up to 4 apps **you choose**, **Settings**, and the **App Drawer** button. Hold an app in the drawer → **Add to Sidebar** (or **Remove from Sidebar**); hold an app in the sidebar → **Move Up / Move Down / Remove from Sidebar**.
 - **App Drawer**: every app in pages, **swipe** sideways. Like the TV home, **hold** an app for the glass menu: **Move**, **Add to Folder**, **Hide**, **Delete**; the app being moved jiggles: drag it (hold it at the screen edge to change page) or tap where it should go, then **Done**. Folders open as a glass platter; hold a folder to **Rename**, **Move** or **Remove Folder**.
 - **No screensaver** in the car version.
@@ -115,6 +119,7 @@ All keys are optional; anything left out uses the default in [`app/assets/config
 | `logoText` | Text at the top of the screensaver and on the car home (default `"M&D"`); `&` is drawn in gold; `""` hides it |
 | `worldClocks` | List of `{ "city", "zone" }` (IANA time zones) |
 | `prayerAlert` | `enabled`, `minutesBefore`, `minutesAfter` (TV screensaver and car banner) |
+| `nightAuto`, `nightLevel` | Car only: night mode from Maghrib to sunrise (default on), and how dark (1 eye comfort, 2 night) |
 | `nightMode` | `enabled`, `dim` (0–1) |
 | `reminders` | `kahf`, `whiteDays` |
 | `azkar` | `morningFrom`, `generalFrom`, `eveningFrom` (hours) |

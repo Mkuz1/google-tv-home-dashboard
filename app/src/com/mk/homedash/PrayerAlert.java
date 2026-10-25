@@ -60,6 +60,11 @@ public class PrayerAlert extends BroadcastReceiver {
     @Override
     public void onReceive(Context ctx, Intent intent) {
         if (homeVisible) return; // the home screen shows its own banner
+        show(ctx, intent.getStringExtra("title"), intent.getStringExtra("text"), intent.getIntExtra("minutes", 10), NOTIFICATION_ID);
+    }
+
+    /** A silent banner (no sound, no vibration) that goes away by itself after some minutes. */
+    static void show(Context ctx, String title, String text, int minutes, int id) {
         NotificationManager nm = (NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);
         // High importance so it shows as a banner over other apps, but without sound or vibration.
         NotificationChannel ch = new NotificationChannel(CHANNEL, "Prayer times", NotificationManager.IMPORTANCE_HIGH);
@@ -73,15 +78,16 @@ public class PrayerAlert extends BroadcastReceiver {
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
         Notification n = new Notification.Builder(ctx, CHANNEL)
                 .setSmallIcon(prayerIcon(ctx))
-                .setContentTitle(intent.getStringExtra("title"))
-                .setContentText(intent.getStringExtra("text"))
+                .setContentTitle(title)
+                .setContentText(text)
+                .setStyle(new Notification.BigTextStyle().bigText(text))
                 .setCategory(Notification.CATEGORY_REMINDER)
                 .setOnlyAlertOnce(true)
                 .setAutoCancel(true)
                 .setContentIntent(open)
-                .setTimeoutAfter(intent.getIntExtra("minutes", 10) * 60000L)
+                .setTimeoutAfter(minutes * 60000L)
                 .build();
-        nm.notify(NOTIFICATION_ID, n);
+        nm.notify(id, n);
     }
 
     /** The notification icon, looked up by name: R is generated per build in the flavor's package. */

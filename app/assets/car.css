@@ -90,6 +90,8 @@ body.portrait #dkRecents { flex-direction: row; }
   transition: opacity .3s var(--ease), transform .35s var(--ease);
 }
 body.narrow #home { grid-template-columns: 1.2fr 1fr; }
+#left { display: flex; flex-direction: column; gap: var(--gap); min-width: 0; min-height: 0; }
+#left #azkar { flex: 1; }
 body.portrait #home { grid-template-columns: 1fr; grid-template-rows: max-content minmax(0, 1fr); }
 body.portrait #prayer { min-height: max-content; }
 body.portrait #prayer { order: -1; }
@@ -123,16 +125,22 @@ body.drawer-full #home { visibility: hidden; } /* nothing to paint under the dra
 .logo { display: flex; align-items: center; gap: 14px; min-height: 44px; }
 
 /* ---------- eye comfort ---------- */
-#prayer { position: relative; }
-#comfortBtn {
-  position: absolute; top: 16px; right: 18px; width: 52px; height: 52px; border-radius: 50%;
-  display: flex; align-items: center; justify-content: center; color: var(--ink-2);
-  background: rgba(255,255,255,0.12); box-shadow: inset 0 1px 0 rgba(255,255,255,.35), inset 0 0 0 1px rgba(255,255,255,.08);
+.p-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.p-ctrls { display: flex; align-items: center; gap: 10px; flex: 0 0 auto; }
+#langBtn, .seg button {
+  height: 48px; display: flex; align-items: center; justify-content: center; color: var(--ink-2);
   transition: transform .18s var(--ease), background .2s, color .2s;
 }
-#comfortBtn svg { width: 26px; height: 26px; display: block; }
-#comfortBtn:active { transform: scale(.88); }
-#comfortBtn.on { color: var(--gold-ink); background: var(--gold-pill); box-shadow: var(--gold-pill-rim); }
+#langBtn {
+  min-width: 48px; padding: 0 12px; border-radius: 24px; font-size: 20px; font-weight: 700;
+  background: rgba(255,255,255,0.12); box-shadow: inset 0 1px 0 rgba(255,255,255,.35);
+}
+#langBtn.arabic { font-family: "Amiri", serif; font-size: 26px; padding-bottom: 6px; }
+.seg { display: flex; padding: 3px; gap: 2px; border-radius: 26px; background: rgba(255,255,255,0.10); box-shadow: inset 0 1px 0 rgba(255,255,255,.3); }
+.seg button { width: 48px; height: 44px; border-radius: 22px; }
+.seg button svg { width: 24px; height: 24px; display: block; }
+.seg button.on { color: var(--gold-ink); background: var(--gold-pill); box-shadow: var(--gold-pill-rim); }
+#langBtn:active, .seg button:active { transform: scale(.88); }
 #comfort {
   position: fixed; inset: 0; z-index: 50; pointer-events: none; opacity: 0;
   transition: opacity .5s ease, background .5s ease;
@@ -149,6 +157,7 @@ body.comfort-2 #comfort { opacity: 1; background: linear-gradient(rgba(255,120,3
 #pAmpm { font-size: 26px; font-weight: 300; color: var(--ink-2); }
 .p-date { margin-top: 4px; font-size: 21px; }
 .p-hijri { margin-top: 2px; font-family: "Amiri", serif; font-size: 23px; color: var(--gold); text-align: left; }
+body.rtl .p-hijri { text-align: right; }
 #chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
 #chips:empty { display: none; }
 .chip { display: flex; align-items: center; gap: 8px; height: 36px; padding: 0 14px 0 10px; border-radius: 999px; white-space: nowrap; background: rgba(255,255,255,0.10); box-shadow: inset 0 1px 0 rgba(255,255,255,.28); }
@@ -305,3 +314,74 @@ body.portrait #prList li { padding: 3px 12px; }
 #alert.now .al-icon { background: var(--gold-pill); color: var(--gold-ink); }
 #alert.now .al-en { color: var(--ink); }
 .pin { display: inline-block; width: 13px; height: 13px; margin-right: 6px; vertical-align: -1px; }
+
+/* ---------- favorite places + Qibla ---------- */
+#fav { flex: 0 0 auto; border-radius: 30px; padding: 10px 12px; display: flex; justify-content: space-around; gap: 6px; }
+.fav {
+  flex: 1; min-width: 0; height: 92px; border-radius: 22px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 7px;
+  transition: transform .16s var(--ease), background .15s;
+}
+.fav:active { transform: scale(.92); background: rgba(255,255,255,0.10); }
+.fv-icon { width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.14); box-shadow: inset 0 1px 0 rgba(255,255,255,.35); }
+.fv-icon svg { width: 26px; height: 26px; }
+.fav[data-f="home"] .fv-icon { background: linear-gradient(180deg, #5AA9FF, #2F7BE0); }
+.fav[data-f="work"] .fv-icon { background: linear-gradient(180deg, #A58BFF, #6F55E0); }
+.fav[data-f="mosque"] .fv-icon { background: linear-gradient(180deg, #3FC48A, #1F8F5E); }
+.fav[data-f="fuel"] .fv-icon { background: linear-gradient(180deg, #FF9F5A, #E06A2F); }
+.fav.qibla .fv-icon { background: var(--gold-pill); color: var(--gold-ink); box-shadow: var(--gold-pill-rim); }
+.fav.unset .fv-icon { opacity: .55; }
+.fv-name { font-size: 16px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+body.rtl .fv-name { font-size: 17px; }
+
+/* ---------- Qibla panel ---------- */
+#qibla { position: absolute; inset: 0; z-index: 8; background: rgba(0,0,0,0.42); opacity: 0; pointer-events: none; transition: opacity .25s ease; }
+body.qibla-open #qibla { opacity: 1; pointer-events: auto; }
+.qb-panel {
+  position: absolute; left: 50%; top: 50%; width: 520px; margin: -320px 0 0 -260px; height: 640px; border-radius: 44px;
+  display: flex; flex-direction: column; align-items: center; padding: 28px 30px;
+  transform: scale(.94); transition: transform .4s var(--spring);
+}
+body.qibla-open .qb-panel { transform: scale(1); }
+.qb-panel .dr-close { top: 18px; right: 18px; }
+body.rtl .qb-panel .dr-close { right: auto; left: 18px; }
+.qb-title { font-size: 26px; font-weight: 700; }
+body.rtl .qb-title { font-family: "Amiri", serif; font-size: 32px; }
+.qb-dial { position: relative; width: 360px; height: 360px; margin: 22px 0 14px; }
+#qbRose { position: absolute; inset: 0; transition: transform .45s var(--ease); will-change: transform; }
+#qbRose svg { width: 100%; height: 100%; display: block; }
+.qb-n { font: 700 18px Inter, sans-serif; fill: #FF8A80; }
+.qb-car { position: absolute; left: 50%; top: 50%; width: 64px; height: 64px; margin: -32px 0 0 -32px; filter: drop-shadow(0 4px 10px rgba(0,0,0,.5)); }
+.qb-main { font-size: 30px; font-weight: 700; color: var(--gold-soft); text-align: center; }
+.qb-sub { margin-top: 6px; font-size: 18px; color: var(--ink-2); text-align: center; }
+body.rtl .qb-main { font-family: "Amiri", serif; font-size: 34px; }
+
+/* ---------- travel dua (azkar card while a trip starts) ---------- */
+#azkar.travel .az-title::before { content: ""; display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: var(--gold); margin: 0 12px; vertical-align: middle; }
+
+/* ---------- Arabic interface: mirrored, Arabic first ---------- */
+body.rtl #azkar header, body.rtl #azkar footer { flex-direction: row; }
+body.rtl #prList .en { display: none; }
+body.rtl #prList .ar { font-size: 25px; color: inherit; }
+body.rtl #prList li { grid-template-columns: 1fr auto; }
+body.rtl #prList li:not(.next) .ar { color: var(--ink); }
+body.rtl #prList li.past:not(.next) .ar { color: var(--ink-3); }
+body.rtl .label { letter-spacing: 0; font-size: 18px; font-family: "Amiri", serif; }
+body.rtl .pr-next, body.rtl .p-date { font-family: "Amiri", serif; font-size: 22px; }
+body.rtl .az-sub, body.rtl #alert .al-en { display: none; }
+body.rtl .dr-title, body.rtl #moveBar, body.rtl .pop-item, body.rtl .fd-title { font-family: "Amiri", serif; }
+body.rtl .pop-item { font-size: 25px; }
+body.rtl .dr-close { right: auto; left: 16px; }
+body.rtl #pop.side { transform-origin: 100% 50%; }
+body.rtl #pop.side .pop-tail { left: auto; right: -10px; box-shadow: inset -1px 1px 0 rgba(255,255,255,0.16); }
+
+/* ---------- toast ---------- */
+#toast {
+  position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%); z-index: 60; padding: 14px 28px; border-radius: 999px;
+  background: rgba(30,36,44,0.92); box-shadow: var(--glass-rim), 0 12px 30px rgba(0,0,0,.35);
+  font-size: 18px; font-weight: 600; white-space: nowrap; transition: opacity .3s ease, transform .35s var(--ease);
+}
+#toast[hidden] { display: block; opacity: 0; transform: translateX(-50%) translateY(16px); pointer-events: none; }
+body.rtl #toast { font-family: "Amiri", serif; font-size: 22px; }
+/* The app pages keep their order in Arabic too (swipes and moves stay the same). */
+#viewport, #fdGrid, #dots { direction: ltr; }
+body.rtl .name { direction: rtl; }

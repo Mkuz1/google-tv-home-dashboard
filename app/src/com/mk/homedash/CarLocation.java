@@ -26,13 +26,20 @@ import java.util.Locale;
 final class CarLocation implements LocationListener {
 
     static final int PERMISSION_REQUEST = 7;
-    private static final long MIN_TIME_MS = 2 * 60 * 1000;
-    private static final float MIN_DISTANCE_M = 1000;
+    private static final long MIN_TIME_MS = 2000; // often enough for the Qibla compass while driving
+    private static final long SAVE_EVERY_MS = 2 * 60 * 1000;
+    private static final float SAVE_DISTANCE_M = 1000;
     private static final float RENAME_DISTANCE_M = 4000; // look the city up again after this far
 
     private final Activity activity;
     private LocationManager lm;
     private boolean listening;
+    private long savedAt;
+    private Location saved;
+
+    /** Latest fix, for the direction of travel: {bearing, speed (m/s), at} via TV.carMotion(). */
+    static volatile float bearing = -1, speed = 0;
+    static volatile long fixAt = 0;
 
     CarLocation(Activity activity) {
         this.activity = activity;
@@ -71,10 +78,10 @@ final class CarLocation implements LocationListener {
                 Location l = lm.getLastKnownLocation(p);
                 if (l != null && (best == null || l.getTime() > best.getTime())) best = l;
                 if (!LocationManager.PASSIVE_PROVIDER.equals(p) && lm.isProviderEnabled(p)) {
-                    lm.requestLocationUpdates(p, MIN_TIME_MS, MIN_DISTANCE_M, this);
+                    lm.requestLocationUpdates(p, MIN_TIME_MS, 0, this);
                 }
             }
-            lm.requestLocationUpdates(LocationManager.PASSIVE_PROVIDER, MIN_TIME_MS, MIN_DISTANCE_M, this);
+            lm.requestLocationUpdates(LocationManager.PASSIVE_PROVIDER, MIN_TIME_MS, 0, this);
             listening = true;
             if (best != null) onLocationChanged(best);
         } catch (Exception e) {
@@ -89,6 +96,13 @@ final class CarLocation implements LocationListener {
 
     @Override
     public void onLocationChanged(final Location l) {
+        bearing = l.hasBearing() ? l.getBearing() : -1;
+        speed = l.hasSpeed() ? l.getSpeed() : 0;
+        fixAt = System.currentTimeMillis();
+        // The position itself is saved (and the city looked up) every 2 minutes or 1 km at most.
+        if (saved != null && System.currentTimeMillis() - savedAt < SAVE_EVERY_MS && saved.distanceTo(l) < SAVE_DISTANCE_M) return;
+        saved = l;
+        savedAt = System.currentTimeMillis();
         final Context ctx = activity.getApplicationContext();
         new Thread(new Runnable() {
             @Override public void run() {

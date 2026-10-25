@@ -1,6 +1,8 @@
-// Car home screen (car/AndroidManifest.xml), touch first. Home: time, Wi-Fi, Settings, recent apps,
-// an azkar widget and Sharjah prayer times. The App Drawer button opens every app in pages, with the
-// TV home's options menu: Move, Add to Folder, Hide, Delete, folders with Rename and Remove.
+// Car home screen (car/AndroidManifest.xml), touch first, in English or Arabic. Home: time, Wi-Fi,
+// Settings, sidebar apps, an azkar widget (the travel dua when a trip starts), favorite places opened in
+// Google Maps, the Qibla compass, and prayer times for where the car is, with day / night modes.
+// The App Drawer button opens every app in pages, with the TV home's options menu: Move, Add to
+// Folder, Hide, Delete, folders with Rename and Remove.
 // Smoothness: nothing is blurred live (the wallpaper is pre-blurred), only transform/opacity animate,
 // and the app list is re-read only when an app was installed or removed.
 (function () {
@@ -16,6 +18,51 @@
   };
   const escapeHtml = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
   const has = (cls) => document.body.classList.contains(cls);
+
+  /* ---------------- language: English or Arabic ---------------- */
+  const STR = {
+    en: {
+      apps: "Apps", moveHint: "Drag the app, or tap where it should go", done: "Done",
+      move: "Move", addFolder: "Add to Folder", addSidebar: "Add to Sidebar", removeSidebar: "Remove from Sidebar",
+      hide: "Hide", del: "Delete", showHidden: (n) => `Show ${n} hidden`, rename: "Rename", removeFolder: "Remove Folder",
+      moveOut: "Move Out", newFolder: "New Folder", typeName: "Type a Name…", folderName: "Folder name",
+      replace: (x) => `Replace ${x}`, moveUp: "Move Up", moveDown: "Move Down", moveLeft: "Move Left", moveRight: "Move Right",
+      prayerTimes: (c) => `${c} Prayer Times`, prayerTimesNoCity: "Prayer Times",
+      next: (name, mins) => `${name} in ${D.inMinutes(mins)}`,
+      home: "Home", work: "Work", mosque: "Mosque", fuel: "Petrol", qibla: "Qibla",
+      setHere: "Set to Current Location", typeAddress: "Type an Address", clear: "Clear",
+      homeAddress: "Home address", workAddress: "Work address", noMaps: "Google Maps isn't installed",
+      noFix: "Waiting for the car's GPS…", saved: (x) => `${x} saved`,
+      qiblaTitle: "Qibla Direction", ahead: "Qibla is straight ahead", behind: "Qibla is behind you",
+      turnRight: (d) => `Qibla ${d}° to your right`, turnLeft: (d) => `Qibla ${d}° to your left`,
+      fromNorth: (d, c) => `Qibla ${d}° from North (${c})`, driveHint: "Drive a little and the compass turns with the car",
+      makkah: (km) => `Makkah · ${km} km`,
+      day: "Day", comfort: "Eye comfort", night: "Night", nightOn: "Night mode · tap ☀ for day", dayOn: "Day mode",
+      travel: "Travel dua", lang: "ع",
+    },
+    ar: {
+      apps: "التطبيقات", moveHint: "اسحب التطبيق أو اضغط حيث تريد نقله", done: "تم",
+      move: "نقل", addFolder: "إضافة إلى مجلد", addSidebar: "إضافة إلى الشريط", removeSidebar: "إزالة من الشريط",
+      hide: "إخفاء", del: "حذف", showHidden: (n) => `إظهار المخفي (${n})`, rename: "إعادة تسمية", removeFolder: "إلغاء المجلد",
+      moveOut: "إخراج من المجلد", newFolder: "مجلد جديد", typeName: "كتابة اسم…", folderName: "اسم المجلد",
+      replace: (x) => `استبدال ${x}`, moveUp: "نقل للأعلى", moveDown: "نقل للأسفل", moveLeft: "نقل لليسار", moveRight: "نقل لليمين",
+      prayerTimes: (c) => `مواقيت الصلاة · ${c}`, prayerTimesNoCity: "مواقيت الصلاة",
+      next: (name, mins) => { const h = Math.floor(mins / 60), m = mins % 60; return `${name} بعد ${h ? h + " س " : ""}${m} د`; },
+      home: "المنزل", work: "العمل", mosque: "أقرب مسجد", fuel: "محطة وقود", qibla: "القبلة",
+      setHere: "تعيين الموقع الحالي", typeAddress: "كتابة العنوان", clear: "مسح",
+      homeAddress: "عنوان المنزل", workAddress: "عنوان العمل", noMaps: "خرائط Google غير مثبتة",
+      noFix: "بانتظار موقع السيارة…", saved: (x) => `تم حفظ ${x}`,
+      qiblaTitle: "اتجاه القبلة", ahead: "القبلة أمامك", behind: "القبلة خلفك",
+      turnRight: (d) => `القبلة ${d}° إلى يمينك`, turnLeft: (d) => `القبلة ${d}° إلى يسارك`,
+      fromNorth: (d) => `القبلة ${d}° من الشمال`, driveHint: "تحرّك قليلاً لتدور البوصلة مع اتجاه السيارة",
+      makkah: (km) => `مكة المكرمة · ${km} كم`,
+      day: "نهار", comfort: "راحة العين", night: "ليل", nightOn: "الوضع الليلي · اضغط ☀ للنهار", dayOn: "الوضع النهاري",
+      travel: "دعاء السفر", lang: "EN",
+    },
+  };
+  let lang = store.get("car.lang", /^ar/.test(navigator.language || "") ? "ar" : "en");
+  const T = (k, ...args) => { const v = STR[lang][k]; return typeof v === "function" ? v(...args) : v; };
+  const ampm = (d) => (lang === "ar" ? (d.getHours() < 12 ? "ص" : "م") : D.ampm(d));
 
   /* ---------------- scaling ---------------- */
   // Designed 720 units tall on a landscape screen of any width (1920x720, 1280x720, 1024x600...),
@@ -94,8 +141,15 @@
     $("dkRecents").innerHTML = shown.map((a) =>
       `<button class="recent${a.small ? " small" : ""}" data-pkg="${escapeHtml(a.pkg)}" aria-label="${escapeHtml(a.label)}">${a.icon ? `<img src="${a.icon}" alt="" decoding="async">` : ""}</button>`).join("");
   }
+  // Opening a navigation app (from the drawer, sidebar or favorites) starts a trip: travel dua.
+  const NAV_APPS = new Set([
+    "com.google.android.apps.maps", "com.google.android.apps.mapslite", "com.waze", "com.here.app.maps",
+    "com.sygic.aura", "net.osmand", "net.osmand.plus", "ru.yandex.yandexnavi", "ru.yandex.yandexmaps",
+    "app.organicmaps", "com.mapswithme.maps.pro", "com.tomtom.gplay.navapp", "com.baidu.BaiduMap", "com.autonavi.minimap",
+  ]);
   function launch(a) {
     TV.launch(a.pkg);
+    if (NAV_APPS.has(a.pkg) || a.category === 6) startTrip();
   }
 
   /* ---------------- apps, folders and their saved layout ---------------- */
@@ -141,11 +195,14 @@
     }
   }
 
-  const CATEGORY_NAMES = { 0: "Games", 1: "Music", 2: "Entertainment", 3: "Photos", 4: "Social", 5: "News", 6: "Navigation", 7: "Productivity" };
+  const CATEGORY_NAMES = {
+    en: { 0: "Games", 1: "Music", 2: "Entertainment", 3: "Photos", 4: "Social", 5: "News", 6: "Navigation", 7: "Productivity" },
+    ar: { 0: "ألعاب", 1: "موسيقى", 2: "ترفيه", 3: "صور", 4: "تواصل", 5: "أخبار", 6: "ملاحة", 7: "إنتاجية" },
+  };
   function folderNameFor(apps) {
     const vendor = (p) => p.split(".").slice(0, 2).join(".");
     if (apps.every((a) => vendor(a.pkg) === "com.google")) return "Google";
-    return CATEGORY_NAMES[apps[0].category] || "Folder";
+    return CATEGORY_NAMES[lang][apps[0].category] || (lang === "ar" ? "مجلد" : "Folder");
   }
 
   /* ---------------- app drawer pages ---------------- */
@@ -373,13 +430,14 @@
     if (!el) return;
     const pop = $("pop"), st = $("stage").getBoundingClientRect();
     const r = (el.querySelector(".art") || el).getBoundingClientRect();
-    const side = !!popAnchor && !has("portrait");
+    const side = !!popAnchor && !!popAnchor.closest("#dock") && !has("portrait");
     pop.classList.toggle("side", side);
     if (side) {
       const cy = (r.top + r.height / 2 - st.top) / S, h = pop.offsetHeight;
       const top = Math.max(14, Math.min(SH - 14 - h, cy - h / 2));
       pop.classList.remove("below");
-      pop.style.left = (r.right - st.left) / S + 24 + "px";
+      // Beside the sidebar: to its right, or to its left when the sidebar is on the right (Arabic).
+      pop.style.left = (has("rtl") ? (r.left - st.left) / S - 24 - pop.offsetWidth : (r.right - st.left) / S + 24) + "px";
       pop.style.top = top + "px";
       const tail = pop.querySelector(".pop-tail");
       tail.style.left = "";
@@ -441,36 +499,36 @@
     const hiddenCount = store.get("home.hidden", []).length;
     const actions = [];
     if (it.type === "folder") {
-      actions.push(["Rename", ICON.rename, () => startRename(it)]);
-      actions.push(["Move", ICON.move, startMove]);
-      actions.push(["Remove Folder", ICON.ungroup, () => ungroup(it)]);
+      actions.push([T("rename"), ICON.rename, () => startRename(it)]);
+      actions.push([T("move"), ICON.move, startMove]);
+      actions.push([T("removeFolder"), ICON.ungroup, () => ungroup(it)]);
     } else if (ctx === "main") {
       const a = it.app;
-      actions.push(["Move", ICON.move, startMove]);
-      actions.push(["Add to Folder", ICON.folder, () => folderChoices(a)]);
+      actions.push([T("move"), ICON.move, startMove]);
+      actions.push([T("addFolder"), ICON.folder, () => folderChoices(a)]);
       actions.push(sidebarAction(a));
-      actions.push(["Hide", ICON.hide, () => hideApp(a)]);
-      if (!a.system) actions.push(["Delete", ICON.trash, () => del(a), "danger"]);
+      actions.push([T("hide"), ICON.hide, () => hideApp(a)]);
+      if (!a.system) actions.push([T("del"), ICON.trash, () => del(a), "danger"]);
     } else {
       const a = it.app;
-      actions.push(["Move", ICON.move, startMove]);
-      actions.push(["Move Out", ICON.out, () => moveOut(a)]);
+      actions.push([T("move"), ICON.move, startMove]);
+      actions.push([T("moveOut"), ICON.out, () => moveOut(a)]);
       actions.push(sidebarAction(a));
-      actions.push(["Hide", ICON.hide, () => hideApp(a)]);
-      if (!a.system) actions.push(["Delete", ICON.trash, () => del(a), "danger"]);
+      actions.push([T("hide"), ICON.hide, () => hideApp(a)]);
+      if (!a.system) actions.push([T("del"), ICON.trash, () => del(a), "danger"]);
     }
-    if (hiddenCount && it.type === "app") actions.push([`Show ${hiddenCount} hidden`, ICON.show, showHidden]);
+    if (hiddenCount && it.type === "app") actions.push([T("showHidden", hiddenCount), ICON.show, showHidden]);
     showPop(actions);
   }
 
   // Sidebar: add (replacing one when it's full) or remove; reorder from the sidebar itself.
   function sidebarAction(a) {
-    if (inDock(a.pkg)) return ["Remove from Sidebar", ICON.unpin, () => { setDock(dockPkgs().filter((p) => p !== a.pkg)); closePop(); }];
-    return ["Add to Sidebar", ICON.pin, () => {
+    if (inDock(a.pkg)) return [T("removeSidebar"), ICON.unpin, () => { setDock(dockPkgs().filter((p) => p !== a.pkg)); closePop(); }];
+    return [T("addSidebar"), ICON.pin, () => {
       const pkgs = dockPkgs();
       if (pkgs.length < C.dockMax) { setDock(pkgs.concat(a.pkg)); return closePop(); }
       const byPkg = Object.fromEntries(installed.map((x) => [x.pkg, x]));
-      showPop(pkgs.map((p, i) => [`Replace ${byPkg[p] ? byPkg[p].label : p}`, ICON.pin, () => {
+      showPop(pkgs.map((p, i) => [T("replace", byPkg[p] ? byPkg[p].label : p), ICON.pin, () => {
         const next = pkgs.slice(); next[i] = a.pkg; setDock(next); closePop();
       }]));
     }];
@@ -480,9 +538,12 @@
     if (i < 0) return;
     const swap = (j) => { const next = pkgs.slice(); [next[i], next[j]] = [next[j], next[i]]; setDock(next); closePop(); };
     const portrait = has("portrait"), actions = [];
-    if (i > 0) actions.push([portrait ? "Move Left" : "Move Up", portrait ? ICON.left : ICON.up, () => swap(i - 1)]);
-    if (i < pkgs.length - 1) actions.push([portrait ? "Move Right" : "Move Down", portrait ? ICON.right : ICON.down, () => swap(i + 1)]);
-    actions.push(["Remove from Sidebar", ICON.unpin, () => { setDock(pkgs.filter((p) => p !== btn.dataset.pkg)); closePop(); }, "danger"]);
+    // On a portrait screen the sidebar runs along the bottom (right to left in Arabic).
+    const back = portrait ? (lang === "ar" ? ["moveRight", ICON.right] : ["moveLeft", ICON.left]) : ["moveUp", ICON.up];
+    const fwd = portrait ? (lang === "ar" ? ["moveLeft", ICON.left] : ["moveRight", ICON.right]) : ["moveDown", ICON.down];
+    if (i > 0) actions.push([T(back[0]), back[1], () => swap(i - 1)]);
+    if (i < pkgs.length - 1) actions.push([T(fwd[0]), fwd[1], () => swap(i + 1)]);
+    actions.push([T("removeSidebar"), ICON.unpin, () => { setDock(pkgs.filter((p) => p !== btn.dataset.pkg)); closePop(); }, "danger"]);
     showPop(actions, btn);
   }
 
@@ -490,7 +551,7 @@
   function folderChoices(a) {
     const folders = items.filter((x) => x.type === "folder");
     showPop([
-      ["New Folder", ICON.plus, () => newFolder(a)],
+      [T("newFolder"), ICON.plus, () => newFolder(a)],
       ...folders.map((f) => [f.f.name, ICON.folder, () => addToFolder(a, f)]),
     ]);
   }
@@ -522,20 +583,23 @@
   }
 
   // Rename: one-tap names in the menu, or "Type a Name…" for the keyboard.
-  const NAME_IDEAS = ["Navigation", "Music", "Islamic", "Phone", "Entertainment", "Tools"];
+  const NAME_IDEAS = {
+    en: ["Navigation", "Music", "Islamic", "Phone", "Entertainment", "Tools"],
+    ar: ["الملاحة", "الموسيقى", "إسلامي", "الهاتف", "الترفيه", "أدوات"],
+  };
   function startRename(folder) {
     const rename = (name) => { folder.f.name = name; closePop(); commit(); };
     showPop([
-      ["Type a Name…", ICON.keyboard, () => {
+      [T("typeName"), ICON.keyboard, () => {
         closePop();
         zone = "prompt"; // the native dialog has the keys until it closes
         window.onPrompt = (text) => {
           zone = "grid";
           if (text && text.trim()) { folder.f.name = text.trim().slice(0, 24); commit(); } else renderFocus();
         };
-        TV.promptText("Folder name", folder.f.name);
+        TV.promptText(T("folderName"), folder.f.name);
       }],
-      ...NAME_IDEAS.filter((n) => n !== folder.f.name).map((n) => [n, ICON.rename, () => rename(n)]),
+      ...NAME_IDEAS[lang].filter((n) => n !== folder.f.name).map((n) => [n, ICON.rename, () => rename(n)]),
     ]);
   }
 
@@ -717,7 +781,12 @@
   $("dkWifi").addEventListener("click", () => TV.openWifiSettings());
   $("dkSettings").addEventListener("click", () => TV.openSettings());
   $("dkDrawer").addEventListener("click", () => (has("drawer-open") ? closeDrawer() : openDrawer()));
-  $("azkar").addEventListener("click", () => { azIndex++; showDhikr(); }); // tap for the next dhikr
+  // Tap the azkar card for the next dhikr (or to leave the travel dua).
+  $("azkar").addEventListener("click", () => {
+    if (travelUntil > Date.now()) { travelUntil = 0; restoreAzkarTitle(); showDhikr(); return; }
+    azIndex++;
+    showDhikr();
+  });
 
   /* ---------------- keys: steering-wheel buttons, rotary knob, keyboard ---------------- */
   const KEYS = {
@@ -789,7 +858,8 @@
   }
 
   /* ---------------- time and Sharjah prayer times ---------------- */
-  const dateFmt = new Intl.DateTimeFormat("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+  const DATE_OPTS = { weekday: "long", day: "numeric", month: "long", year: "numeric" };
+  let dateFmt = new Intl.DateTimeFormat("en-GB", DATE_OPTS);
   let hijriFmt;
   try { hijriFmt = new Intl.DateTimeFormat("ar-u-ca-islamic-umalqura-nu-latn", { day: "numeric", month: "long", year: "numeric" }); } catch (e) {}
   let today = null, tomorrow = null, lastDay = -1, lastMinute = -1;
@@ -805,7 +875,7 @@
       $("pDate").textContent = dateFmt.format(t);
       $("pHijri").textContent = hijriFmt ? hijriFmt.format(t) : "";
       $("prList").innerHTML = D.PRAYERS.map(([k, en, ar]) =>
-        `<li data-k="${k}"><span class="en">${en}</span><span class="ar">${ar}</span><span class="tm">${D.hm(today[k])} <small>${D.ampm(today[k])}</small></span></li>`).join("");
+        `<li data-k="${k}"><span class="en">${en}</span><span class="ar">${ar}</span><span class="tm">${D.hm(today[k])} <small>${ampm(today[k])}</small></span></li>`).join("");
       renderPlace();
       scheduleAlerts(t);
       lastMinute = -1;
@@ -815,15 +885,16 @@
     if (t.getMinutes() === lastMinute) return; // everything below changes once a minute
     lastMinute = t.getMinutes();
     $("clock").textContent = $("pTime").textContent = D.hm(t);
-    $("clockAmpm").textContent = $("pAmpm").textContent = D.ampm(t);
+    $("clockAmpm").textContent = $("pAmpm").textContent = ampm(t);
     const next = D.nextPrayer(t, today, tomorrow);
     for (const li of $("prList").children) {
       const k = li.dataset.k;
       li.classList.toggle("next", k === next.key);
       li.classList.toggle("past", today[k] <= t && k !== next.key);
     }
-    $("prNext").textContent = `${next.name} in ${D.inMinutes(next.minutes)}`;
+    $("prNext").textContent = T("next", lang === "ar" ? PRAYER_AR[next.key] : next.name, next.minutes);
     renderAlert(t);
+    autoNight(t);
     $("chips").innerHTML = D.dayReminders(t, today, C).map((c) => `<div class="chip">${c}</div>`).join("");
     updateNetwork();
   }
@@ -831,7 +902,7 @@
   /* ---------------- prayer times follow the car ---------------- */
   const PIN = '<svg class="pin" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg>';
   function renderPlace() {
-    $("prLabel").innerHTML = (C.location === "gps" && C.located ? PIN : "") + escapeHtml(`${C.city || "Prayer"} Prayer Times`);
+    $("prLabel").innerHTML = (C.location === "gps" && C.located ? PIN : "") + escapeHtml(C.city ? T("prayerTimes", C.city) : T("prayerTimesNoCity"));
   }
   // New GPS positions are saved by the app; check once a minute and recompute when the car has moved.
   function checkCarLocation() {
@@ -848,8 +919,10 @@
   const PRAYER_AR = { fajr: "الفجر", dhuhr: "الظهر", asr: "العصر", maghrib: "المغرب", isha: "العشاء" };
   const arMinutes = (n) => n === 1 ? "دقيقة واحدة" : n === 2 ? "دقيقتان"
     : `${D.toArabicDigits(n)} ${n <= 10 ? "دقائق" : "دقيقة"}`;
-  const soonText = (k, en, mins, t) => [`باقٍ ${arMinutes(mins)} على صلاة ${PRAYER_AR[k]}`, `${en} in ${mins} minute${mins === 1 ? "" : "s"} · ${D.hm(t)} ${D.ampm(t)}`];
-  const nowText = (k, en, t) => [`حان الآن موعد صلاة ${PRAYER_AR[k]}`, `It's time for ${en} prayer · ${D.hm(t)} ${D.ampm(t)}`];
+  // [Arabic line, second line]: English, or the time in Arabic for the Arabic interface.
+  const at2 = (t) => (lang === "ar" ? `الساعة ${D.hm(t)} ${ampm(t)}` : null);
+  const soonText = (k, en, mins, t) => [`باقٍ ${arMinutes(mins)} على صلاة ${PRAYER_AR[k]}`, at2(t) || `${en} in ${mins} minute${mins === 1 ? "" : "s"} · ${D.hm(t)} ${D.ampm(t)}`];
+  const nowText = (k, en, t) => [`حان الآن موعد صلاة ${PRAYER_AR[k]}`, at2(t) || `It's time for ${en} prayer · ${D.hm(t)} ${D.ampm(t)}`];
   let alertKey = "";
   function renderAlert(t) {
     const pa = C.prayerAlert, el = $("alert");
@@ -906,8 +979,15 @@
     $("azSub").textContent = set.subtitle;
     showDhikr(false);
   }
+  function restoreAzkarTitle() {
+    const set = AZKAR[azPeriod];
+    $("azTitle").textContent = set.title;
+    $("azSub").textContent = set.subtitle;
+  }
   const REPEAT_AR = { 1: "مرة واحدة", 2: "مرتان", 3: "ثلاث مرات", 4: "أربع مرات", 7: "سبع مرات", 10: "عشر مرات", 100: "مائة مرة" };
   function showDhikr(animate = true) {
+    if (travelUntil > Date.now()) return renderTravel();
+    $("azkar").classList.remove("travel");
     const list = AZKAR[azPeriod].items;
     azIndex = (azIndex + list.length) % list.length;
     const item = list[azIndex];
@@ -942,28 +1022,233 @@
     }
   }
 
-  /* ---------------- eye comfort ---------------- */
-  // Normal → comfort (warmer, dimmer) → night (warmest, darkest) → normal. The page gets a warm dark
-  // layer, and the screen's backlight is lowered while the home screen is in front (some head units
-  // ignore that, the layer still works).
-  const COMFORT = [
-    { name: "Normal", brightness: -1, icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></svg>' },
-    { name: "Eye comfort", brightness: 0.35, icon: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3a9 9 0 1 0 0 18V3z"/><path d="M12 3a9 9 0 0 1 0 18" fill="none" stroke="currentColor" stroke-width="2"/></svg>' },
-    { name: "Night", brightness: 0.08, icon: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M14.5 3a9 9 0 1 0 6.5 15.2A7.5 7.5 0 0 1 14.5 3z"/></svg>' },
-  ];
+  /* ---------------- day / eye comfort / night ---------------- */
+  // Day (normal), eye comfort (warmer, dimmer) or night (warmest, darkest): the page gets a warm dark
+  // layer and the backlight is lowered while the home screen is in front (some head units ignore
+  // that; the layer still works). Night comes on by itself at Maghrib and day at sunrise; a tap on
+  // the buttons wins until the next sunrise or Maghrib.
+  const BRIGHTNESS = [-1, 0.35, 0.08];
   let comfort = 0;
-  function setComfort(level) {
-    comfort = (level + COMFORT.length) % COMFORT.length;
-    const c = COMFORT[comfort];
+  function setComfort(level, save = true) {
+    comfort = Math.max(0, Math.min(2, level));
     document.body.classList.remove("comfort-1", "comfort-2");
     if (comfort) document.body.classList.add("comfort-" + comfort);
-    $("comfortBtn").innerHTML = c.icon;
-    $("comfortBtn").classList.toggle("on", comfort > 0);
-    $("comfortBtn").setAttribute("aria-label", c.name);
-    try { TV.setBrightness(c.brightness); } catch (e) {}
-    store.set("car.comfort", comfort);
+    [...$("modeSeg").children].forEach((b) => b.classList.toggle("on", +b.dataset.m === comfort));
+    try { TV.setBrightness(BRIGHTNESS[comfort]); } catch (e) {}
+    if (save) store.set("car.comfort", comfort);
   }
-  $("comfortBtn").addEventListener("click", (e) => { e.stopPropagation(); setComfort(comfort + 1); });
+  $("modeSeg").addEventListener("click", (e) => {
+    const b = e.target.closest("button");
+    if (b) { e.stopPropagation(); setComfort(+b.dataset.m); }
+  });
+  function autoNight(t) {
+    if (!C.nightAuto || !today) return;
+    const period = t >= today.maghrib || t < today.sunrise ? "night" : "day";
+    const last = store.get("car.period", null);
+    if (last === period) return;
+    store.set("car.period", period);
+    setComfort(period === "night" ? C.nightLevel : 0);
+    if (last) toast(T(period === "night" ? "nightOn" : "dayOn")); // not on the very first start
+  }
+
+  /* ---------------- favorite places, in Google Maps only ---------------- */
+  // Home and Work: tap to navigate there (hold to set them: here, or a typed address).
+  // Mosque and petrol: the nearest ones around the car. Each opens Google Maps and starts a trip.
+  const near = () => `${C.latitude},${C.longitude}`;
+  function maps(uri) {
+    let ok = false;
+    try { ok = TV.openMaps(uri); } catch (e) {}
+    if (!ok) return toast(T("noMaps"));
+    startTrip();
+  }
+  const favs = () => store.get("car.favs", {});
+  function setFav(f, place) {
+    const all = favs();
+    if (place) all[f] = place; else delete all[f];
+    store.set("car.favs", all);
+    renderFavs();
+  }
+  function renderFavs() {
+    const all = favs();
+    document.querySelectorAll(".fav").forEach((b) => b.classList.toggle("unset", (b.dataset.f === "home" || b.dataset.f === "work") && !all[b.dataset.f]));
+  }
+  function favTap(b) {
+    const f = b.dataset.f;
+    if (f === "qibla") return openQibla();
+    if (f === "mosque") return maps(`geo:${near()}?q=${encodeURIComponent("mosque")}`);
+    if (f === "fuel") return maps(`geo:${near()}?q=${encodeURIComponent("petrol station")}`);
+    const p = favs()[f];
+    if (!p) return favMenu(b);
+    maps("google.navigation:q=" + (p.addr ? encodeURIComponent(p.addr) : `${p.lat},${p.lon}`));
+  }
+  function favMenu(b) {
+    const f = b.dataset.f;
+    if (f !== "home" && f !== "work") return;
+    const actions = [];
+    actions.push([T("setHere"), ICON.pin, () => {
+      closePop();
+      if (C.location !== "gps" || !C.located) return toast(T("noFix"));
+      setFav(f, { lat: +C.latitude.toFixed(6), lon: +C.longitude.toFixed(6) });
+      toast(T("saved", T(f)));
+    }]);
+    actions.push([T("typeAddress"), ICON.keyboard, () => {
+      closePop();
+      zone = "prompt";
+      window.onPrompt = (text) => {
+        zone = "grid";
+        if (text && text.trim()) { setFav(f, { addr: text.trim() }); toast(T("saved", T(f))); }
+      };
+      TV.promptText(T(f + "Address"), (favs()[f] || {}).addr || "");
+    }]);
+    if (favs()[f]) actions.push([T("clear"), ICON.trash, () => { setFav(f, null); closePop(); }, "danger"]);
+    showPop(actions, b);
+  }
+  let favHold = null, favHeld = false;
+  $("fav").addEventListener("pointerdown", (e) => {
+    const b = e.target.closest(".fav");
+    if (!b) return;
+    favHeld = false;
+    clearTimeout(favHold);
+    favHold = setTimeout(() => { favHeld = true; favMenu(b); }, LONG_PRESS_MS);
+  });
+  for (const ev of ["pointerup", "pointercancel", "pointerleave"]) $("fav").addEventListener(ev, () => clearTimeout(favHold));
+  $("fav").addEventListener("click", (e) => {
+    const b = e.target.closest(".fav");
+    if (b && !favHeld) favTap(b);
+  });
+
+  /* ---------------- Qibla compass ---------------- */
+  // The direction of the Kaaba from the car. The dial turns with the car: from the head unit's
+  // compass when it has one, otherwise from the GPS direction of travel once the car is moving;
+  // standing still without a compass, north is up.
+  const KAABA = [21.4225, 39.8262], rad = Math.PI / 180;
+  function qiblaBearing(lat, lon) {
+    const f1 = lat * rad, f2 = KAABA[0] * rad, dl = (KAABA[1] - lon) * rad;
+    const b = Math.atan2(Math.sin(dl), Math.cos(f1) * Math.tan(f2) - Math.sin(f1) * Math.cos(dl)) / rad;
+    return (b + 360) % 360;
+  }
+  function makkahKm(lat, lon) {
+    const f1 = lat * rad, f2 = KAABA[0] * rad, df = f2 - f1, dl = (KAABA[1] - lon) * rad;
+    const a = Math.sin(df / 2) ** 2 + Math.cos(f1) * Math.cos(f2) * Math.sin(dl / 2) ** 2;
+    return Math.round(6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
+  }
+  const COMPASS = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"];
+  let compass = null, compassAt = 0, qbTimer = null, roseAngle = 0;
+  function onOrientation(e) {
+    if (e.alpha == null || (e.type === "deviceorientation" && !e.absolute)) return;
+    compass = (360 - e.alpha) % 360;
+    compassAt = Date.now();
+  }
+  function heading() {
+    if (Date.now() - compassAt < 2000) return compass;
+    let m = null;
+    try { m = JSON.parse(TV.carMotion()); } catch (e) {}
+    if (m && m.bearing >= 0 && m.speed > 2 && Date.now() - m.at < 10000) return m.bearing; // moving > 7 km/h
+    return null;
+  }
+  function updateQibla() {
+    const q = qiblaBearing(C.latitude, C.longitude), h = heading();
+    // Turn the dial the short way round, so it never spins a full circle at north.
+    const target = h == null ? 0 : -h;
+    roseAngle += ((target - roseAngle) % 360 + 540) % 360 - 180;
+    $("qbRose").style.transform = `rotate(${roseAngle.toFixed(1)}deg)`;
+    $("qbKaaba").setAttribute("transform", `rotate(${q.toFixed(1)} 100 100)`);
+    const deg = Math.round(q);
+    if (h == null) {
+      $("qbMain").textContent = T("fromNorth", deg, COMPASS[Math.round(q / 45) % 8]);
+      $("qbSub").textContent = T("driveHint");
+    } else {
+      const d = Math.round(((q - h) % 360 + 540) % 360 - 180);
+      $("qbMain").textContent = Math.abs(d) <= 10 ? T("ahead") : Math.abs(d) >= 160 ? T("behind")
+        : d > 0 ? T("turnRight", d) : T("turnLeft", -d);
+      $("qbSub").textContent = T("makkah", makkahKm(C.latitude, C.longitude).toLocaleString("en"));
+    }
+  }
+  function openQibla() {
+    if (!$("qbTicks").childElementCount) {
+      let ticks = "";
+      for (let a = 0; a < 360; a += 10) ticks += `<line x1="100" y1="${a % 90 ? 12 : 10}" x2="100" y2="${a % 90 ? 18 : 22}" transform="rotate(${a} 100 100)"/>`;
+      $("qbTicks").innerHTML = ticks;
+    }
+    addEventListener("deviceorientationabsolute", onOrientation);
+    addEventListener("deviceorientation", onOrientation);
+    document.body.classList.add("qibla-open");
+    updateQibla();
+    clearInterval(qbTimer);
+    qbTimer = setInterval(updateQibla, 500);
+  }
+  function closeQibla() {
+    document.body.classList.remove("qibla-open");
+    clearInterval(qbTimer);
+    removeEventListener("deviceorientationabsolute", onOrientation);
+    removeEventListener("deviceorientation", onOrientation);
+  }
+  $("qbClose").addEventListener("click", closeQibla);
+  $("qibla").addEventListener("pointerdown", (e) => { if (e.target === $("qibla")) closeQibla(); });
+
+  /* ---------------- travel dua ---------------- */
+  // When a trip starts (a navigation app opened from here), the azkar card shows the travel dua for
+  // 15 minutes (tap it to go back to the azkar), and a silent banner shows it over the map. At most
+  // once an hour, so short stops don't repeat it.
+  const TRAVEL_DUA = "اللَّهُ أَكْبَرُ، اللَّهُ أَكْبَرُ، اللَّهُ أَكْبَرُ، ﴿سُبْحَانَ الَّذِي سَخَّرَ لَنَا هَذَا وَمَا كُنَّا لَهُ مُقْرِنِينَ ۝ وَإِنَّا إِلَى رَبِّنَا لَمُنْقَلِبُونَ﴾، " +
+    "اللَّهُمَّ إِنَّا نَسْأَلُكَ فِي سَفَرِنَا هَذَا الْبِرَّ وَالتَّقْوَى، وَمِنَ الْعَمَلِ مَا تَرْضَى، اللَّهُمَّ هَوِّنْ عَلَيْنَا سَفَرَنَا هَذَا وَاطْوِ عَنَّا بُعْدَهُ، " +
+    "اللَّهُمَّ أَنْتَ الصَّاحِبُ فِي السَّفَرِ، وَالْخَلِيفَةُ فِي الأَهْلِ، اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنْ وَعْثَاءِ السَّفَرِ، وَكَآبَةِ الْمَنْظَرِ، وَسُوءِ الْمُنْقَلَبِ فِي الْمَالِ وَالأَهْلِ";
+  const TRAVEL_MS = 15 * 60000;
+  let travelUntil = 0;
+  function startTrip() {
+    if (Date.now() - store.get("car.duaAt", 0) < 60 * 60000) return;
+    store.set("car.duaAt", Date.now());
+    travelUntil = Date.now() + TRAVEL_MS;
+    showDhikr(false);
+    try { TV.notifyTravelDua("دعاء السفر", TRAVEL_DUA); } catch (e) {}
+  }
+  function renderTravel() {
+    $("azkar").classList.add("travel");
+    $("azTitle").textContent = "دعاء السفر";
+    $("azSub").textContent = T("travel");
+    $("azCount").textContent = "";
+    $("azRepeat").textContent = "";
+    $("azBody").textContent = TRAVEL_DUA;
+    $("azBody").classList.remove("fade");
+    fitAzkarText();
+    azStart = travelUntil - TRAVEL_MS;
+    azDwell = TRAVEL_MS;
+    renderAzProgress();
+    clearTimeout(azTimer);
+    azTimer = setTimeout(() => { travelUntil = 0; azPeriod = null; checkAzkarPeriod(now()); }, Math.max(0, travelUntil - Date.now()));
+  }
+
+  /* ---------------- toast: a short note at the bottom ---------------- */
+  let toastTimer = null;
+  function toast(text) {
+    const el = $("toast");
+    el.textContent = text;
+    el.hidden = false;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { el.hidden = true; }, 3200);
+  }
+
+  /* ---------------- language switch ---------------- */
+  function applyLang() {
+    document.documentElement.lang = lang;
+    document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
+    document.body.classList.toggle("rtl", lang === "ar");
+    document.querySelectorAll("[data-t]").forEach((el) => { el.textContent = T(el.dataset.t); });
+    $("langBtn").textContent = T("lang");
+    $("langBtn").classList.toggle("arabic", lang === "en"); // the button shows the other language
+    ["day", "comfort", "night"].forEach((k, i) => $("modeSeg").children[i].setAttribute("aria-label", T(k)));
+    dateFmt = new Intl.DateTimeFormat(lang === "ar" ? "ar-u-nu-latn" : "en-GB", DATE_OPTS);
+    lastDay = -1; // re-render the dates, prayer list and banner texts
+    alertKey = "";
+    if (azPeriod && travelUntil <= Date.now()) restoreAzkarTitle();
+    fit();
+  }
+  $("langBtn").addEventListener("click", () => {
+    lang = lang === "ar" ? "en" : "ar";
+    store.set("car.lang", lang);
+    applyLang();
+    tick();
+  });
 
   // Called from MainActivity.
   let paused = false;
@@ -1004,9 +1289,10 @@
   renderPlace();
   setInterval(() => { if (!paused) checkCarLocation(); }, 60000);
   $("dkDrawer").innerHTML = ICON.apps;
-  setComfort(store.get("car.comfort", 0));
+  setComfort(store.get("car.comfort", 0), false);
+  renderFavs();
   loadApps();
-  fit();
+  applyLang();
   renderDock();
   tick();
   setInterval(() => { if (!paused) tick(); }, 1000);

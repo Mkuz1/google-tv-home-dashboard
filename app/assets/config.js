@@ -63,6 +63,8 @@ window.CAR_CONFIG = {
   timezone: "auto", // the head unit's time zone
   prayerCountry: "AE",
   dockMax: 4, // apps kept in the sidebar
+  nightAuto: true, // night mode by itself from Maghrib to sunrise (a tap on Day overrides it until then)
+  nightLevel: 2,   // 1 = eye comfort, 2 = night
   homeOrder: [
     "com.google.android.apps.maps", "com.waze", "com.spotify.music",
     "com.google.android.apps.youtube.music", "com.google.android.dialer", "com.android.dialer",

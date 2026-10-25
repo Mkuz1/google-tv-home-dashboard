@@ -119,6 +119,32 @@ public class Bridge {
         PrayerAlert.schedule(context, json);
     }
 
+    /** Direction and speed of the car from its last GPS fix: {bearing (-1 unknown), speed m/s, at}. */
+    @JavascriptInterface
+    public String carMotion() {
+        try {
+            return new JSONObject().put("bearing", CarLocation.bearing).put("speed", CarLocation.speed)
+                    .put("at", CarLocation.fixAt).toString();
+        } catch (Exception e) {
+            return "null";
+        }
+    }
+
+    /** Opens a geo: or google.navigation: link in Google Maps only; false if Maps isn't installed. */
+    @JavascriptInterface
+    public boolean openMaps(String uri) {
+        Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse(uri)).setPackage("com.google.android.apps.maps");
+        if (i.resolveActivity(context.getPackageManager()) == null) return false;
+        start(i);
+        return true;
+    }
+
+    /** The travel dua as a silent banner over the navigation app that was just opened. */
+    @JavascriptInterface
+    public void notifyTravelDua(String title, String text) {
+        PrayerAlert.show(context, title, text, 10, 8);
+    }
+
     /** Bumped whenever an app is installed, removed or updated (MainActivity listens). */
     static volatile int appsStamp = 0;
 
