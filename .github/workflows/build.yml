@@ -1,7 +1,7 @@
 name: Build
 
-# Builds both APKs (Google TV and car) on every push and pull request. Pushing a tag like v1.2.0 also publishes
-# a GitHub release with the APK, signed with the key stored in the repository secrets
+# Builds both APKs (Google TV and car) on every push and pull request. Pushing a tag like v1.2.0, or a new
+# versionName reaching main, also publishes a GitHub release with both APKs, signed with the key stored in the repository secrets
 # (KEYSTORE_BASE64, KEYSTORE_PASSWORD, KEYSTORE_ALIAS) so updates install over earlier versions.
 on:
   push:
@@ -49,16 +49,30 @@ jobs:
             out/mk-tv-launcher.apk
             out/mk-car-launcher.apk
 
-      - name: Publish release
-        if: startsWith(github.ref, 'refs/tags/v')
+      # A pushed tag (v2.0.0) publishes that release. A push to main publishes the version in
+      # app/AndroidManifest.xml (versionName) once, if there is no release for it yet.
+      - name: Release tag
+        id: rel
         env:
           GH_TOKEN: ${{ github.token }}
-          TAG: ${{ github.ref_name }}
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            echo "tag=$GITHUB_REF_NAME" >> "$GITHUB_OUTPUT"
+          elif [ "$GITHUB_REF" = refs/heads/main ]; then
+            TAG="v$(sed -n 's/.*android:versionName="\([^"]*\)".*/\1/p' app/AndroidManifest.xml)"
+            gh release view "$TAG" >/dev/null 2>&1 || echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Publish release
+        if: steps.rel.outputs.tag != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.rel.outputs.tag }}
         run: |
           cp out/mk-tv-launcher.apk "out/mk-tv-launcher-$TAG.apk"
           cp out/mk-car-launcher.apk "out/mk-car-launcher-$TAG.apk"
           SUMS=$(cd out && sha256sum mk-*-launcher-$TAG.apk)
-          gh release create "$TAG" "out/mk-tv-launcher-$TAG.apk" "out/mk-car-launcher-$TAG.apk" --title "MK TV & Car Launcher ${TAG#v}" --notes "**Google TV / Android TV:** \`mk-tv-launcher-$TAG.apk\` (Android TV 9+). **Car head unit:** \`mk-car-launcher-$TAG.apk\` (Android 8+). Install steps are in the README.
+          gh release create "$TAG" "out/mk-tv-launcher-$TAG.apk" "out/mk-car-launcher-$TAG.apk" --target "$GITHUB_SHA" --title "MK TV & Car Launcher ${TAG#v}" --notes "**Google TV / Android TV:** \`mk-tv-launcher-$TAG.apk\` (Android TV 9+). **Car head unit:** \`mk-car-launcher-$TAG.apk\` (Android 8+). Install steps are in the README.
 
           SHA-256:
           \`\`\`
