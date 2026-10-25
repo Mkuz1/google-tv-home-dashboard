@@ -1,0 +1,15 @@
+# Build output
+out/
+
+# Signing keys and Google sign-in tokens never leave this machine
+keystore/
+*.jks
+*.keystore
+client_secret*.json
+
+# Per-machine / per-TV files
+.tv-ip
+settings.json
+photos/
+__pycache__/
+.DS_Store

@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Screensaver</title>
+  <link rel="stylesheet" href="screensaver.css">
+</head>
+<body>
+  <div id="bg">
+    <div class="bg-layer" id="bgA"></div>
+    <div class="bg-layer" id="bgB"></div>
+    <div id="shade"></div>
+  </div>
+
+  <!-- Three groups: clock (top left), azkar (bottom left), one info panel (right). -->
+  <main id="stage">
+    <section id="clock">
+      <div class="time"><span id="time">--:--</span><span id="ampm"></span></div>
+      <div class="date" id="date"></div>
+      <div class="hijri" id="hijri" dir="rtl"></div>
+      <div id="chips"></div>
+    </section>
+
+    <div id="logo"></div>
+
+    <!-- Silent prayer alert: "Asr in 10 minutes", then "It's time for Asr" -->
+    <div id="alert" class="glass" hidden></div>
+
+    <section id="azkar" class="glass" tabindex="-1">
+      <header>
+        <div class="az-titles">
+          <div class="az-title" id="azTitle" dir="rtl"></div>
+          <div class="az-sub" id="azSub"></div>
+        </div>
+        <div class="az-count" id="azCount"></div>
+      </header>
+      <div class="az-body" id="azBody" dir="rtl" lang="ar"></div>
+      <footer>
+        <div class="az-repeat" id="azRepeat" dir="rtl"></div>
+        <div class="az-progress"><div id="azBar"></div></div>
+      </footer>
+    </section>
+
+    <aside id="side" class="glass">
+      <section id="weather">
+        <div class="now">
+          <div class="now-icon" id="wIcon"></div>
+          <div class="now-temp" id="wTemp">--°</div>
+          <div class="now-meta">
+            <div class="city" id="wCity"></div>
+            <div class="cond" id="wCond"></div>
+            <div class="extra" id="wExtra"></div>
+          </div>
+        </div>
+        <div class="days" id="wDays"></div>
+      </section>
+
+      <div class="divider"></div>
+
+      <section id="prayers">
+        <header>
+          <div class="label">Prayer Times</div>
+          <div class="pr-next" id="prNext"></div>
+        </header>
+        <ol id="prList"></ol>
+      </section>
+
+      <div class="divider" id="worldDivider"></div>
+
+      <section id="world"></section>
+    </aside>
+  </main>
+
+  <!-- Night mode: gently dims everything, photo included, between Isha and Fajr -->
+  <div id="night"></div>
+
+  <script src="config.js"></script>
+  <script src="bridge-mock.js"></script>
+  <script src="praytimes.js"></script>
+  <script src="azkar.js"></script>
+  <script src="screensaver.js"></script>
+</body>
+</html>

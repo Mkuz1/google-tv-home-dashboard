@@ -1,0 +1,177 @@
+@font-face { font-family: "Amiri"; src: url("fonts/Amiri-Regular.ttf"); font-weight: 400; }
+@font-face { font-family: "Amiri"; src: url("fonts/Amiri-Bold.ttf"); font-weight: 700; }
+@font-face { font-family: "Inter"; src: url("fonts/Inter.ttf"); font-weight: 100 900; }
+
+:root {
+  --ink: #F6EFE2;
+  --ink-2: rgba(246, 239, 226, 0.72);
+  --ink-3: rgba(246, 239, 226, 0.50);
+  --gold: #E2BC74;
+  --gold-soft: #FFE0A6;
+  --gold-ink: #1B1407;
+  --hair: rgba(255, 255, 255, 0.16);
+  /* Liquid Glass: a tinted, blurred pane with a bright specular rim */
+  --glass-fill: linear-gradient(160deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.06) 45%, rgba(255,255,255,0.03) 100%), rgba(8,12,14,0.30);
+  --glass-blur: blur(28px) saturate(170%);
+  --glass-rim: inset 0 1.5px 0 rgba(255,255,255,0.50), inset 0 -1px 0 rgba(255,255,255,0.10), inset 0 0 0 1px rgba(255,255,255,0.14);
+  --glass-drop: 0 30px 70px rgba(0,0,0,0.30);
+  --gold-pill: linear-gradient(180deg, #F4D597 0%, #DDB066 100%);
+  --gold-pill-rim: inset 0 1.5px 0 rgba(255,255,255,0.7), inset 0 -1px 0 rgba(120,80,20,0.25);
+
+  --edge: 72px;      /* outer margin on every side */
+  --side-w: 560px;   /* right info panel */
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  width: 100%; height: 100%; overflow: hidden;
+  background: #0A1214; color: var(--ink);
+  font-family: "Inter", "Roboto", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---------- background ---------- */
+#bg, .bg-layer, #shade { position: fixed; inset: 0; }
+#bg { background: radial-gradient(120% 90% at 70% 20%, #1D3A3C 0%, #0E1D20 55%, #070D0E 100%); }
+.bg-layer { background-size: cover; background-position: center; opacity: 0; transition: opacity 2.4s ease; }
+.bg-layer.show { opacity: 1; }
+/* Only the top-left (clock over the photo) needs shading; everything else sits on glass. */
+#shade {
+  background:
+    radial-gradient(70% 60% at 0% 0%, rgba(4,8,9,0.62) 0%, rgba(4,8,9,0.25) 55%, rgba(4,8,9,0) 100%),
+    linear-gradient(180deg, rgba(4,8,9,0.30) 0%, rgba(4,8,9,0) 25%);
+}
+
+/* ---------- stage: designed at 1920x1080, scaled to the screen ---------- */
+#stage { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; transform-origin: 0 0; }
+
+.glass {
+  background: var(--glass-fill);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  box-shadow: var(--glass-rim), var(--glass-drop);
+}
+.label { font-size: 18px; font-weight: 600; letter-spacing: 2.4px; text-transform: uppercase; color: var(--ink-2); }
+.divider { height: 1px; flex: 0 0 auto; background: linear-gradient(90deg, rgba(255,255,255,0), var(--hair) 15%, var(--hair) 85%, rgba(255,255,255,0)); }
+
+/* ---------- clock (top left, no box) ---------- */
+#clock { position: absolute; left: var(--edge); top: 60px; text-shadow: 0 2px 22px rgba(0,0,0,.40); }
+#clock .time { display: flex; align-items: baseline; gap: 12px; }
+#time { font-size: 150px; font-weight: 200; letter-spacing: -5px; line-height: 0.95; font-variant-numeric: tabular-nums; }
+#ampm { font-size: 40px; font-weight: 300; color: var(--ink-2); }
+#date { margin-top: 18px; font-size: 32px; font-weight: 400; }
+#hijri { margin-top: 8px; font-family: "Amiri", serif; font-size: 34px; color: var(--gold); text-align: left; }
+
+/* ---------- optional logo text (top centre of the page, light) ---------- */
+#logo {
+  position: absolute; top: 70px; left: 50%; transform: translateX(-50%);
+  display: flex; align-items: center; gap: 20px; text-shadow: 0 2px 18px rgba(0,0,0,.45);
+}
+#logo .mono { font-family: "Amiri", serif; font-weight: 700; font-size: 46px; letter-spacing: 6px; line-height: 1; }
+#logo .mono em { font-style: normal; font-weight: 400; color: var(--gold); margin: 0 8px; font-size: 38px; }
+#logo .rule { width: 46px; height: 1.5px; background: linear-gradient(90deg, rgba(226,188,116,0), var(--gold)); }
+#logo .rule:last-child { background: linear-gradient(90deg, var(--gold), rgba(226,188,116,0)); }
+#logo[hidden], #world[hidden] { display: none; }
+/* Without world clocks, the prayer list fills the rest of the panel. */
+#side:has(#world[hidden]) { justify-content: flex-start; gap: 34px; }
+#side:has(#world[hidden]) #prayers { flex: 1; display: flex; flex-direction: column; }
+#side:has(#world[hidden]) #prList { flex: 1; justify-content: space-around; }
+
+/* ---------- day reminders under the Hijri date (Friday, white days) ---------- */
+#chips { display: flex; gap: 12px; margin-top: 18px; text-shadow: none; }
+.chip { display: flex; align-items: center; gap: 12px; height: 52px; padding: 0 22px 0 16px; border-radius: 999px; white-space: nowrap; }
+.chip svg { width: 26px; height: 26px; flex: 0 0 auto; }
+.chip .ar { font-family: "Amiri", serif; font-size: 25px; color: var(--gold-soft); }
+.chip .en { font-size: 17px; color: var(--ink-2); }
+.chip .dot { width: 4px; height: 4px; border-radius: 50%; background: var(--ink-3); }
+
+/* ---------- silent prayer alert (top centre, under the logo) ---------- */
+#alert {
+  position: absolute; top: 140px; left: 50%; width: 600px; margin-left: -300px;
+  display: flex; align-items: center; gap: 20px; padding: 18px 28px; border-radius: 30px;
+  transition: opacity .8s ease, transform .8s cubic-bezier(.2,.8,.2,1);
+}
+#alert[hidden] { display: flex; opacity: 0; transform: translateY(-16px) scale(.97); }
+#alert .al-icon { width: 58px; height: 58px; flex: 0 0 auto; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.14); box-shadow: inset 0 1px 0 rgba(255,255,255,.45); }
+#alert .al-icon svg { width: 32px; height: 32px; }
+#alert .al-text { flex: 1; min-width: 0; }
+#alert .al-ar { font-family: "Amiri", serif; font-size: 32px; line-height: 1.3; text-align: right; }
+#alert .al-en { font-size: 19px; color: var(--ink-2); margin-top: 2px; text-align: right; }
+#alert.now { background: linear-gradient(160deg, rgba(244,213,151,0.55), rgba(221,176,102,0.30)), rgba(30,20,6,0.30); }
+#alert.now .al-icon { background: var(--gold-pill); color: var(--gold-ink); }
+#alert.now .al-en { color: var(--ink); }
+
+/* ---------- night mode ---------- */
+#night { position: fixed; inset: 0; background: #000; opacity: 0; pointer-events: none; transition: opacity 6s ease; z-index: 5; }
+body.night #night { opacity: var(--night-dim, 0.45); }
+
+/* ---------- azkar (bottom left) ---------- */
+#azkar {
+  position: absolute; left: var(--edge); bottom: var(--edge);
+  width: calc(1920px - 2 * var(--edge) - var(--side-w) - 64px); height: 560px;
+  border-radius: 40px; padding: 34px 48px 32px;
+  display: flex; flex-direction: column; outline: none;
+}
+#azkar header { display: flex; justify-content: space-between; align-items: flex-start; flex-direction: row-reverse; }
+.az-titles { text-align: right; }
+.az-title { font-family: "Amiri", serif; font-weight: 700; font-size: 42px; color: var(--gold); line-height: 1.25; }
+.az-sub { margin-top: 10px; font-size: 18px; color: var(--ink-3); letter-spacing: 1px; }
+.az-count { font-size: 20px; color: var(--ink-3); font-variant-numeric: tabular-nums; padding-top: 12px; }
+.az-body {
+  flex: 1; min-height: 0; overflow: hidden;
+  display: flex; align-items: center; justify-content: center; text-align: center;
+  font-family: "Amiri", serif; font-size: 50px; line-height: 1.8; color: var(--ink);
+  padding: 18px 24px 10px; transition: opacity .6s ease;
+}
+.az-body.fade { opacity: 0; }
+#azkar footer { display: flex; align-items: center; gap: 24px; flex-direction: row-reverse; }
+.az-repeat {
+  font-family: "Amiri", serif; font-size: 26px; color: var(--gold-ink); border-radius: 999px; padding: 2px 22px 4px; white-space: nowrap;
+  background: var(--gold-pill); box-shadow: var(--gold-pill-rim), 0 6px 18px rgba(0,0,0,0.22);
+}
+.az-repeat:empty { display: none; }
+.az-progress { flex: 1; height: 4px; border-radius: 4px; background: rgba(255,255,255,0.14); overflow: hidden; }
+#azBar { height: 100%; width: 100%; background: var(--gold); transform: scaleX(0); transform-origin: left center; will-change: transform; }
+
+/* ---------- right info panel: weather, prayer times, world clock ---------- */
+#side {
+  position: absolute; right: var(--edge); top: 60px; bottom: var(--edge); width: var(--side-w);
+  border-radius: 40px; padding: 34px 40px 30px;
+  display: flex; flex-direction: column; justify-content: space-between;
+}
+
+#weather .now { display: flex; align-items: center; gap: 14px; }
+.now-icon svg { width: 76px; height: 76px; display: block; }
+.now-temp { font-size: 80px; font-weight: 200; letter-spacing: -3px; line-height: 1; }
+.now-meta { margin-left: auto; text-align: right; }
+.now-meta .city { font-size: 26px; font-weight: 600; }
+.now-meta .cond { font-size: 20px; color: var(--ink-2); margin-top: 2px; }
+.now-meta .extra { font-size: 17px; color: var(--ink-3); margin-top: 4px; }
+#wDays { display: grid; grid-template-columns: repeat(5, 1fr); margin-top: 22px; }
+.day { text-align: center; }
+.day .dn { font-size: 15px; color: var(--ink-3); font-weight: 600; text-transform: uppercase; letter-spacing: 1.6px; }
+.day svg { width: 40px; height: 40px; margin: 6px auto 4px; display: block; }
+.day .hl { font-size: 19px; font-variant-numeric: tabular-nums; }
+.day .hl span { color: var(--ink-3); margin-left: 5px; }
+.day.today .dn { color: var(--gold-soft); }
+
+#prayers header { display: flex; justify-content: space-between; align-items: baseline; padding: 0 14px 10px; }
+.pr-next { font-size: 18px; color: var(--gold-soft); font-weight: 500; font-variant-numeric: tabular-nums; }
+#prList { list-style: none; display: flex; flex-direction: column; gap: 4px; }
+#prList li { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 16px; padding: 7px 14px; border-radius: 14px; }
+#prList .en { font-size: 25px; }
+#prList .ar { font-family: "Amiri", serif; font-size: 24px; color: var(--ink-3); }
+#prList .tm { font-size: 26px; font-variant-numeric: tabular-nums; min-width: 130px; text-align: right; }
+#prList .tm small { font-size: 16px; color: var(--ink-2); margin-left: 3px; }
+#prList li.past .en, #prList li.past .tm { color: var(--ink-3); }
+#prList li.next { color: var(--gold-ink); background: var(--gold-pill); box-shadow: var(--gold-pill-rim), 0 10px 24px rgba(0,0,0,0.22); }
+#prList li.next .ar, #prList li.next .tm small { color: rgba(27,20,7,0.62); }
+#prList li.next .tm { font-weight: 600; }
+
+#world { display: flex; align-items: stretch; justify-content: space-around; }
+.wc { text-align: center; }
+.wc-city { font-size: 15px; font-weight: 600; letter-spacing: 2.4px; text-transform: uppercase; color: var(--ink-3); }
+.wc-time { margin-top: 4px; font-size: 38px; font-weight: 300; letter-spacing: -1px; font-variant-numeric: tabular-nums; line-height: 1.1; }
+.wc-time span { font-size: 16px; font-weight: 400; color: var(--ink-2); margin-left: 5px; letter-spacing: 0; }
+.wc-diff { margin-top: 4px; font-size: 15px; color: var(--ink-3); }
+.wc-sep { width: 1px; background: linear-gradient(180deg, rgba(255,255,255,0), var(--hair), rgba(255,255,255,0)); }

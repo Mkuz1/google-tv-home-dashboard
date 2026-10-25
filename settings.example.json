@@ -1,0 +1,18 @@
+{
+  "logoText": "A&B",
+  "worldClocks": [
+    { "city": "Makkah", "zone": "Asia/Riyadh" },
+    { "city": "London", "zone": "Europe/London" }
+  ],
+  "prayerAlert": { "enabled": true, "minutesBefore": 10, "minutesAfter": 15 },
+  "nightMode": { "enabled": true, "dim": 0.45 },
+  "reminders": { "kahf": true, "whiteDays": true },
+  "homeOrder": ["com.google.android.youtube.tv", "com.netflix.ninja"],
+  "mixScenes": true,
+
+  "_comment": "Location and prayer method are detected automatically. To fix them instead, add for example:",
+  "_example_manual_location": {
+    "city": "Riyadh", "latitude": 24.7136, "longitude": 46.6753,
+    "prayer": { "fajrAngle": 18.5, "ishaMinutes": 90, "asrFactor": 1, "offsets": { "dhuhr": 0 } }
+  }
+}

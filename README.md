@@ -1,0 +1,131 @@
+# Home Dashboard for Google TV
+
+An Apple TV–style home screen and an Islamic dashboard screensaver for Google TV and Android TV, in a Liquid Glass look.
+
+![Home screen](docs/home.jpg)
+
+| Screensaver | Prayer alert |
+|---|---|
+| ![Screensaver](docs/screensaver.jpg) | ![Prayer alert](docs/prayer-alert.jpg) |
+| **Folder** | **Night mode, Friday reminder** |
+| ![Folder](docs/folder.jpg) | ![Night mode](docs/night-mode.jpg) |
+
+## Features
+
+**Home screen**
+- Apple TV layout: apps five to a row, a soft glow in the selected app's brand colour, glass capsule with clock, Wi-Fi and Settings.
+- **Hold OK** on an app (or press Play/Pause) for a small glass menu: **Move**, **Add to Folder**, **Hide**, **Delete** (apps you installed).
+- **Folders** like Apple TV: glass tiles previewing up to nine apps, named automatically (Entertainment, Games, Sony…), with Rename, Move and Remove Folder.
+- Smooth on TV hardware: every tile is GPU-composited and only transform/opacity animate.
+
+**Screensaver**
+- Clock, Gregorian and Hijri date, weather now and for 4 days (Open-Meteo, no API key).
+- **Finds where the TV is by itself**: time and dates follow the TV's time zone, the city comes from its internet connection (TVs have no GPS), and prayer times use the official method for that country (UAE Awqaf, Umm al-Qura, Egyptian, Karachi/Hanafi, Diyanet, JAKIM, ISNA, and more). You can fix the place and method yourself instead.
+- Prayer times are calculated on the TV and keep working offline.
+- **Silent prayer alert**: "Asr in 10 minutes", then "It's time for Asr" in Arabic and English. No sound.
+- Azkar by time of day: morning (4 AM–12 PM), general (12–5 PM), evening (5 PM–4 AM), from Hisn al-Muslim.
+- **Night mode** dims everything between Isha and Fajr.
+- **Friday** Surat Al-Kahf reminder (Thursday Maghrib to Friday Maghrib) and **white days** fasting reminder (Hijri 12–15).
+- Optional two-city world clock and your own logo text at the top.
+- Backgrounds: your **shared Google Photos albums** (new photos appear by themselves) mixed with 10 bundled nature scenes.
+
+## What you need
+
+- A Google TV or Android TV running Android 9 or newer.
+- A Mac or Linux computer on the same network (for `adb`, used to install and to make it the Home screen).
+
+## Install
+
+1. **Get the tools** (adb, and JDK + Android SDK if you build yourself):
+   ```bash
+   tools/setup-sdk.sh
+   ```
+2. **Turn on debugging on the TV**: Settings → System → About → press OK on *Android TV OS build* 7 times. Then Settings → System → Developer options → **USB debugging** on. Note the TV's IP address (Settings → Network).
+3. **Connect** and accept the prompt on the TV (tick *Always allow*):
+   ```bash
+   ./tv.sh connect 192.168.1.50
+   ```
+   If your TV shows *Wireless debugging* with a pairing code instead: `./tv.sh pair <tv-ip> <port> <code>`, then `./tv.sh connect <tv-ip> <port>`.
+4. **Install** the APK from the Releases page (or build it, see below):
+   ```bash
+   ./tv.sh install homedash.apk
+   ./tv.sh set-home
+   ./tv.sh screensaver on
+   ./tv.sh delay 2
+   ```
+5. **Optional, make it yours**: location and prayer method are detected automatically. To add a logo or world clocks, or to fix the place and method, copy `settings.example.json` to `settings.json`, edit it, then:
+   ```bash
+   ./tv.sh settings settings.json
+   ```
+
+## Your photos in the screensaver
+
+In Google Photos, open an album → **Share** → **Create link**, then:
+
+```bash
+./tv.sh albums add https://photos.app.goo.gl/XXXXXXXX
+```
+
+The TV re-reads the albums every 6 hours. `./tv.sh albums list | remove <link> | clear` manage them. Set `"mixScenes": false` to show only your photos.
+
+> Google stopped letting apps read albums through its API in March 2025, so this reads the album's public share page. It works today, but Google could change that page.
+
+Prefer local files? `./tv.sh photos <folder>` pushes a folder of images instead.
+
+## Settings
+
+All keys are optional; anything left out uses the default in [`app/assets/config.js`](app/assets/config.js).
+
+| Key | What it does |
+|---|---|
+| `latitude`, `longitude`, `city` | Fix the place instead of detecting it (detection is the default) |
+| `timezone` | IANA zone; default `"auto"` uses the TV's own time-zone setting |
+| `prayer` | Fix the method instead of the country's official one. A `prayer` block replaces the detected method entirely |
+| `prayer.fajrAngle`, `prayer.ishaAngle` | Twilight angles (e.g. 18.2/18.2 UAE, 18/17 MWL, 19.5/17.5 Egypt) |
+| `prayer.ishaMinutes` | Isha a fixed time after Maghrib (Umm al-Qura: 90) |
+| `prayer.asrFactor` | 1 = Shafi'i/Maliki/Hanbali, 2 = Hanafi |
+| `prayer.offsets` | Minutes added per prayer, to match your local authority |
+| `logoText` | Text at the top of the screensaver; `&` is drawn in gold; empty hides it |
+| `worldClocks` | List of `{ "city", "zone" }` (IANA time zones) |
+| `prayerAlert` | `enabled`, `minutesBefore`, `minutesAfter` |
+| `nightMode` | `enabled`, `dim` (0–1) |
+| `reminders` | `kahf`, `whiteDays` |
+| `azkar` | `morningFrom`, `generalFrom`, `eveningFrom` (hours) |
+| `homeOrder`, `homeExclude` | Starting app order, and apps never shown |
+| `useAlbums`, `mixScenes`, `photoSeconds`, `albumRefreshHours`, `weatherMinutes` | Screensaver photos and refresh |
+
+## Remote
+
+| Where | Button | Does |
+|---|---|---|
+| Home | OK / hold OK | Open app or folder / options menu |
+| Home | Up from the top row | Wi-Fi and Settings |
+| Options menu | Left / Right, OK, Back | Choose, pick, close |
+| Move | Arrows, OK | Move the app, done |
+| Folder | Back | Close the folder |
+
+## Going back to the stock home screen
+
+```bash
+./tv.sh restore
+```
+
+Without a computer: Settings → Apps → See all apps → Show system apps → **Google TV Home** → Enable (and **Setup**), then press Home. Remove the app from Settings → Apps → **Home Dashboard** → Uninstall.
+
+## Build from source
+
+```bash
+tools/setup-sdk.sh
+./build.sh          # out/homedash.apk
+./tv.sh install
+```
+
+No Gradle: `build.sh` uses `aapt2`, `javac`, `d8` and `apksigner` directly. The UI is plain HTML/CSS/JS in [`app/assets/`](app/assets) shown in a WebView; [`Bridge.java`](app/src/com/mk/homedash/Bridge.java) is the small Android side (apps, launching, network, location, albums).
+
+Releases are built by GitHub Actions: pushing a tag like `v1.2.0` builds the APK, signs it with the key kept in the repository's encrypted secrets, and publishes the release. Your own local builds use a key created in `keystore/`, so uninstall a release before installing your own build (or the other way round).
+
+Tested on a Sony BRAVIA 4K VH2 (Google TV, Android 12).
+
+## Credits
+
+See [CREDITS.md](CREDITS.md). MIT licensed, see [LICENSE](LICENSE).

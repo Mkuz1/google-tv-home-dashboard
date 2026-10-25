@@ -1,0 +1,62 @@
+name: Build
+
+# Builds the APK on every push and pull request. Pushing a tag like v1.2.0 also publishes
+# a GitHub release with the APK, signed with the key stored in the repository secrets
+# (KEYSTORE_BASE64, KEYSTORE_PASSWORD, KEYSTORE_ALIAS) so updates install over earlier versions.
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+
+permissions:
+  contents: write
+
+jobs:
+  apk:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Check page scripts
+        run: for f in app/assets/*.js; do node -e "new Function(require('fs').readFileSync('$f','utf8'))"; done
+
+      - name: Signing key
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        run: |
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.jks"
+            echo "KEYSTORE_FILE=$RUNNER_TEMP/release.jks" >> "$GITHUB_ENV"
+          else
+            echo "No signing secret (e.g. a fork): building with a throwaway key."
+          fi
+
+      - name: Build APK
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEYSTORE_ALIAS: ${{ secrets.KEYSTORE_ALIAS }}
+        run: ./build.sh
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: homedash-apk
+          path: out/homedash.apk
+
+      - name: Publish release
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          cp out/homedash.apk "out/homedash-$TAG.apk"
+          SUM=$(sha256sum "out/homedash-$TAG.apk" | cut -d' ' -f1)
+          gh release create "$TAG" "out/homedash-$TAG.apk" --title "Home Dashboard ${TAG#v}" --notes "Install: download \`homedash-$TAG.apk\` below and follow the README (\`./tv.sh connect <tv-ip>\`, \`./tv.sh install homedash-$TAG.apk\`, \`./tv.sh set-home\`, \`./tv.sh screensaver on\`).
+
+          Requires Android TV / Google TV 9+ (API 28).
+
+          SHA-256: \`$SUM\`"
