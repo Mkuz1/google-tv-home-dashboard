@@ -58,9 +58,11 @@ build() {
   cp "$B/unsigned.apk" "$B/with-dex.apk"
   (cd "$B/dex" && zip -qj ../with-dex.apk classes.dex)
   "$BT/zipalign" -f -p 4 "$B/with-dex.apk" "$B/aligned.apk"
-  # v1 (JAR) signing too: some head-unit installers and file managers only read that one.
+  # v1 (JAR) + v2 only. v1: some head-unit installers and file managers only read that one.
+  # No v3: Android 9 checks v3 first when present, and some head-unit ROMs fail on it ("problem
+  # parsing the package"); v3 is only needed to rotate signing keys, which these apps don't do.
   "$BT/apksigner" sign --ks "$KS" --ks-pass "pass:$PASS" --key-pass "pass:$PASS" --ks-key-alias "$ALIAS" \
-    --v1-signing-enabled true --v2-signing-enabled true --v3-signing-enabled true \
+    --v1-signing-enabled true --v2-signing-enabled true --v3-signing-enabled false --v4-signing-enabled false \
     --out "$APK" "$B/aligned.apk"
   "$BT/apksigner" verify --min-sdk-version "$3" "$APK"
   echo "Built $APK ($(du -h "$APK" | cut -f1))"

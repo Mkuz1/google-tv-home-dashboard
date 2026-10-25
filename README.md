@@ -59,7 +59,10 @@ A smooth, touch-first home screen for the car (made for 12" screens such as 1920
 - Adapts to 1920×720, 1280×720, 1024×600 and portrait screens. Steering-wheel / rotary buttons that send arrow and OK keys work too (hold OK for the menu).
 - On first start the app asks for **location** permission (allow it, for prayer times that follow the car). Without GPS, or until the first fix, it uses Sharjah (UAE Awqaf). To fix a place instead, set `latitude`, `longitude`, `city` (and `prayer`) in settings.
 
-**Install**: copy `mk-car-launcher.apk` to a USB stick, open it with the head unit's file manager and allow installing from that source. If it says *"There was a problem parsing the package"*: check the file is complete (about 4.9 MB; a half-finished download won't open), copy it from the USB stick to the head unit's internal storage first and open it from there, or try another file manager (some head-unit file managers can't hand APKs to the installer). Then press **Home** and choose *MK TV & Car Launcher* → **Always** (or Settings → Apps → Default apps → Home app). If the head unit has adb over Wi-Fi, the `tv.sh` install and settings commands work with `CAR=1` in front, e.g. `CAR=1 ./tv.sh install`, `CAR=1 ./tv.sh settings settings.json`.
+**Install**: copy `mk-car-launcher.apk` to a USB stick, open it with the head unit's file manager and allow installing from that source. If it says *"There was a problem parsing the package"*:
+1. Check the file is complete (about 4.9 MB; a half-finished download won't open).
+2. Allow installing for the app you open it with: Settings → Apps → (your file manager or browser) → *Install unknown apps* → Allow. On Android 8 and later, a file manager without this permission gets exactly this error.
+3. Copy the APK from the USB stick to the head unit's internal storage and open it from there, or open it with another file manager (*Files by Google*, *X-plore*); or download it straight on the head unit with Chrome from the Releases page and open it from Chrome's downloads. Then press **Home** and choose *MK TV & Car Launcher* → **Always** (or Settings → Apps → Default apps → Home app). If the head unit has adb over Wi-Fi, the `tv.sh` install and settings commands work with `CAR=1` in front, e.g. `CAR=1 ./tv.sh install`, `CAR=1 ./tv.sh settings settings.json`.
 
 ## What you need
 
