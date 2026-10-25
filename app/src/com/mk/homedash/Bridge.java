@@ -140,10 +140,10 @@ public class Bridge {
     }
 
     /**
-     * Opens two apps side by side (the first on the left/top). With the MK Split Screen accessibility
-     * helper on: open the first, press the system's split-screen action, then open the second next
-     * to it. Without it: ask for a split-screen launch directly (works on many Android 7-11 head
-     * units). Returns "split" (helper used), "tried" (direct way) or "missing" (an app can't open).
+     * Opens two apps side by side (the first on the left/top). With the MK Split Screen helper app
+     * switched on: open the first, have the helper press the system's split-screen action, then open
+     * the second next to it. Without it: ask for a split-screen launch directly (works on many
+     * Android 7-11 head units). Returns "split" (helper used), "tried" (direct way) or "missing".
      */
     @JavascriptInterface
     public String launchSplit(String first, String second) {
@@ -151,7 +151,7 @@ public class Bridge {
         if (a == null || b == null) return "missing";
         a.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         b.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT | Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
-        final boolean helper = SplitService.instance != null;
+        final boolean helper = splitHelperOn();
         main.post(new Runnable() {
             @Override public void run() {
                 try {
@@ -171,7 +171,10 @@ public class Bridge {
         });
         if (helper) {
             main.postDelayed(new Runnable() {
-                @Override public void run() { SplitService.toggleSplit(); }
+                @Override public void run() {
+                    context.sendBroadcast(new Intent(SplitReceiver.ACTION)
+                            .setClassName(SplitReceiver.PACKAGE, SplitReceiver.class.getName()));
+                }
             }, 900);
         }
         main.postDelayed(new Runnable() {
@@ -182,10 +185,21 @@ public class Bridge {
         return helper ? "split" : "tried";
     }
 
-    /** True when the MK Split Screen accessibility helper is switched on. */
+    /** True when the MK Split Screen helper app is installed and switched on in Accessibility. */
     @JavascriptInterface
     public boolean splitHelperOn() {
-        return SplitService.instance != null;
+        String on = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES);
+        return on != null && on.contains(SplitReceiver.PACKAGE + "/");
+    }
+
+    @JavascriptInterface
+    public boolean splitHelperInstalled() {
+        try {
+            context.getPackageManager().getPackageInfo(SplitReceiver.PACKAGE, 0);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     @JavascriptInterface

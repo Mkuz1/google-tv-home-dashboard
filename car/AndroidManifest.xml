@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Car head unit build (./build.sh car): same code as the TV app (app/), with the touch-first
      car home screen (car.html: time, Wi-Fi, Settings, sidebar apps, azkar, prayer times
-     for where the car is, silent prayer banners, app drawer).
+     for where the car is, silent prayer banners, split screen, app drawer). The optional split-screen
+     helper (an accessibility service) is a separate APK, helper/AndroidManifest.xml.
      No screensaver in the car. -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.mk.carlauncher"
-    android:versionCode="9"
-    android:versionName="2.3.1">
+    android:versionCode="10"
+    android:versionName="2.3.2">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -57,17 +58,5 @@
         </activity>
 
         <receiver android:name="com.mk.homedash.PrayerAlert" android:exported="false" />
-
-        <!-- Split screen helper (off until you switch it on in Settings → Accessibility) -->
-        <service
-            android:name="com.mk.homedash.SplitService"
-            android:exported="true"
-            android:label="@string/split_service_name"
-            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
-            <intent-filter>
-                <action android:name="android.accessibilityservice.AccessibilityService" />
-            </intent-filter>
-            <meta-data android:name="android.accessibilityservice" android:resource="@xml/split_service" />
-        </service>
     </application>
 </manifest>

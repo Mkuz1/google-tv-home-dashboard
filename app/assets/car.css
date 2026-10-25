@@ -379,7 +379,7 @@ body.rtl #pop.side .pop-tail { left: auto; right: -10px; box-shadow: inset -1px 
 
 /* ---------- toast ---------- */
 #toast {
-  position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%); z-index: 60; padding: 14px 28px; border-radius: 999px;
+  position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%); z-index: 60; padding: 14px 28px; border-radius: 999px; max-width: 90vw; overflow: hidden; text-overflow: ellipsis;
   background: rgba(30,36,44,0.92); box-shadow: var(--glass-rim), 0 12px 30px rgba(0,0,0,.35);
   font-size: 18px; font-weight: 600; white-space: nowrap; transition: opacity .3s ease, transform .35s var(--ease);
 }

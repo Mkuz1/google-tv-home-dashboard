@@ -43,6 +43,7 @@
       pickFirst: "First app: on the left", pickSecond: "Second app: on the right", openSplit: "Open Side by Side",
       helperOn: "Turn On Split Helper", helperHint: "Not side by side? Turn on MK Split Screen in Accessibility",
       appMissing: "One of these apps isn't installed",
+      helperGet: "Install mk-split-helper.apk from the Releases page, then turn it on here",
       mapsHome: "Use Google Maps Home", mapsWork: "Use Google Maps Work",
     },
     ar: {
@@ -67,6 +68,7 @@
       pickFirst: "التطبيق الأول: على اليسار", pickSecond: "التطبيق الثاني: على اليمين", openSplit: "فتح جنباً إلى جنب",
       helperOn: "تشغيل مساعد تقسيم الشاشة", helperHint: "لم تنقسم الشاشة؟ شغّل MK Split Screen من إعدادات تسهيل الاستخدام",
       appMissing: "أحد التطبيقين غير مثبت",
+      helperGet: "ثبّت mk-split-helper.apk من صفحة الإصدارات ثم شغّله من هنا",
       mapsHome: "المنزل من خرائط Google", mapsWork: "العمل من خرائط Google",
     },
   };
@@ -1250,7 +1252,13 @@
     }, "danger"]), $("dkSplit")), "danger"]);
     let helper = true;
     try { helper = TV.splitHelperOn(); } catch (e) {}
-    if (!helper) actions.push([T("helperOn"), ICON.access, () => { closePop(); TV.openAccessibilitySettings(); }]);
+    // The helper is a separate small app (some head units refuse apps with an accessibility service).
+    if (!helper) actions.push([T("helperOn"), ICON.access, () => {
+      closePop();
+      let installed = false;
+      try { installed = TV.splitHelperInstalled(); } catch (e) {}
+      if (installed) TV.openAccessibilitySettings(); else toast(T("helperGet"));
+    }]);
     showPop(actions, $("dkSplit"));
   }
   function openPair([a, b]) {

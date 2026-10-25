@@ -44,6 +44,7 @@
     notifyTravelDua: (title) => console.log("travel dua", title),
     launchSplit: (a, b) => { console.log("split", a, b); return "tried"; },
     splitHelperOn: () => false,
+    splitHelperInstalled: () => false,
     openAccessibilitySettings: () => console.log("accessibility settings"),
     launch: (p) => { console.log("launch", p); return true; },
     uninstall: (p) => { apps = apps.filter((a) => a.pkg !== p); setTimeout(() => window.onTvResume && window.onTvResume(), 300); },

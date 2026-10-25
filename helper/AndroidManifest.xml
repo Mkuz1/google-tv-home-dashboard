@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- MK Split Screen (./build.sh helper): an optional, separate helper for the car launcher's Split
+     button. Apps can't start split screen themselves; once you switch this on in Settings →
+     Accessibility, the launcher asks it to press the system's split-screen action. It reads nothing
+     on the screen. Kept out of the launcher APK because some head units refuse apps that declare
+     an accessibility service. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.mk.splithelper"
+    android:versionCode="1"
+    android:versionName="1.0.0">
+
+    <application
+        android:label="@string/split_service_name"
+        android:icon="@drawable/icon">
+
+        <service
+            android:name="com.mk.homedash.SplitService"
+            android:exported="true"
+            android:label="@string/split_service_name"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data android:name="android.accessibilityservice" android:resource="@xml/split_service" />
+        </service>
+
+        <!-- The launcher sends this to dock the app in front to one side. -->
+        <receiver android:name="com.mk.homedash.SplitReceiver" android:exported="true">
+            <intent-filter>
+                <action android:name="com.mk.splithelper.TOGGLE_SPLIT" />
+            </intent-filter>
+        </receiver>
+    </application>
+</manifest>

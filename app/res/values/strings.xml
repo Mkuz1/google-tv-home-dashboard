@@ -1,6 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">MK TV &amp; Car Launcher</string>
-    <string name="split_service_name">MK Split Screen</string>
-    <string name="split_service_description">Lets MK TV &amp; Car Launcher open two apps side by side when you press Split on the car home screen. It only uses the system split-screen action and does not read anything on the screen.</string>
 </resources>
