@@ -18,6 +18,10 @@
       <div class="dk-rule"></div>
       <div id="dkRecents"></div>
       <div class="dk-spacer"></div>
+      <!-- Split screen: two apps side by side -->
+      <button class="dk-btn round" id="dkSplit" aria-label="Split screen">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="2.5" y="4" width="8.5" height="16" rx="2.2"/><rect x="13" y="4" width="8.5" height="16" rx="2.2"/></svg>
+      </button>
       <button class="dk-btn round" id="dkSettings" aria-label="Settings">
         <svg viewBox="0 0 24 24"><path fill="currentColor" d="M19.14 12.94a7.07 7.07 0 0 0 .05-.94 7.07 7.07 0 0 0-.05-.94l2.03-1.58a.48.48 0 0 0 .12-.61l-1.92-3.32a.48.48 0 0 0-.59-.21l-2.39.96a7.03 7.03 0 0 0-1.62-.94l-.36-2.54a.48.48 0 0 0-.48-.41h-3.84a.48.48 0 0 0-.47.41l-.36 2.54a7.36 7.36 0 0 0-1.62.94l-2.39-.96a.48.48 0 0 0-.59.21L2.74 8.87a.47.47 0 0 0 .12.61l2.03 1.58a7.4 7.4 0 0 0 0 1.88l-2.03 1.58a.48.48 0 0 0-.12.61l1.92 3.32c.12.21.37.3.59.21l2.39-.96c.5.38 1.04.7 1.62.94l.36 2.54c.05.24.25.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54a7.36 7.36 0 0 0 1.62-.94l2.39.96c.22.08.47 0 .59-.21l1.92-3.32a.48.48 0 0 0-.12-.61zM12 15.6A3.6 3.6 0 1 1 12 8.4a3.6 3.6 0 0 1 0 7.2z"/></svg>
       </button>
@@ -127,6 +131,21 @@
         </div>
         <div class="qb-main" id="qbMain"></div>
         <div class="qb-sub" id="qbSub"></div>
+      </div>
+    </div>
+
+    <!-- Split screen: choose two apps to open side by side -->
+    <div id="picker">
+      <div class="pk-panel glass solid">
+        <div class="pk-head">
+          <div class="pk-title" data-t="pickTitle"></div>
+          <div class="pk-sub" id="pkSub"></div>
+        </div>
+        <div class="pk-scroll"><div class="pk-grid" id="pkGrid"></div></div>
+        <div class="pk-foot">
+          <button class="pk-btn" id="pkCancel" data-t="cancel"></button>
+          <button class="pk-btn main" id="pkGo" data-t="openSplit" disabled></button>
+        </div>
       </div>
     </div>
 

@@ -39,6 +39,11 @@
       makkah: (km) => `Makkah · ${km} km`,
       day: "Day", comfort: "Eye comfort", night: "Night", nightOn: "Night mode · tap ☀ for day", dayOn: "Day mode",
       travel: "Travel dua", lang: "ع",
+      newPair: "New Pair", removePair: "Remove a Pair", pickTitle: "Choose two apps", cancel: "Cancel",
+      pickFirst: "First app: on the left", pickSecond: "Second app: on the right", openSplit: "Open Side by Side",
+      helperOn: "Turn On Split Helper", helperHint: "Not side by side? Turn on MK Split Screen in Accessibility",
+      appMissing: "One of these apps isn't installed",
+      mapsHome: "Use Google Maps Home", mapsWork: "Use Google Maps Work",
     },
     ar: {
       apps: "التطبيقات", moveHint: "اسحب التطبيق أو اضغط حيث تريد نقله", done: "تم",
@@ -58,6 +63,11 @@
       makkah: (km) => `مكة المكرمة · ${km} كم`,
       day: "نهار", comfort: "راحة العين", night: "ليل", nightOn: "الوضع الليلي · اضغط ☀ للنهار", dayOn: "الوضع النهاري",
       travel: "دعاء السفر", lang: "EN",
+      newPair: "زوج جديد", removePair: "حذف زوج", pickTitle: "اختر تطبيقين", cancel: "إلغاء",
+      pickFirst: "التطبيق الأول: على اليسار", pickSecond: "التطبيق الثاني: على اليمين", openSplit: "فتح جنباً إلى جنب",
+      helperOn: "تشغيل مساعد تقسيم الشاشة", helperHint: "لم تنقسم الشاشة؟ شغّل MK Split Screen من إعدادات تسهيل الاستخدام",
+      appMissing: "أحد التطبيقين غير مثبت",
+      mapsHome: "المنزل من خرائط Google", mapsWork: "العمل من خرائط Google",
     },
   };
   let lang = store.get("car.lang", /^ar/.test(navigator.language || "") ? "ar" : "en");
@@ -327,7 +337,7 @@
   const cur = () => view[ctx];
   const list = () => (ctx === "main" ? items : folderList());
   const tileEl = (c, i) => (c === "main" ? $("pages") : $("fdGrid")).querySelector(`.app[data-i="${i}"]`);
-  const dockEls = () => [$("dkWifi"), ...$("dkRecents").children, $("dkSettings"), $("dkDrawer")];
+  const dockEls = () => [$("dkWifi"), ...$("dkRecents").children, $("dkSplit"), $("dkSettings"), $("dkDrawer")];
   let lastFocus = null, lastMoving = null;
 
   function renderFocus() {
@@ -420,6 +430,9 @@
     down: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M6 13l6 6 6-6"/></svg>',
     left: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>',
     right: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>',
+    split: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="2.5" y="4" width="8.5" height="16" rx="2.2"/><rect x="13" y="4" width="8.5" height="16" rx="2.2"/></svg>',
+    access: '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="4.5" r="2.2"/><path d="M4 8.5l8 1.5 8-1.5.4 1.8-5.4 1.4V15l2 6.2-1.8.6L13 16h-2l-2.2 5.8-1.8-.6L9 15v-3.3L3.6 10.3z"/></svg>',
+    mapsPin: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg>',
     apps: '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="5" r="2.2"/><circle cx="12" cy="5" r="2.2"/><circle cx="19" cy="5" r="2.2"/><circle cx="5" cy="12" r="2.2"/><circle cx="12" cy="12" r="2.2"/><circle cx="19" cy="12" r="2.2"/><circle cx="5" cy="19" r="2.2"/><circle cx="12" cy="19" r="2.2"/><circle cx="19" cy="19" r="2.2"/></svg>',
   };
 
@@ -1052,7 +1065,8 @@
   }
 
   /* ---------------- favorite places, in Google Maps only ---------------- */
-  // Home and Work: tap to navigate there (hold to set them: here, or a typed address).
+  // Home and Work: navigate to the places saved as Home and Work in your Google Maps (hold to use
+  // another place instead: where the car is now, or a typed address).
   // Mosque and petrol: the nearest ones around the car. Each opens Google Maps and starts a trip.
   const near = () => `${C.latitude},${C.longitude}`;
   function maps(uri) {
@@ -1070,7 +1084,7 @@
   }
   function renderFavs() {
     const all = favs();
-    document.querySelectorAll(".fav").forEach((b) => b.classList.toggle("unset", (b.dataset.f === "home" || b.dataset.f === "work") && !all[b.dataset.f]));
+    document.querySelectorAll(".fav").forEach((b) => b.classList.toggle("custom", !!all[b.dataset.f]));
   }
   function favTap(b) {
     const f = b.dataset.f;
@@ -1078,7 +1092,8 @@
     if (f === "mosque") return maps(`geo:${near()}?q=${encodeURIComponent("mosque")}`);
     if (f === "fuel") return maps(`geo:${near()}?q=${encodeURIComponent("petrol station")}`);
     const p = favs()[f];
-    if (!p) return favMenu(b);
+    // Google Maps knows "Home" and "Work" as the places saved in your account.
+    if (!p) return maps("google.navigation:q=" + (f === "home" ? "Home" : "Work"));
     maps("google.navigation:q=" + (p.addr ? encodeURIComponent(p.addr) : `${p.lat},${p.lon}`));
   }
   function favMenu(b) {
@@ -1100,7 +1115,7 @@
       };
       TV.promptText(T(f + "Address"), (favs()[f] || {}).addr || "");
     }]);
-    if (favs()[f]) actions.push([T("clear"), ICON.trash, () => { setFav(f, null); closePop(); }, "danger"]);
+    if (favs()[f]) actions.push([T(f === "home" ? "mapsHome" : "mapsWork"), ICON.mapsPin, () => { setFav(f, null); closePop(); }]);
     showPop(actions, b);
   }
   let favHold = null, favHeld = false;
@@ -1218,6 +1233,81 @@
     azTimer = setTimeout(() => { travelUntil = 0; azPeriod = null; checkAzkarPeriod(now()); }, Math.max(0, travelUntil - Date.now()));
   }
 
+  /* ---------------- split screen: two apps side by side ---------------- */
+  // The Split button in the sidebar lists your saved pairs (e.g. Google Maps + YouTube); "New Pair"
+  // picks two apps. Android opens them side by side, the first on the left.
+  const MAX_PAIRS = 6;
+  const pairs = () => store.get("car.pairs", []);
+  const appByPkg = (p) => installed.find((a) => a.pkg === p);
+  const pairName = ([a, b]) => `${(appByPkg(a) || { label: a }).label} + ${(appByPkg(b) || { label: b }).label}`;
+  function splitMenu() {
+    const list = pairs().filter(([a, b]) => appByPkg(a) && appByPkg(b));
+    const actions = list.map((p) => [pairName(p), ICON.split, () => { closePop(); openPair(p); }]);
+    actions.push([T("newPair"), ICON.plus, () => { closePop(); openPicker(); }]);
+    if (list.length) actions.push([T("removePair"), ICON.trash, () => showPop(list.map((p) => [pairName(p), ICON.trash, () => {
+      store.set("car.pairs", pairs().filter((x) => x.join() !== p.join()));
+      closePop();
+    }, "danger"]), $("dkSplit")), "danger"]);
+    let helper = true;
+    try { helper = TV.splitHelperOn(); } catch (e) {}
+    if (!helper) actions.push([T("helperOn"), ICON.access, () => { closePop(); TV.openAccessibilitySettings(); }]);
+    showPop(actions, $("dkSplit"));
+  }
+  function openPair([a, b]) {
+    let r = "missing";
+    try { r = TV.launchSplit(a, b); } catch (e) {}
+    if (r === "missing") return toast(T("appMissing"));
+    if (r === "tried") setTimeout(() => toast(T("helperHint")), 2500);
+    const nav = (p) => { const x = appByPkg(p); return x && (NAV_APPS.has(p) || x.category === 6); };
+    if (nav(a) || nav(b)) startTrip();
+  }
+
+  // Picker: tap two apps (1 = left, 2 = right), then Open Side by Side; the pair is saved.
+  let picked = [];
+  function openPicker() {
+    picked = [];
+    const all = [];
+    for (const it of items) (it.type === "app" ? [it.app] : it.apps).forEach((a) => all.push(a));
+    $("pkGrid").innerHTML = all.map((a) => `<button class="pk-app" data-pkg="${escapeHtml(a.pkg)}">` +
+      `${artHtml(a)}<div class="name">${escapeHtml(a.label)}</div><span class="pk-badge"></span></button>`).join("");
+    const main = $("main"), pl = document.querySelector(".pk-panel");
+    pl.style.left = main.offsetLeft + 20 + "px";
+    pl.style.top = main.offsetTop + 10 + "px";
+    pl.style.width = main.offsetWidth - 40 + "px";
+    pl.style.height = main.offsetHeight - 20 + "px";
+    renderPicked();
+    document.body.classList.add("picker-open");
+  }
+  function closePicker() { document.body.classList.remove("picker-open"); }
+  function renderPicked() {
+    document.querySelectorAll(".pk-app").forEach((b) => {
+      const i = picked.indexOf(b.dataset.pkg);
+      b.classList.toggle("sel", i >= 0);
+      b.querySelector(".pk-badge").textContent = i >= 0 ? i + 1 : "";
+    });
+    $("pkSub").textContent = T(picked.length ? "pickSecond" : "pickFirst");
+    $("pkGo").disabled = picked.length < 2;
+  }
+  $("pkGrid").addEventListener("click", (e) => {
+    const b = e.target.closest(".pk-app");
+    if (!b) return;
+    const p = b.dataset.pkg, i = picked.indexOf(p);
+    if (i >= 0) picked.splice(i, 1);
+    else if (picked.length < 2) picked.push(p);
+    else picked[1] = p;
+    renderPicked();
+  });
+  $("pkCancel").addEventListener("click", closePicker);
+  $("picker").addEventListener("pointerdown", (e) => { if (e.target === $("picker")) closePicker(); });
+  $("pkGo").addEventListener("click", () => {
+    if (picked.length < 2) return;
+    const p = picked.slice();
+    store.set("car.pairs", [p].concat(pairs().filter((x) => x.join() !== p.join())).slice(0, MAX_PAIRS));
+    closePicker();
+    openPair(p);
+  });
+  $("dkSplit").addEventListener("click", () => { if (zone === "move") endMove(); splitMenu(); });
+
   /* ---------------- toast: a short note at the bottom ---------------- */
   let toastTimer = null;
   function toast(text) {
@@ -1257,6 +1347,8 @@
     clearTimeout(azTimer); // nothing changes on screen while another app is in front
   };
   window.onTvBack = () => {
+    if (has("picker-open")) return closePicker();
+    if (has("qibla-open")) return closeQibla();
     if (zone === "prompt" || (!has("drawer-open") && zone !== "pop")) return; // Back on the home page does nothing
     handle("back");
   };

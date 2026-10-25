@@ -5,8 +5,8 @@
      No screensaver in the car. -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.mk.carlauncher"
-    android:versionCode="7"
-    android:versionName="2.2.0">
+    android:versionCode="8"
+    android:versionName="2.3.0">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -57,5 +57,17 @@
         </activity>
 
         <receiver android:name="com.mk.homedash.PrayerAlert" android:exported="false" />
+
+        <!-- Split screen helper (off until you switch it on in Settings → Accessibility) -->
+        <service
+            android:name="com.mk.homedash.SplitService"
+            android:exported="true"
+            android:label="@string/split_service_name"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data android:name="android.accessibilityservice" android:resource="@xml/split_service" />
+        </service>
     </application>
 </manifest>

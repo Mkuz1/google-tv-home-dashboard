@@ -51,8 +51,8 @@ body.portrait #stage { flex-direction: column-reverse; }
 
 /* ---------- dock ---------- */
 #dock {
-  flex: 0 0 var(--dock); border-radius: 34px; padding: 20px 0 16px;
-  display: flex; flex-direction: column; align-items: center; gap: 12px; z-index: 4;
+  flex: 0 0 var(--dock); border-radius: 34px; padding: 18px 0 14px;
+  display: flex; flex-direction: column; align-items: center; gap: 10px; z-index: 4;
 }
 body.portrait #dock { flex-direction: row; padding: 0 18px; }
 .dk-time { display: flex; flex-direction: column; align-items: center; line-height: 1; }
@@ -62,8 +62,9 @@ body.portrait #dock { flex-direction: row; padding: 0 18px; }
   flex: 0 0 auto; display: flex; align-items: center; justify-content: center;
   transition: transform .18s var(--ease), background .15s;
 }
-.dk-btn.round { width: 60px; height: 60px; border-radius: 50%; }
-.dk-btn.round svg { width: 30px; height: 30px; display: block; }
+.dk-btn.round { width: 54px; height: 54px; border-radius: 50%; }
+.dk-btn.round svg { width: 28px; height: 28px; display: block; }
+#dkSplit { background: rgba(255,255,255,0.12); box-shadow: inset 0 1px 0 rgba(255,255,255,.3); }
 .dk-btn.drawer {
   width: 84px; height: 84px; border-radius: 26px; background: rgba(255,255,255,0.16);
   box-shadow: inset 0 1.5px 0 rgba(255,255,255,.45), inset 0 0 0 1px rgba(255,255,255,.12);
@@ -73,9 +74,9 @@ body.drawer-open .dk-btn.drawer { background: var(--white-pill); color: #111; }
 .dk-btn:active { transform: scale(.88); }
 .dk-rule { width: 60px; height: 1px; background: var(--hair); flex: 0 0 auto; }
 body.portrait .dk-rule { width: 1px; height: 60px; }
-#dkRecents { display: flex; flex-direction: column; gap: 12px; }
+#dkRecents { display: flex; flex-direction: column; gap: 10px; }
 body.portrait #dkRecents { flex-direction: row; }
-.recent { position: relative; width: 70px; height: 70px; border-radius: 17px; overflow: hidden; transition: transform .18s var(--ease); }
+.recent { position: relative; width: 66px; height: 66px; border-radius: 16px; overflow: hidden; transition: transform .18s var(--ease); }
 .recent img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .recent.small img { width: 74%; height: 74%; margin: 13%; object-fit: contain; }
 .recent:active { transform: scale(.88); }
@@ -329,7 +330,9 @@ body.portrait #prList li { padding: 3px 12px; }
 .fav[data-f="mosque"] .fv-icon { background: linear-gradient(180deg, #3FC48A, #1F8F5E); }
 .fav[data-f="fuel"] .fv-icon { background: linear-gradient(180deg, #FF9F5A, #E06A2F); }
 .fav.qibla .fv-icon { background: var(--gold-pill); color: var(--gold-ink); box-shadow: var(--gold-pill-rim); }
-.fav.unset .fv-icon { opacity: .55; }
+/* Home / Work set to another place than Google Maps' own: a small dot */
+.fav.custom .fv-icon { position: relative; }
+.fav.custom .fv-icon::after { content: ""; position: absolute; top: 2px; right: 2px; width: 10px; height: 10px; border-radius: 50%; background: var(--gold); box-shadow: 0 0 0 2px rgba(0,0,0,.3); }
 .fv-name { font-size: 16px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
 body.rtl .fv-name { font-size: 17px; }
 
@@ -385,3 +388,36 @@ body.rtl #toast { font-family: "Amiri", serif; font-size: 22px; }
 /* The app pages keep their order in Arabic too (swipes and moves stay the same). */
 #viewport, #fdGrid, #dots { direction: ltr; }
 body.rtl .name { direction: rtl; }
+
+/* ---------- split screen app picker ---------- */
+#picker { position: absolute; inset: 0; z-index: 8; background: rgba(0,0,0,0.42); opacity: 0; pointer-events: none; transition: opacity .25s ease; }
+body.picker-open #picker { opacity: 1; pointer-events: auto; }
+.pk-panel {
+  position: absolute; border-radius: 40px; display: flex; flex-direction: column; overflow: hidden;
+  transform: scale(.95); transition: transform .4s var(--spring);
+}
+body.picker-open .pk-panel { transform: scale(1); }
+.pk-head { padding: 22px 30px 8px; text-align: center; }
+.pk-title { font-size: 28px; font-weight: 700; }
+.pk-sub { margin-top: 4px; font-size: 17px; color: var(--ink-2); }
+.pk-scroll { flex: 1; min-height: 0; overflow-y: auto; touch-action: pan-y; padding: 10px 18px; }
+.pk-scroll::-webkit-scrollbar { display: none; }
+.pk-grid { display: grid; grid-template-columns: repeat(auto-fill, 128px); justify-content: center; gap: 14px 10px; direction: ltr; }
+.pk-app { position: relative; display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 8px 0; border-radius: 22px; transition: transform .15s var(--ease), background .15s; }
+.pk-app:active { transform: scale(.92); }
+.pk-app .art { width: 84px; height: 84px; }
+.pk-app .name { margin-top: 0; font-size: 15px; max-width: 120px; }
+.pk-app.sel { background: rgba(255,255,255,0.14); }
+.pk-badge {
+  position: absolute; top: 2px; right: 14px; width: 34px; height: 34px; border-radius: 50%; display: none;
+  align-items: center; justify-content: center; font-size: 18px; font-weight: 800; color: var(--gold-ink);
+  background: var(--gold-pill); box-shadow: var(--gold-pill-rim), 0 4px 10px rgba(0,0,0,.35);
+}
+.pk-app.sel .pk-badge { display: flex; }
+.pk-foot { display: flex; justify-content: center; gap: 14px; padding: 12px 20px 20px; }
+.pk-btn { height: 58px; padding: 0 30px; border-radius: 999px; font-size: 20px; font-weight: 700; background: rgba(255,255,255,0.14); box-shadow: inset 0 1px 0 rgba(255,255,255,.3); }
+.pk-btn.main { background: var(--white-pill); color: #111; }
+.pk-btn:disabled { opacity: .4; }
+.pk-btn:active { transform: scale(.95); }
+body.rtl .pk-title, body.rtl .pk-sub, body.rtl .pk-btn { font-family: "Amiri", serif; }
+body.rtl .pk-title { font-size: 32px; }

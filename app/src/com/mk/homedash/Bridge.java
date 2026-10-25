@@ -139,6 +139,66 @@ public class Bridge {
         return true;
     }
 
+    /**
+     * Opens two apps side by side (the first on the left/top). With the MK Split Screen accessibility
+     * helper on: open the first, press the system's split-screen action, then open the second next
+     * to it. Without it: ask for a split-screen launch directly (works on many Android 7-11 head
+     * units). Returns "split" (helper used), "tried" (direct way) or "missing" (an app can't open).
+     */
+    @JavascriptInterface
+    public String launchSplit(String first, String second) {
+        final Intent a = launchIntentFor(first), b = launchIntentFor(second);
+        if (a == null || b == null) return "missing";
+        a.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        b.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT | Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
+        final boolean helper = SplitService.instance != null;
+        main.post(new Runnable() {
+            @Override public void run() {
+                try {
+                    if (helper) {
+                        context.startActivity(a);
+                    } else {
+                        android.app.ActivityOptions o = android.app.ActivityOptions.makeBasic();
+                        // Hidden API: WINDOWING_MODE_SPLIT_SCREEN_PRIMARY = 3.
+                        android.app.ActivityOptions.class.getMethod("setLaunchWindowingMode", int.class).invoke(o, 3);
+                        context.startActivity(a, o.toBundle());
+                    }
+                } catch (Exception e) {
+                    Log.w("HomeDash", "split launch: " + e);
+                    try { context.startActivity(a); } catch (Exception ignored) { }
+                }
+            }
+        });
+        if (helper) {
+            main.postDelayed(new Runnable() {
+                @Override public void run() { SplitService.toggleSplit(); }
+            }, 900);
+        }
+        main.postDelayed(new Runnable() {
+            @Override public void run() {
+                try { context.startActivity(b); } catch (Exception e) { Log.w("HomeDash", "split second: " + e); }
+            }
+        }, helper ? 1900 : 900);
+        return helper ? "split" : "tried";
+    }
+
+    /** True when the MK Split Screen accessibility helper is switched on. */
+    @JavascriptInterface
+    public boolean splitHelperOn() {
+        return SplitService.instance != null;
+    }
+
+    @JavascriptInterface
+    public void openAccessibilitySettings() {
+        start(new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS));
+    }
+
+    private Intent launchIntentFor(String pkg) {
+        PackageManager pm = context.getPackageManager();
+        Intent i = car ? null : pm.getLeanbackLaunchIntentForPackage(pkg);
+        return i != null ? i : pm.getLaunchIntentForPackage(pkg);
+    }
+
     /** The travel dua as a silent banner over the navigation app that was just opened. */
     @JavascriptInterface
     public void notifyTravelDua(String title, String text) {
