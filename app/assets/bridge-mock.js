@@ -36,6 +36,7 @@
     apps: () => JSON.stringify(apps),
     flavor: () => flavor,
     appsStamp: () => 0,
+    setBrightness: (v) => console.log("brightness", v),
     launch: (p) => { console.log("launch", p); return true; },
     uninstall: (p) => { apps = apps.filter((a) => a.pkg !== p); setTimeout(() => window.onTvResume && window.onTvResume(), 300); },
     openSettings: () => console.log("settings"),

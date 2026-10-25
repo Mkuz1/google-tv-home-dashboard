@@ -44,6 +44,8 @@
 
         <section id="prayer" class="glass">
           <div id="logo" class="logo"></div>
+          <!-- Eye comfort: normal → warm and dimmer → night (warmest, darkest) -->
+          <button id="comfortBtn" aria-label="Eye comfort"></button>
           <div class="p-time"><span id="pTime">--:--</span><span id="pAmpm"></span></div>
           <div class="p-date" id="pDate"></div>
           <div class="p-hijri" id="pHijri" dir="rtl"></div>
@@ -88,6 +90,9 @@
       <div class="pop-tail"></div>
     </div>
   </main>
+
+  <!-- Eye comfort: a warm, dark layer over the whole page (touches go through) -->
+  <div id="comfort"></div>
 
   <script src="bridge-mock.js"></script>
   <script src="config.js"></script>

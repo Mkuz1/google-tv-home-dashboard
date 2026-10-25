@@ -45,6 +45,7 @@ A smooth, touch-first home screen for the car (made for 12" screens such as 1920
 ![Options menu](docs/car-menu.jpg)
 
 - **Home**: the time (and M&D logo, Gregorian and Hijri dates, Friday / white days reminders), an **azkar widget** (morning, general or evening azkar by the time of day; tap for the next one) and **Sharjah prayer times** (UAE Awqaf method) with the next prayer highlighted.
+- **Eye comfort** button (top right of the time card): tap for *Eye comfort* (warmer and dimmer), again for *Night* (warmest, darkest), again for normal. It lowers the screen brightness while the home screen is shown and lays a warm tint over it; other apps keep the system brightness.
 - **Dock**: time, **Wi-Fi**, your three most recent apps, **Settings**, and the **App Drawer** button.
 - **App Drawer**: every app in pages, **swipe** sideways. Like the TV home, **hold** an app for the glass menu: **Move**, **Add to Folder**, **Hide**, **Delete**; the app being moved jiggles: drag it (hold it at the screen edge to change page) or tap where it should go, then **Done**. Folders open as a glass platter; hold a folder to **Rename**, **Move** or **Remove Folder**.
 - **No screensaver** in the car version.
@@ -52,7 +53,7 @@ A smooth, touch-first home screen for the car (made for 12" screens such as 1920
 - Adapts to 1920×720, 1280×720, 1024×600 and portrait screens. Steering-wheel / rotary buttons that send arrow and OK keys work too (hold OK for the menu).
 - Prayer times are for Sharjah wherever the car is. For another city set `latitude`, `longitude`, `city` (and `prayer`) in settings.
 
-**Install**: copy `mk-car-launcher.apk` to a USB stick, open it with the head unit's file manager and allow installing from that source. Then press **Home** and choose *MK TV & Car Launcher* → **Always** (or Settings → Apps → Default apps → Home app). If the head unit has adb over Wi-Fi, the `tv.sh` install and settings commands work with `CAR=1` in front, e.g. `CAR=1 ./tv.sh install`, `CAR=1 ./tv.sh settings settings.json`.
+**Install**: copy `mk-car-launcher.apk` to a USB stick, open it with the head unit's file manager and allow installing from that source. If it says *"There was a problem parsing the package"*: check the file is complete (about 4.9 MB; a half-finished download won't open), copy it from the USB stick to the head unit's internal storage first and open it from there, or try another file manager (some head-unit file managers can't hand APKs to the installer). Then press **Home** and choose *MK TV & Car Launcher* → **Always** (or Settings → Apps → Default apps → Home app). If the head unit has adb over Wi-Fi, the `tv.sh` install and settings commands work with `CAR=1` in front, e.g. `CAR=1 ./tv.sh install`, `CAR=1 ./tv.sh settings settings.json`.
 
 ## What you need
 

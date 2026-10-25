@@ -1,5 +1,6 @@
 package com.mk.homedash;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
@@ -26,6 +27,7 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.webkit.WebView;
@@ -84,6 +86,24 @@ public class Bridge {
     @JavascriptInterface
     public String flavor() {
         return car ? "car" : "tv";
+    }
+
+    /**
+     * Screen brightness while the home screen is in front, 0-1, or below 0 for the system's own
+     * setting (the car home screen's eye comfort button). Other apps keep the system brightness.
+     */
+    @JavascriptInterface
+    public void setBrightness(final float level) {
+        if (!(context instanceof Activity)) return;
+        main.post(new Runnable() {
+            @Override public void run() {
+                Window w = ((Activity) context).getWindow();
+                WindowManager.LayoutParams lp = w.getAttributes();
+                lp.screenBrightness = level < 0 ? WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_NONE
+                        : Math.max(0.02f, Math.min(1f, level));
+                w.setAttributes(lp);
+            }
+        });
     }
 
     /** Bumped whenever an app is installed, removed or updated (MainActivity listens). */

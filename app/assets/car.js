@@ -806,6 +806,29 @@
     }
   }
 
+  /* ---------------- eye comfort ---------------- */
+  // Normal → comfort (warmer, dimmer) → night (warmest, darkest) → normal. The page gets a warm dark
+  // layer, and the screen's backlight is lowered while the home screen is in front (some head units
+  // ignore that, the layer still works).
+  const COMFORT = [
+    { name: "Normal", brightness: -1, icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></svg>' },
+    { name: "Eye comfort", brightness: 0.35, icon: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3a9 9 0 1 0 0 18V3z"/><path d="M12 3a9 9 0 0 1 0 18" fill="none" stroke="currentColor" stroke-width="2"/></svg>' },
+    { name: "Night", brightness: 0.08, icon: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M14.5 3a9 9 0 1 0 6.5 15.2A7.5 7.5 0 0 1 14.5 3z"/></svg>' },
+  ];
+  let comfort = 0;
+  function setComfort(level) {
+    comfort = (level + COMFORT.length) % COMFORT.length;
+    const c = COMFORT[comfort];
+    document.body.classList.remove("comfort-1", "comfort-2");
+    if (comfort) document.body.classList.add("comfort-" + comfort);
+    $("comfortBtn").innerHTML = c.icon;
+    $("comfortBtn").classList.toggle("on", comfort > 0);
+    $("comfortBtn").setAttribute("aria-label", c.name);
+    try { TV.setBrightness(c.brightness); } catch (e) {}
+    store.set("car.comfort", comfort);
+  }
+  $("comfortBtn").addEventListener("click", (e) => { e.stopPropagation(); setComfort(comfort + 1); });
+
   // Called from MainActivity.
   let paused = false;
   window.onTvPause = () => {
@@ -843,6 +866,7 @@
   $("logo").innerHTML = D.logoHtml(logo);
   $("prLabel").textContent = `${C.city || "Prayer"} Prayer Times`;
   $("dkDrawer").innerHTML = ICON.apps;
+  setComfort(store.get("car.comfort", 0));
   loadApps();
   fit();
   renderDock();

@@ -17,8 +17,12 @@ for c in "$HOME/Library/Android/sdk" "$HOME/Android/Sdk"; do
   [ -d "$c" ] && SDK="$c"
 done
 [ -d "${SDK:-}" ] || { echo "Android SDK not found. Run tools/setup-sdk.sh or set ANDROID_HOME." >&2; exit 1; }
-BT="$(ls -d "$SDK"/build-tools/* 2>/dev/null | sort -V | tail -1)"
-JAR="$(ls -d "$SDK"/platforms/android-*/android.jar 2>/dev/null | sort -V | tail -1)"
+BT="$(ls -d "$SDK"/build-tools/* 2>/dev/null | grep -v -- "-rc" | sort -V | tail -1)"
+# Compile against a stable platform (34 or 35 when installed), never a preview one: some
+# head units (Android 9) refuse APKs built against preview SDKs.
+JAR=""
+for v in 35 34; do [ -f "$SDK/platforms/android-$v/android.jar" ] && { JAR="$SDK/platforms/android-$v/android.jar"; break; }; done
+[ -n "$JAR" ] || JAR="$(ls -d "$SDK"/platforms/android-[0-9]*/android.jar 2>/dev/null | sort -V | tail -1)"
 [ -x "$BT/aapt2" ] && [ -f "$JAR" ] || { echo "Missing build-tools or platform in $SDK. Run tools/setup-sdk.sh." >&2; exit 1; }
 
 if [ -z "${JAVA_HOME:-}" ]; then
@@ -54,8 +58,11 @@ build() {
   cp "$B/unsigned.apk" "$B/with-dex.apk"
   (cd "$B/dex" && zip -qj ../with-dex.apk classes.dex)
   "$BT/zipalign" -f -p 4 "$B/with-dex.apk" "$B/aligned.apk"
+  # v1 (JAR) signing too: some head-unit installers and file managers only read that one.
   "$BT/apksigner" sign --ks "$KS" --ks-pass "pass:$PASS" --key-pass "pass:$PASS" --ks-key-alias "$ALIAS" \
+    --v1-signing-enabled true --v2-signing-enabled true --v3-signing-enabled true \
     --out "$APK" "$B/aligned.apk"
+  "$BT/apksigner" verify --min-sdk-version "$3" "$APK"
   echo "Built $APK ($(du -h "$APK" | cut -f1))"
 }
 
