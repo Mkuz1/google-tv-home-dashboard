@@ -37,6 +37,8 @@
     flavor: () => flavor,
     appsStamp: () => 0,
     setBrightness: (v) => console.log("brightness", v),
+    carLocation: () => JSON.stringify({ lat: 25.2048, lon: 55.2708, city: "Dubai", country: "AE", at: Date.now() }),
+    schedulePrayerAlerts: (json) => console.log("alerts", json),
     launch: (p) => { console.log("launch", p); return true; },
     uninstall: (p) => { apps = apps.filter((a) => a.pkg !== p); setTimeout(() => window.onTvResume && window.onTvResume(), 300); },
     openSettings: () => console.log("settings"),

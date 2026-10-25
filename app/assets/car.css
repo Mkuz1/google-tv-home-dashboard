@@ -73,9 +73,9 @@ body.drawer-open .dk-btn.drawer { background: var(--white-pill); color: #111; }
 .dk-btn:active { transform: scale(.88); }
 .dk-rule { width: 60px; height: 1px; background: var(--hair); flex: 0 0 auto; }
 body.portrait .dk-rule { width: 1px; height: 60px; }
-#dkRecents { display: flex; flex-direction: column; gap: 14px; }
+#dkRecents { display: flex; flex-direction: column; gap: 12px; }
 body.portrait #dkRecents { flex-direction: row; }
-.recent { position: relative; width: 76px; height: 76px; border-radius: 18px; overflow: hidden; transition: transform .18s var(--ease); }
+.recent { position: relative; width: 70px; height: 70px; border-radius: 17px; overflow: hidden; transition: transform .18s var(--ease); }
 .recent img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .recent.small img { width: 74%; height: 74%; margin: 13%; object-fit: contain; }
 .recent:active { transform: scale(.88); }
@@ -90,7 +90,8 @@ body.portrait #dkRecents { flex-direction: row; }
   transition: opacity .3s var(--ease), transform .35s var(--ease);
 }
 body.narrow #home { grid-template-columns: 1.2fr 1fr; }
-body.portrait #home { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
+body.portrait #home { grid-template-columns: 1fr; grid-template-rows: max-content minmax(0, 1fr); }
+body.portrait #prayer { min-height: max-content; }
 body.portrait #prayer { order: -1; }
 body.drawer-open #home { opacity: 0; transform: scale(.97); pointer-events: none; }
 body.drawer-shut #home { transition: none; }
@@ -277,10 +278,30 @@ body.popping #scrim { display: block; }
   transform: rotate(45deg); border-radius: 4px; background: rgb(48,54,62);
   box-shadow: inset -1px -1px 0 rgba(255,255,255,0.16);
 }
+#pop.side { transform-origin: 0 50%; }
+#pop.side .pop-tail { bottom: auto; left: -10px; margin: -11px 0 0 0; box-shadow: inset 1px -1px 0 rgba(255,255,255,0.16); }
 #pop.below .pop-tail { bottom: auto; top: -10px; box-shadow: inset 1px 1px 0 rgba(255,255,255,0.3); }
 
 /* Portrait: a more compact prayer card so the azkar keep room to read */
 body.portrait #pTime { font-size: 64px; }
 body.portrait #prList { flex: none; }
 body.portrait #prList li { padding: 3px 12px; }
-body.portrait #azkar { min-height: 300px; }
+
+
+/* ---------- silent prayer banner (top, over the main area) ---------- */
+#alert {
+  position: absolute; top: 24px; left: 0; width: 640px; z-index: 7; /* placed over the azkar card by car.js */
+  display: flex; align-items: center; gap: 18px; padding: 14px 26px 14px 16px; border-radius: 30px;
+  transition: opacity .6s ease, transform .6s var(--ease);
+}
+
+#alert[hidden] { display: flex; opacity: 0; transform: translateY(-18px) scale(.97); pointer-events: none; }
+#alert .al-icon { width: 54px; height: 54px; flex: 0 0 auto; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.14); box-shadow: inset 0 1px 0 rgba(255,255,255,.45); }
+#alert .al-icon svg { width: 30px; height: 30px; }
+#alert .al-text { flex: 1; min-width: 0; text-align: right; }
+#alert .al-ar { font-family: "Amiri", serif; font-size: 29px; line-height: 1.3; }
+#alert .al-en { font-size: 17px; color: var(--ink-2); margin-top: 2px; }
+#alert.now { background: linear-gradient(160deg, rgba(244,213,151,0.65), rgba(221,176,102,0.45)), rgba(40,28,10,0.88); }
+#alert.now .al-icon { background: var(--gold-pill); color: var(--gold-ink); }
+#alert.now .al-en { color: var(--ink); }
+.pin { display: inline-block; width: 13px; height: 13px; margin-right: 6px; vertical-align: -1px; }

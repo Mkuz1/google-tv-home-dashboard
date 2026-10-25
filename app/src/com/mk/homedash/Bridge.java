@@ -106,6 +106,19 @@ public class Bridge {
         });
     }
 
+    /** The car's last GPS position {lat, lon, at, city, country} (car build), or null. */
+    @JavascriptInterface
+    public String carLocation() {
+        String v = context.getSharedPreferences("home", Context.MODE_PRIVATE).getString("carLocation", null);
+        return v == null ? "null" : v;
+    }
+
+    /** Silent prayer banners for when another app is in front: [{at, title, text, minutes}]. */
+    @JavascriptInterface
+    public void schedulePrayerAlerts(String json) {
+        PrayerAlert.schedule(context, json);
+    }
+
     /** Bumped whenever an app is installed, removed or updated (MainActivity listens). */
     static volatile int appsStamp = 0;
 

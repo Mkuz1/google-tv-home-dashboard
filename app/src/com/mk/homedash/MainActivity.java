@@ -13,6 +13,7 @@ import android.webkit.WebView;
 public class MainActivity extends Activity {
 
     private WebView web;
+    private CarLocation location; // car only: GPS for prayer times
 
     // App installed, removed or updated: the page re-reads the app list next time it shows.
     private final BroadcastReceiver packages = new BroadcastReceiver() {
@@ -36,11 +37,21 @@ public class MainActivity extends Activity {
         setContentView(web);
         hideSystemUi();
         web.requestFocus();
+        if ("car".equals(Bridge.flavor(this))) {
+            location = new CarLocation(this);
+            location.start();
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] results) {
+        if (requestCode == CarLocation.PERMISSION_REQUEST && location != null) location.permissionResult();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        PrayerAlert.homeVisible = true;
         hideSystemUi();
         if (web != null) {
             web.requestFocus();
@@ -50,6 +61,7 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onPause() {
+        PrayerAlert.homeVisible = false;
         js("window.onTvPause && window.onTvPause()");
         super.onPause();
     }
@@ -70,6 +82,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onDestroy() {
         unregisterReceiver(packages);
+        if (location != null) location.stop();
         super.onDestroy();
     }
 

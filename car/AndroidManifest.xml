@@ -1,16 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Car head unit build (./build.sh car): same code as the TV app (app/), with the touch-first
-     car home screen (car.html: time, Wi-Fi, Settings, azkar, Sharjah prayer times, app drawer).
+     car home screen (car.html: time, Wi-Fi, Settings, sidebar apps, azkar, prayer times
+     for where the car is, silent prayer banners, app drawer).
      No screensaver in the car. -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.mk.carlauncher"
-    android:versionCode="5"
-    android:versionName="2.0.1">
+    android:versionCode="6"
+    android:versionName="2.1.0">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.REQUEST_DELETE_PACKAGES" />
+    <!-- Prayer times follow the car (GPS); silent prayer banners over other apps -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-feature android:name="android.hardware.location.gps" android:required="false" />
     <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
 
     <!-- Lets the launcher see every installed app (Android 11+ package visibility). -->
@@ -50,5 +56,6 @@
             </intent-filter>
         </activity>
 
+        <receiver android:name="com.mk.homedash.PrayerAlert" android:exported="false" />
     </application>
 </manifest>

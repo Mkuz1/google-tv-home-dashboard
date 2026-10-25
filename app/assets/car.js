@@ -38,8 +38,17 @@
     renderGrid();
     if (openItem) renderFolder();
     fitAzkarText();
+    placeAlert();
   }
   addEventListener("resize", fit);
+  // The prayer banner sits over the azkar card, so the clock and prayer list stay in view.
+  function placeAlert() {
+    const az = $("azkar"), main = $("main"), el = $("alert");
+    const left = main.offsetLeft + az.offsetLeft, w = Math.min(640, az.offsetWidth - 40);
+    el.style.width = w + "px";
+    el.style.left = left + (az.offsetWidth - w) / 2 + "px";
+    el.style.top = main.offsetTop + az.offsetTop + 20 + "px";
+  }
 
   /* ---------------- dock: time, Wi-Fi, recent apps ---------------- */
   function wifiIcon(net) {
@@ -63,27 +72,30 @@
     if (key !== netKey) { netKey = key; $("dkWifi").innerHTML = wifiIcon(net); }
   }
 
-  // The dock keeps the three apps used last (the first apps on the home order until then).
-  const RECENT_COUNT = 3;
-  let recentKey = "";
+  // Sidebar apps: the ones you keep there (hold an app in the drawer → Add to Sidebar), up to
+  // C.dockMax. Until you choose, the first apps of the home order.
+  let dockKey = "";
+  function dockPkgs() {
+    const saved = store.get("car.dock", null);
+    if (saved) return saved;
+    return items.filter((it) => it.type === "app").slice(0, 3).map((it) => it.app.pkg);
+  }
+  const inDock = (pkg) => dockPkgs().includes(pkg);
+  function setDock(pkgs) {
+    store.set("car.dock", pkgs.slice(0, C.dockMax));
+    renderDock();
+  }
   function renderDock() {
     const byPkg = Object.fromEntries(installed.map((a) => [a.pkg, a]));
-    const apps = store.get("car.recent", []).filter((p) => byPkg[p]).map((p) => byPkg[p]);
-    for (const it of items) {
-      if (apps.length >= RECENT_COUNT) break;
-      if (it.type === "app" && !apps.includes(it.app)) apps.push(it.app);
-    }
-    const shown = apps.slice(0, RECENT_COUNT);
+    const shown = dockPkgs().filter((p) => byPkg[p]).map((p) => byPkg[p]).slice(0, C.dockMax);
     const key = shown.map((a) => a.pkg).join();
-    if (key === recentKey) return;
-    recentKey = key;
+    if (key === dockKey) return;
+    dockKey = key;
     $("dkRecents").innerHTML = shown.map((a) =>
       `<button class="recent${a.small ? " small" : ""}" data-pkg="${escapeHtml(a.pkg)}" aria-label="${escapeHtml(a.label)}">${a.icon ? `<img src="${a.icon}" alt="" decoding="async">` : ""}</button>`).join("");
   }
   function launch(a) {
     TV.launch(a.pkg);
-    store.set("car.recent", [a.pkg].concat(store.get("car.recent", []).filter((p) => p !== a.pkg)).slice(0, 8));
-    setTimeout(renderDock, 600); // after the app has opened over us
   }
 
   /* ---------------- apps, folders and their saved layout ---------------- */
@@ -345,13 +357,36 @@
     rename: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16zM14 6l4 4"/></svg>',
     ungroup: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7.5" height="7.5" rx="2"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="2"/><path d="M14 4h6v6M10 20H4v-6"/></svg>',
     keyboard: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="3"/><path d="M6 9h.01M10 9h.01M14 9h.01M18 9h.01M6 13h.01M18 13h.01M9 15.5h6"/></svg>',
+    pin: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="6" height="18" rx="2"/><path d="M15 12h6M18 9v6"/></svg>',
+    unpin: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="6" height="18" rx="2"/><path d="M15 12h6"/></svg>',
+    up: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M6 11l6-6 6 6"/></svg>',
+    down: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M6 13l6 6 6-6"/></svg>',
+    left: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>',
+    right: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>',
     apps: '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="5" r="2.2"/><circle cx="12" cy="5" r="2.2"/><circle cx="19" cy="5" r="2.2"/><circle cx="5" cy="12" r="2.2"/><circle cx="12" cy="12" r="2.2"/><circle cx="19" cy="12" r="2.2"/><circle cx="5" cy="19" r="2.2"/><circle cx="12" cy="19" r="2.2"/><circle cx="19" cy="19" r="2.2"/></svg>',
   };
 
+  // Above the app (below when there's no room); beside a sidebar app on a landscape screen.
+  let popAnchor = null;
   function placePop() {
-    const el = tileEl(ctx, cur().idx);
+    const el = popAnchor || tileEl(ctx, cur().idx);
     if (!el) return;
-    const pop = $("pop"), st = $("stage").getBoundingClientRect(), r = el.querySelector(".art").getBoundingClientRect();
+    const pop = $("pop"), st = $("stage").getBoundingClientRect();
+    const r = (el.querySelector(".art") || el).getBoundingClientRect();
+    const side = !!popAnchor && !has("portrait");
+    pop.classList.toggle("side", side);
+    if (side) {
+      const cy = (r.top + r.height / 2 - st.top) / S, h = pop.offsetHeight;
+      const top = Math.max(14, Math.min(SH - 14 - h, cy - h / 2));
+      pop.classList.remove("below");
+      pop.style.left = (r.right - st.left) / S + 24 + "px";
+      pop.style.top = top + "px";
+      const tail = pop.querySelector(".pop-tail");
+      tail.style.left = "";
+      tail.style.top = Math.max(24, Math.min(h - 24, cy - top)) + "px";
+      return;
+    }
+    pop.querySelector(".pop-tail").style.top = "";
     const cx = (r.left + r.width / 2 - st.left) / S;
     const top = (r.top - st.top) / S, bottom = (r.bottom - st.top) / S;
     const w = pop.offsetWidth, h = pop.offsetHeight;
@@ -362,8 +397,9 @@
     pop.style.top = (below ? bottom + 24 : top - 24 - h) + "px";
     pop.querySelector(".pop-tail").style.left = Math.max(30, Math.min(w - 30, cx - left)) + "px";
   }
-  function showPop(actions) {
+  function showPop(actions, anchor = null) {
     popActions = actions;
+    popAnchor = anchor;
     $("popItems").innerHTML = actions.map(([t, icon, , cls]) =>
       `<button class="pop-item ${cls || ""}">${icon}<span>${escapeHtml(t)}</span></button>`).join("");
     popIdx = 0;
@@ -412,17 +448,42 @@
       const a = it.app;
       actions.push(["Move", ICON.move, startMove]);
       actions.push(["Add to Folder", ICON.folder, () => folderChoices(a)]);
+      actions.push(sidebarAction(a));
       actions.push(["Hide", ICON.hide, () => hideApp(a)]);
       if (!a.system) actions.push(["Delete", ICON.trash, () => del(a), "danger"]);
     } else {
       const a = it.app;
       actions.push(["Move", ICON.move, startMove]);
       actions.push(["Move Out", ICON.out, () => moveOut(a)]);
+      actions.push(sidebarAction(a));
       actions.push(["Hide", ICON.hide, () => hideApp(a)]);
       if (!a.system) actions.push(["Delete", ICON.trash, () => del(a), "danger"]);
     }
     if (hiddenCount && it.type === "app") actions.push([`Show ${hiddenCount} hidden`, ICON.show, showHidden]);
     showPop(actions);
+  }
+
+  // Sidebar: add (replacing one when it's full) or remove; reorder from the sidebar itself.
+  function sidebarAction(a) {
+    if (inDock(a.pkg)) return ["Remove from Sidebar", ICON.unpin, () => { setDock(dockPkgs().filter((p) => p !== a.pkg)); closePop(); }];
+    return ["Add to Sidebar", ICON.pin, () => {
+      const pkgs = dockPkgs();
+      if (pkgs.length < C.dockMax) { setDock(pkgs.concat(a.pkg)); return closePop(); }
+      const byPkg = Object.fromEntries(installed.map((x) => [x.pkg, x]));
+      showPop(pkgs.map((p, i) => [`Replace ${byPkg[p] ? byPkg[p].label : p}`, ICON.pin, () => {
+        const next = pkgs.slice(); next[i] = a.pkg; setDock(next); closePop();
+      }]));
+    }];
+  }
+  function dockMenu(btn) {
+    const pkgs = dockPkgs(), i = pkgs.indexOf(btn.dataset.pkg);
+    if (i < 0) return;
+    const swap = (j) => { const next = pkgs.slice(); [next[i], next[j]] = [next[j], next[i]]; setDock(next); closePop(); };
+    const portrait = has("portrait"), actions = [];
+    if (i > 0) actions.push([portrait ? "Move Left" : "Move Up", portrait ? ICON.left : ICON.up, () => swap(i - 1)]);
+    if (i < pkgs.length - 1) actions.push([portrait ? "Move Right" : "Move Down", portrait ? ICON.right : ICON.down, () => swap(i + 1)]);
+    actions.push(["Remove from Sidebar", ICON.unpin, () => { setDock(pkgs.filter((p) => p !== btn.dataset.pkg)); closePop(); }, "danger"]);
+    showPop(actions, btn);
   }
 
   // "Add to Folder": a new folder in this app's place, or any existing folder.
@@ -637,9 +698,20 @@
   $("drClose").addEventListener("click", () => closeDrawer());
 
   // Dock
+  // Sidebar apps: tap opens, hold for Move Up / Move Down / Remove.
+  let dockHold = null, dockHeld = false;
+  $("dkRecents").addEventListener("pointerdown", (e) => {
+    const b = e.target.closest(".recent");
+    if (!b || zone === "prompt") return;
+    dockHeld = false;
+    clearTimeout(dockHold);
+    dockHold = setTimeout(() => { dockHeld = true; if (zone === "move") endMove(); dockMenu(b); }, LONG_PRESS_MS);
+  });
+  for (const ev of ["pointerup", "pointercancel", "pointerleave"]) $("dkRecents").addEventListener(ev, () => clearTimeout(dockHold));
   $("dkRecents").addEventListener("click", (e) => {
     const b = e.target.closest(".recent");
-    const a = b && installed.find((x) => x.pkg === b.dataset.pkg);
+    if (!b || dockHeld) return;
+    const a = installed.find((x) => x.pkg === b.dataset.pkg);
     if (a) launch(a);
   });
   $("dkWifi").addEventListener("click", () => TV.openWifiSettings());
@@ -734,6 +806,9 @@
       $("pHijri").textContent = hijriFmt ? hijriFmt.format(t) : "";
       $("prList").innerHTML = D.PRAYERS.map(([k, en, ar]) =>
         `<li data-k="${k}"><span class="en">${en}</span><span class="ar">${ar}</span><span class="tm">${D.hm(today[k])} <small>${D.ampm(today[k])}</small></span></li>`).join("");
+      renderPlace();
+      scheduleAlerts(t);
+      lastMinute = -1;
     }
     renderAzProgress();
     checkAzkarPeriod(t);
@@ -748,8 +823,69 @@
       li.classList.toggle("past", today[k] <= t && k !== next.key);
     }
     $("prNext").textContent = `${next.name} in ${D.inMinutes(next.minutes)}`;
+    renderAlert(t);
     $("chips").innerHTML = D.dayReminders(t, today, C).map((c) => `<div class="chip">${c}</div>`).join("");
     updateNetwork();
+  }
+
+  /* ---------------- prayer times follow the car ---------------- */
+  const PIN = '<svg class="pin" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg>';
+  function renderPlace() {
+    $("prLabel").innerHTML = (C.location === "gps" && C.located ? PIN : "") + escapeHtml(`${C.city || "Prayer"} Prayer Times`);
+  }
+  // New GPS positions are saved by the app; check once a minute and recompute when the car has moved.
+  function checkCarLocation() {
+    if (C.location !== "gps") return;
+    let loc = null;
+    try { loc = JSON.parse(TV.carLocation()); } catch (e) {}
+    if (loc && window.applyCarLocation(C, loc)) { lastDay = -1; tick(); }
+  }
+
+  /* ---------------- silent prayer banner ---------------- */
+  // On the home screen: a soft glass banner, no sound. In other apps: the same words as a silent
+  // notification banner, scheduled with the system (PrayerAlert.java).
+  const MOSQUE = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5c.3 1.6 1.3 2.6 2.6 3.4C16.4 7 17.5 8.5 17.5 10.5V11h-11v-.5c0-2 1.1-3.5 2.9-4.6 1.3-.8 2.3-1.8 2.6-3.4zM5 12.5h14V21h-4.5v-4a2.5 2.5 0 0 0-5 0v4H5zM2 9.5a1 1 0 0 1 2 0V21H2zm18 0a1 1 0 0 1 2 0V21h-2z"/></svg>';
+  const PRAYER_AR = { fajr: "الفجر", dhuhr: "الظهر", asr: "العصر", maghrib: "المغرب", isha: "العشاء" };
+  const arMinutes = (n) => n === 1 ? "دقيقة واحدة" : n === 2 ? "دقيقتان"
+    : `${D.toArabicDigits(n)} ${n <= 10 ? "دقائق" : "دقيقة"}`;
+  const soonText = (k, en, mins, t) => [`باقٍ ${arMinutes(mins)} على صلاة ${PRAYER_AR[k]}`, `${en} in ${mins} minute${mins === 1 ? "" : "s"} · ${D.hm(t)} ${D.ampm(t)}`];
+  const nowText = (k, en, t) => [`حان الآن موعد صلاة ${PRAYER_AR[k]}`, `It's time for ${en} prayer · ${D.hm(t)} ${D.ampm(t)}`];
+  let alertKey = "";
+  function renderAlert(t) {
+    const pa = C.prayerAlert, el = $("alert");
+    let lines = null, mode = "", key = "";
+    for (const [k, en] of D.PRAYERS) {
+      if (!PRAYER_AR[k]) continue;
+      const at = today[k], diff = at - t;
+      if (diff > 0 && diff <= pa.minutesBefore * 60000) {
+        const mins = Math.ceil(diff / 60000);
+        lines = soonText(k, en, mins, at); mode = "soon"; key = k + mins;
+      } else if (diff <= 0 && -diff < pa.minutesAfter * 60000) {
+        lines = nowText(k, en, at); mode = "now"; key = k + "now";
+      }
+    }
+    if (!pa.enabled || !lines) { el.hidden = true; alertKey = ""; return; }
+    if (key === alertKey) return;
+    alertKey = key;
+    el.classList.toggle("now", mode === "now");
+    placeAlert();
+    el.innerHTML = `<div class="al-icon">${MOSQUE}</div><div class="al-text"><div class="al-ar" dir="rtl">${lines[0]}</div><div class="al-en">${lines[1]}</div></div>`;
+    el.hidden = false;
+  }
+  function scheduleAlerts(t) {
+    const pa = C.prayerAlert;
+    if (!pa.enabled) { try { TV.schedulePrayerAlerts("[]"); } catch (e) {} return; }
+    const list = [];
+    for (const day of [today, tomorrow]) {
+      for (const [k, en] of D.PRAYERS) {
+        if (!PRAYER_AR[k]) continue;
+        const at = day[k];
+        const soon = soonText(k, en, pa.minutesBefore, at), now = nowText(k, en, at);
+        list.push({ at: +at - pa.minutesBefore * 60000, title: soon[0], text: soon[1], minutes: pa.minutesBefore });
+        list.push({ at: +at, title: now[0], text: now[1], minutes: pa.minutesAfter });
+      }
+    }
+    try { TV.schedulePrayerAlerts(JSON.stringify(list.filter((a) => a.at > +t))); } catch (e) {}
   }
 
   /* ---------------- azkar widget ---------------- */
@@ -856,6 +992,7 @@
     try { stamp = TV.appsStamp(); } catch (e) {}
     if (stamp !== appsStamp) commit(true);
     lastMinute = -1;
+    checkCarLocation();
     tick();
     showDhikr(false);
   };
@@ -864,7 +1001,8 @@
   const logo = (C.logoText || "").trim();
   $("logo").hidden = !logo;
   $("logo").innerHTML = D.logoHtml(logo);
-  $("prLabel").textContent = `${C.city || "Prayer"} Prayer Times`;
+  renderPlace();
+  setInterval(() => { if (!paused) checkCarLocation(); }, 60000);
   $("dkDrawer").innerHTML = ICON.apps;
   setComfort(store.get("car.comfort", 0));
   loadApps();
@@ -872,5 +1010,5 @@
   renderDock();
   tick();
   setInterval(() => { if (!paused) tick(); }, 1000);
-  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { measure(); renderGrid(); fitAzkarText(); });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { measure(); renderGrid(); fitAzkarText(); placeAlert(); });
 })();

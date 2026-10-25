@@ -53,14 +53,16 @@ window.CONFIG = {
 // Car build (car/AndroidManifest.xml): what differs from the TV defaults above.
 // settings.json overrides these the same way.
 window.CAR_CONFIG = {
-  // Prayer times for Sharjah (UAE Awqaf method) wherever the car is; set latitude/longitude/city
-  // (and prayer) in settings.json for another place.
-  location: "manual",
+  // Prayer times follow the car's GPS, with the official method of the country it is in.
+  // Until the first GPS fix (or without GPS): Sharjah, UAE Awqaf method. Setting latitude/longitude
+  // (and prayer) in settings.json fixes the place instead.
+  location: "gps",
   city: "Sharjah",
   latitude: 25.3463,
   longitude: 55.4209,
-  timezone: "Asia/Dubai",
+  timezone: "auto", // the head unit's time zone
   prayerCountry: "AE",
+  dockMax: 4, // apps kept in the sidebar
   homeOrder: [
     "com.google.android.apps.maps", "com.waze", "com.spotify.music",
     "com.google.android.apps.youtube.music", "com.google.android.dialer", "com.android.dialer",
@@ -85,6 +87,20 @@ window.PRAYER_METHODS = (function () {
   };
 })();
 
+// Car: use a GPS position {lat, lon, city, country}; the prayer method follows the country
+// unless settings.json fixes it. Returns true when the prayer times need recomputing.
+window.applyCarLocation = function (C, loc) {
+  const moved = Math.abs(loc.lat - C.latitude) + Math.abs(loc.lon - C.longitude) > 0.02; // ~2 km
+  const method = !C.prayerFixed && loc.country && window.PRAYER_METHODS[loc.country];
+  const changed = moved || (loc.city && loc.city !== C.city) || (method && loc.country !== C.country);
+  C.latitude = loc.lat;
+  C.longitude = loc.lon;
+  if (loc.city) C.city = loc.city;
+  if (method) { C.prayer = JSON.parse(JSON.stringify(method)); C.country = loc.country; }
+  C.located = true;
+  return changed;
+};
+
 // Per-TV overrides from settings.json (pushed with ./tv.sh settings), then the location.
 (function () {
   const C = window.CONFIG;
@@ -94,6 +110,7 @@ window.PRAYER_METHODS = (function () {
   if (C.flavor === "car") {
     Object.assign(C, window.CAR_CONFIG);
     C.prayer = JSON.parse(JSON.stringify(window.PRAYER_METHODS[C.prayerCountry]));
+    C.country = C.prayerCountry;
   }
   let overrides = null;
   try { overrides = TV && JSON.parse(TV.settings()); } catch (e) {}
@@ -110,9 +127,15 @@ window.PRAYER_METHODS = (function () {
     if ("latitude" in overrides || "longitude" in overrides) C.location = "manual";
   }
   const own = (k) => overrides && k in overrides;
+  C.prayerFixed = own("prayer");
 
   if (C.timezone === "auto") {
     try { C.timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC"; } catch (e) { C.timezone = "UTC"; }
+  }
+  if (C.location === "gps") {
+    let loc = null;
+    try { loc = TV && JSON.parse(TV.carLocation()); } catch (e) {}
+    if (loc) window.applyCarLocation(C, loc);
   }
   if (C.location === "auto") {
     let loc = null;

@@ -44,14 +44,15 @@ A smooth, touch-first home screen for the car (made for 12" screens such as 1920
 ![App drawer](docs/car-drawer.jpg)
 ![Options menu](docs/car-menu.jpg)
 
-- **Home**: the time (and M&D logo, Gregorian and Hijri dates, Friday / white days reminders), an **azkar widget** (morning, general or evening azkar by the time of day; tap for the next one) and **Sharjah prayer times** (UAE Awqaf method) with the next prayer highlighted.
+- **Home**: the time (and M&D logo, Gregorian and Hijri dates, Friday / white days reminders), an **azkar widget** (morning, general or evening azkar by the time of day; tap for the next one) and **prayer times for where the car is** (from its GPS, with the official method of that country), next prayer highlighted.
+- **Silent prayer banner**: 10 minutes before each prayer a soft glass banner ("Asr in 10 minutes"), then "It's time for Asr" in gold, in Arabic and English. No sound, no vibration. When another app is in front (navigation, music), the same words come as a silent notification banner that goes away by itself.
 - **Eye comfort** button (top right of the time card): tap for *Eye comfort* (warmer and dimmer), again for *Night* (warmest, darkest), again for normal. It lowers the screen brightness while the home screen is shown and lays a warm tint over it; other apps keep the system brightness.
-- **Dock**: time, **Wi-Fi**, your three most recent apps, **Settings**, and the **App Drawer** button.
+- **Sidebar**: time, **Wi-Fi**, up to 4 apps **you choose**, **Settings**, and the **App Drawer** button. Hold an app in the drawer → **Add to Sidebar** (or **Remove from Sidebar**); hold an app in the sidebar → **Move Up / Move Down / Remove from Sidebar**.
 - **App Drawer**: every app in pages, **swipe** sideways. Like the TV home, **hold** an app for the glass menu: **Move**, **Add to Folder**, **Hide**, **Delete**; the app being moved jiggles: drag it (hold it at the screen edge to change page) or tap where it should go, then **Done**. Folders open as a glass platter; hold a folder to **Rename**, **Move** or **Remove Folder**.
 - **No screensaver** in the car version.
 - **Smooth on head units**: the Liquid Glass wallpaper is pre-blurred, so nothing is blurred while you swipe; only transform and opacity animate; the app list is re-read only when an app is installed or removed; the page ignores the system font size.
 - Adapts to 1920×720, 1280×720, 1024×600 and portrait screens. Steering-wheel / rotary buttons that send arrow and OK keys work too (hold OK for the menu).
-- Prayer times are for Sharjah wherever the car is. For another city set `latitude`, `longitude`, `city` (and `prayer`) in settings.
+- On first start the app asks for **location** permission (allow it, for prayer times that follow the car). Without GPS, or until the first fix, it uses Sharjah (UAE Awqaf). To fix a place instead, set `latitude`, `longitude`, `city` (and `prayer`) in settings.
 
 **Install**: copy `mk-car-launcher.apk` to a USB stick, open it with the head unit's file manager and allow installing from that source. If it says *"There was a problem parsing the package"*: check the file is complete (about 4.9 MB; a half-finished download won't open), copy it from the USB stick to the head unit's internal storage first and open it from there, or try another file manager (some head-unit file managers can't hand APKs to the installer). Then press **Home** and choose *MK TV & Car Launcher* → **Always** (or Settings → Apps → Default apps → Home app). If the head unit has adb over Wi-Fi, the `tv.sh` install and settings commands work with `CAR=1` in front, e.g. `CAR=1 ./tv.sh install`, `CAR=1 ./tv.sh settings settings.json`.
 
@@ -113,7 +114,7 @@ All keys are optional; anything left out uses the default in [`app/assets/config
 | `prayer.offsets` | Minutes added per prayer, to match your local authority |
 | `logoText` | Text at the top of the screensaver and on the car home (default `"M&D"`); `&` is drawn in gold; `""` hides it |
 | `worldClocks` | List of `{ "city", "zone" }` (IANA time zones) |
-| `prayerAlert` | `enabled`, `minutesBefore`, `minutesAfter` |
+| `prayerAlert` | `enabled`, `minutesBefore`, `minutesAfter` (TV screensaver and car banner) |
 | `nightMode` | `enabled`, `dim` (0–1) |
 | `reminders` | `kahf`, `whiteDays` |
 | `azkar` | `morningFrom`, `generalFrom`, `eveningFrom` (hours) |
