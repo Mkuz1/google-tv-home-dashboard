@@ -19,6 +19,9 @@ final class Web {
         web.setBackgroundColor(Color.BLACK);
         web.setFocusable(true);
         web.setFocusableInTouchMode(true);
+        web.setOverScrollMode(WebView.OVER_SCROLL_NEVER); // no edge glow when a finger hits the end
+        web.setVerticalScrollBarEnabled(false);
+        web.setHorizontalScrollBarEnabled(false);
         web.setWebViewClient(new WebViewClient());
         web.setWebChromeClient(new WebChromeClient() {
             @Override
@@ -35,6 +38,7 @@ final class Web {
         s.setAllowFileAccessFromFileURLs(true);
         s.setAllowUniversalAccessFromFileURLs(true);
         s.setMediaPlaybackRequiresUserGesture(false);
+        s.setTextZoom(100); // the system font size must not break the fixed layout
 
         Bridge bridge = new Bridge(context);
         bridge.attach(web);

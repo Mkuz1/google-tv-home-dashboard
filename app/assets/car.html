@@ -7,73 +7,75 @@
   <link rel="stylesheet" href="car.css">
 </head>
 <body>
-  <!-- CarPlay-style wallpaper: a softly blurred nature scene under Liquid Glass -->
-  <div id="wall">
-    <div id="wallImg"></div>
-    <div id="wallShade"></div>
-  </div>
+  <!-- Liquid Glass wallpaper: already blurred in the image, so nothing is blurred live -->
+  <div id="wall"></div>
 
   <main id="stage">
-    <!-- Dock (left, or bottom on a portrait screen): status, recent apps, Settings, Home/Dashboard -->
+    <!-- Dock (left, or bottom on a portrait screen): time, Wi-Fi, recent apps, Settings, App Drawer -->
     <nav id="dock" class="glass">
-      <button class="dk-status" id="dkClock" aria-label="Start screensaver">
-        <span id="clock"></span><span id="clockAmpm"></span>
-      </button>
-      <button class="dk-btn small" id="dkWifi" aria-label="Wi-Fi"></button>
+      <div class="dk-time"><span id="clock"></span><span id="clockAmpm"></span></div>
+      <button class="dk-btn round" id="dkWifi" aria-label="Wi-Fi"></button>
       <div class="dk-rule"></div>
       <div id="dkRecents"></div>
       <div class="dk-spacer"></div>
-      <button class="dk-btn small" id="dkSettings" aria-label="Settings">
+      <button class="dk-btn round" id="dkSettings" aria-label="Settings">
         <svg viewBox="0 0 24 24"><path fill="currentColor" d="M19.14 12.94a7.07 7.07 0 0 0 .05-.94 7.07 7.07 0 0 0-.05-.94l2.03-1.58a.48.48 0 0 0 .12-.61l-1.92-3.32a.48.48 0 0 0-.59-.21l-2.39.96a7.03 7.03 0 0 0-1.62-.94l-.36-2.54a.48.48 0 0 0-.48-.41h-3.84a.48.48 0 0 0-.47.41l-.36 2.54a7.36 7.36 0 0 0-1.62.94l-2.39-.96a.48.48 0 0 0-.59.21L2.74 8.87a.47.47 0 0 0 .12.61l2.03 1.58a7.4 7.4 0 0 0 0 1.88l-2.03 1.58a.48.48 0 0 0-.12.61l1.92 3.32c.12.21.37.3.59.21l2.39-.96c.5.38 1.04.7 1.62.94l.36 2.54c.05.24.25.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54a7.36 7.36 0 0 0 1.62-.94l2.39.96c.22.08.47 0 .59-.21l1.92-3.32a.48.48 0 0 0-.12-.61zM12 15.6A3.6 3.6 0 1 1 12 8.4a3.6 3.6 0 0 1 0 7.2z"/></svg>
       </button>
-      <button class="dk-btn view" id="dkView" aria-label="Home or Dashboard"></button>
+      <button class="dk-btn drawer" id="dkDrawer" aria-label="All apps"></button>
     </nav>
 
     <section id="main">
-      <!-- Home: pages of app icons, swiped sideways -->
-      <div id="apps">
-        <div id="viewport"><div id="pages"></div></div>
-        <div id="dots"></div>
-      </div>
-
-      <!-- Dashboard: time, weather and prayer times -->
-      <div id="dash">
-        <section class="card glass" id="cClock">
-          <div id="dLogo" class="logo"></div>
-          <div class="d-time"><span id="dTime">--:--</span><span id="dAmpm"></span></div>
-          <div class="d-date" id="dDate"></div>
-          <div class="d-hijri" id="dHijri" dir="rtl"></div>
-          <div id="dChips"></div>
-        </section>
-        <section class="card glass" id="cWeather">
-          <div class="card-label">Weather</div>
-          <div class="w-now">
-            <div class="w-icon" id="wIcon"></div>
-            <div class="w-temp" id="wTemp">--°</div>
-            <div class="w-meta">
-              <div class="w-city" id="wCity"></div>
-              <div class="w-cond" id="wCond"></div>
-              <div class="w-extra" id="wExtra"></div>
+      <!-- Home: azkar and Sharjah prayer times -->
+      <div id="home">
+        <section id="azkar" class="glass">
+          <header>
+            <div class="az-titles">
+              <div class="az-title" id="azTitle" dir="rtl"></div>
+              <div class="az-sub" id="azSub"></div>
             </div>
-          </div>
-          <div class="w-days" id="wDays"></div>
+            <div class="az-count" id="azCount"></div>
+          </header>
+          <div class="az-body" id="azBody" dir="rtl" lang="ar"></div>
+          <footer>
+            <div class="az-repeat" id="azRepeat" dir="rtl"></div>
+            <div class="az-progress"><div id="azBar"></div></div>
+          </footer>
         </section>
-        <section class="card glass" id="cPrayer">
-          <header><div class="card-label">Prayer Times</div><div class="pr-next" id="prNext"></div></header>
+
+        <section id="prayer" class="glass">
+          <div id="logo" class="logo"></div>
+          <div class="p-time"><span id="pTime">--:--</span><span id="pAmpm"></span></div>
+          <div class="p-date" id="pDate"></div>
+          <div class="p-hijri" id="pHijri" dir="rtl"></div>
+          <div id="chips"></div>
+          <div class="divider"></div>
+          <header><div class="label" id="prLabel"></div><div class="pr-next" id="prNext"></div></header>
           <ol id="prList"></ol>
         </section>
       </div>
+
+      <!-- App drawer: every app, in pages swiped sideways -->
+      <div id="drawer" class="glass">
+        <div class="dr-head">
+          <div class="dr-title">Apps</div>
+          <button class="dr-close" id="drClose" aria-label="Close">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+          </button>
+        </div>
+        <div id="viewport"><div id="pages"></div></div>
+        <div id="dots"></div>
+      </div>
     </section>
 
-    <!-- Move mode: hint and Done -->
-    <div id="moveBar" class="glass" hidden>
+    <!-- Move mode: hint and Done (like the TV) -->
+    <div id="moveBar" class="glass solid" hidden>
       <span>Drag the app, or tap where it should go</span>
       <button id="moveDone">Done</button>
     </div>
 
-    <!-- Open folder: a Liquid Glass platter -->
+    <!-- Open folder -->
     <div id="folder">
-      <div class="fd-platter glass">
+      <div class="fd-platter glass solid">
         <div class="fd-title" id="fdTitle"></div>
         <div class="fd-scroll" id="fdScroll"><div class="fd-grid" id="fdGrid"></div></div>
       </div>
@@ -81,7 +83,7 @@
 
     <!-- Long-press menu -->
     <div id="scrim"></div>
-    <div id="pop" class="glass" hidden>
+    <div id="pop" class="glass solid" hidden>
       <div id="popItems"></div>
       <div class="pop-tail"></div>
     </div>
@@ -90,6 +92,7 @@
   <script src="bridge-mock.js"></script>
   <script src="config.js"></script>
   <script src="praytimes.js"></script>
+  <script src="azkar.js"></script>
   <script src="dash.js"></script>
   <script src="car.js"></script>
 </body>

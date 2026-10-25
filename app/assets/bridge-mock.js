@@ -35,7 +35,7 @@
   window.MOCK_TV = {
     apps: () => JSON.stringify(apps),
     flavor: () => flavor,
-    startScreensaver: () => { location.href = "screensaver.html?flavor=car"; },
+    appsStamp: () => 0,
     launch: (p) => { console.log("launch", p); return true; },
     uninstall: (p) => { apps = apps.filter((a) => a.pkg !== p); setTimeout(() => window.onTvResume && window.onTvResume(), 300); },
     openSettings: () => console.log("settings"),

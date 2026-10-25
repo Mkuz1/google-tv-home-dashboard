@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Car head unit build (./build.sh car): same code and pages as the TV app (app/), with the
-     CarPlay-style home screen, touch first, and a screensaver that also starts by itself when
-     the home screen is left alone (head units rarely have a screensaver setting). -->
+<!-- Car head unit build (./build.sh car): same code as the TV app (app/), with the touch-first
+     car home screen (car.html: time, Wi-Fi, Settings, azkar, Sharjah prayer times, app drawer).
+     No screensaver in the car. -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.mk.carlauncher"
     android:versionCode="4"
@@ -37,6 +37,7 @@
             android:stateNotNeeded="true"
             android:clearTaskOnLaunch="true"
             android:resizeableActivity="true"
+            android:windowSoftInputMode="adjustNothing"
             android:configChanges="keyboard|keyboardHidden|navigation|orientation|screenLayout|screenSize|smallestScreenSize|uiMode|density">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -49,23 +50,5 @@
             </intent-filter>
         </activity>
 
-        <!-- The screensaver as a normal screen, started from the home screen after a few idle minutes. -->
-        <activity
-            android:name="com.mk.homedash.ScreensaverActivity"
-            android:exported="false"
-            android:excludeFromRecents="true"
-            android:launchMode="singleTop"
-            android:configChanges="keyboard|keyboardHidden|navigation|orientation|screenLayout|screenSize|smallestScreenSize|uiMode|density" />
-
-        <service
-            android:name="com.mk.homedash.DashboardDream"
-            android:exported="true"
-            android:label="@string/app_name"
-            android:permission="android.permission.BIND_DREAM_SERVICE">
-            <intent-filter>
-                <action android:name="android.service.dreams.DreamService" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </service>
     </application>
 </manifest>

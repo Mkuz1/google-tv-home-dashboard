@@ -31,7 +31,7 @@
         android:largeHeap="true"
         android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen">
 
-        <!-- Which home screen to show: "tv" (Apple TV style) or "car" (CarPlay style, car/AndroidManifest.xml). -->
+        <!-- Which home screen to show: "tv" (Apple TV style) or "car" (touch home with azkar and prayer times, car/AndroidManifest.xml). -->
         <meta-data android:name="flavor" android:value="tv" />
 
         <activity

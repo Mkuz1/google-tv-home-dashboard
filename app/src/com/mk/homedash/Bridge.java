@@ -86,10 +86,13 @@ public class Bridge {
         return car ? "car" : "tv";
     }
 
-    /** Shows the screensaver now (the car home screen calls this after a few idle minutes). */
+    /** Bumped whenever an app is installed, removed or updated (MainActivity listens). */
+    static volatile int appsStamp = 0;
+
+    /** Lets the page skip re-reading every app icon when nothing was installed or removed. */
     @JavascriptInterface
-    public void startScreensaver() {
-        start(new Intent(context, ScreensaverActivity.class).addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION));
+    public int appsStamp() {
+        return appsStamp;
     }
 
     /** The WebView this bridge serves; prompt answers are sent back to it. */

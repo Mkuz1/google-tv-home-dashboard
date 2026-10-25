@@ -3,7 +3,7 @@
 #   ./build.sh          both: out/mk-tv-launcher.apk and out/mk-car-launcher.apk
 #   ./build.sh tv       Google TV / Android TV only (app/AndroidManifest.xml)
 #   ./build.sh car      car head unit only (car/AndroidManifest.xml); same code and pages,
-#                       the app picks the CarPlay-style home screen from the manifest's "flavor".
+#                       the app picks the car home screen from the manifest's "flavor".
 # Needs JDK 17+ and an Android SDK with build-tools and a platform (tools/setup-sdk.sh installs both).
 #
 # Signing: a local keystore is created in keystore/ on first build. To sign with your own,

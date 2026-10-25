@@ -1,13 +1,13 @@
 # MK TV & Car Launcher
 
-An Apple TV–style home screen for Google TV / Android TV, a CarPlay-style home screen for Android car head units, and the same Islamic dashboard screensaver (with the M&D logo) on both, in a Liquid Glass look.
+An Apple TV–style home screen and Islamic dashboard screensaver (with the M&D logo) for Google TV / Android TV, and a smooth touch home screen with azkar and Sharjah prayer times for Android car head units, in a Liquid Glass look.
 
 Two APKs are built from the same code:
 
 | APK | For | Home screen |
 |---|---|---|
 | `mk-tv-launcher.apk` | Google TV / Android TV 9+ | Apple TV style, remote control |
-| `mk-car-launcher.apk` | Android car head units 8+ (made for 12" screens, e.g. 1920×720) | CarPlay style, touch first |
+| `mk-car-launcher.apk` | Android car head units 8+ (made for 12" screens, e.g. 1920×720) | Azkar, Sharjah prayer times, app drawer; touch first |
 
 ![Home screen](docs/home.jpg)
 
@@ -38,21 +38,21 @@ Two APKs are built from the same code:
 
 ## Car head unit (`mk-car-launcher.apk`)
 
-Same features as the TV version, laid out like CarPlay for a touch screen (previews at 1920×720, with placeholder app icons):
+A smooth, touch-first home screen for the car (made for 12" screens such as 1920×720), in Liquid Glass. Previews with placeholder app icons:
 
 ![Car home](docs/car-home.jpg)
-![Car dashboard](docs/car-dashboard.jpg)
-![Car screensaver](docs/car-screensaver.jpg)
+![App drawer](docs/car-drawer.jpg)
+![Options menu](docs/car-menu.jpg)
 
-- **Dock** on the left (at the bottom on a portrait screen): clock, Wi-Fi, your three most recent apps, Settings, and the **Home / Dashboard** button.
-- **Home**: pages of rounded app icons; **swipe** sideways to change page.
-- **Hold** an app for the glass menu: **Move**, **Add to Folder**, **Hide**, **Delete**. In Move mode every icon jiggles; drag the app (to the screen edge to change page) or tap where it should go, then **Done**. Folders open as a glass platter; hold a folder to Rename, Move or Remove it.
-- **Dashboard**: the M&D logo, big clock with Gregorian and Hijri dates, Friday / white days reminders, weather now and for 4 days, and today's prayer times with the next one highlighted.
-- **Screensaver**: the same one as on the TV (clock, weather, prayer times, azkar, silent prayer alert, night mode, M&D logo). Head units rarely have a screensaver setting, so the launcher opens it by itself after **5 idle minutes** on the home screen (`screensaverMinutes` in settings, `0` turns it off). Tap the clock in the dock to open it right away; any touch closes it. Where the head unit has a screensaver setting, *MK TV & Car Launcher* is also listed there.
-- The layout adapts to the screen: 1920×720 and other wide 12" panels, 1280×720, 1024×600 and portrait screens.
-- Steering-wheel / rotary buttons that send arrow and OK keys also work (hold OK for the menu).
+- **Home**: the time (and M&D logo, Gregorian and Hijri dates, Friday / white days reminders), an **azkar widget** (morning, general or evening azkar by the time of day; tap for the next one) and **Sharjah prayer times** (UAE Awqaf method) with the next prayer highlighted.
+- **Dock**: time, **Wi-Fi**, your three most recent apps, **Settings**, and the **App Drawer** button.
+- **App Drawer**: every app in pages, **swipe** sideways. Like the TV home, **hold** an app for the glass menu: **Move**, **Add to Folder**, **Hide**, **Delete**; the app being moved jiggles: drag it (hold it at the screen edge to change page) or tap where it should go, then **Done**. Folders open as a glass platter; hold a folder to **Rename**, **Move** or **Remove Folder**.
+- **No screensaver** in the car version.
+- **Smooth on head units**: the Liquid Glass wallpaper is pre-blurred, so nothing is blurred while you swipe; only transform and opacity animate; the app list is re-read only when an app is installed or removed; the page ignores the system font size.
+- Adapts to 1920×720, 1280×720, 1024×600 and portrait screens. Steering-wheel / rotary buttons that send arrow and OK keys work too (hold OK for the menu).
+- Prayer times are for Sharjah wherever the car is. For another city set `latitude`, `longitude`, `city` (and `prayer`) in settings.
 
-**Install**: copy `mk-car-launcher.apk` to a USB stick, open it with the head unit's file manager and allow installing from that source. Then press **Home** and choose *MK TV & Car Launcher* → **Always** (or Settings → Apps → Default apps → Home app). If the head unit has adb over Wi-Fi, the `tv.sh` commands below work with `CAR=1` in front, e.g. `CAR=1 ./tv.sh install`, `CAR=1 ./tv.sh settings settings.json`, `CAR=1 ./tv.sh albums add <link>`.
+**Install**: copy `mk-car-launcher.apk` to a USB stick, open it with the head unit's file manager and allow installing from that source. Then press **Home** and choose *MK TV & Car Launcher* → **Always** (or Settings → Apps → Default apps → Home app). If the head unit has adb over Wi-Fi, the `tv.sh` install and settings commands work with `CAR=1` in front, e.g. `CAR=1 ./tv.sh install`, `CAR=1 ./tv.sh settings settings.json`.
 
 ## What you need
 
@@ -110,7 +110,7 @@ All keys are optional; anything left out uses the default in [`app/assets/config
 | `prayer.ishaMinutes` | Isha a fixed time after Maghrib (Umm al-Qura: 90) |
 | `prayer.asrFactor` | 1 = Shafi'i/Maliki/Hanbali, 2 = Hanafi |
 | `prayer.offsets` | Minutes added per prayer, to match your local authority |
-| `logoText` | Text at the top of the screensaver and on the car Dashboard (default `"M&D"`); `&` is drawn in gold; `""` hides it |
+| `logoText` | Text at the top of the screensaver and on the car home (default `"M&D"`); `&` is drawn in gold; `""` hides it |
 | `worldClocks` | List of `{ "city", "zone" }` (IANA time zones) |
 | `prayerAlert` | `enabled`, `minutesBefore`, `minutesAfter` |
 | `nightMode` | `enabled`, `dim` (0–1) |
@@ -118,8 +118,6 @@ All keys are optional; anything left out uses the default in [`app/assets/config
 | `azkar` | `morningFrom`, `generalFrom`, `eveningFrom` (hours) |
 | `homeOrder`, `homeExclude` | Starting app order, and apps never shown |
 | `useAlbums`, `mixScenes`, `photoSeconds`, `albumRefreshHours`, `weatherMinutes` | Screensaver photos and refresh |
-| `screensaverMinutes` | Car only: idle minutes on the home screen before the screensaver opens (default 5, `0` = never) |
-| `homeView` | Car only: `"apps"` or `"dashboard"`, the view the Home button returns to |
 
 ## Remote
 
@@ -147,7 +145,7 @@ tools/setup-sdk.sh
 ./tv.sh install
 ```
 
-No Gradle: `build.sh` uses `aapt2`, `javac`, `d8` and `apksigner` directly. The UI is plain HTML/CSS/JS in [`app/assets/`](app/assets) shown in a WebView (`home.html` on TV, `car.html` in the car, `screensaver.html` on both); the two APKs differ only in their manifest ([`app/AndroidManifest.xml`](app/AndroidManifest.xml), [`car/AndroidManifest.xml`](car/AndroidManifest.xml)), whose `flavor` picks the home screen; [`Bridge.java`](app/src/com/mk/homedash/Bridge.java) is the small Android side (apps, launching, network, location, albums).
+No Gradle: `build.sh` uses `aapt2`, `javac`, `d8` and `apksigner` directly. The UI is plain HTML/CSS/JS in [`app/assets/`](app/assets) shown in a WebView (`home.html` and `screensaver.html` on TV, `car.html` in the car); the two APKs differ only in their manifest ([`app/AndroidManifest.xml`](app/AndroidManifest.xml), [`car/AndroidManifest.xml`](car/AndroidManifest.xml)), whose `flavor` picks the home screen; [`Bridge.java`](app/src/com/mk/homedash/Bridge.java) is the small Android side (apps, launching, network, location, albums).
 
 Releases are built by GitHub Actions: every push builds both APKs (download them from the run's *Artifacts*); pushing a tag like `v2.0.0` builds them, signs it with the key kept in the repository's encrypted secrets, and publishes the release. Your own local builds use a key created in `keystore/`, so uninstall a release before installing your own build (or the other way round).
 

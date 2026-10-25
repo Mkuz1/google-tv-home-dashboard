@@ -53,12 +53,18 @@ window.CONFIG = {
 // Car build (car/AndroidManifest.xml): what differs from the TV defaults above.
 // settings.json overrides these the same way.
 window.CAR_CONFIG = {
+  // Prayer times for Sharjah (UAE Awqaf method) wherever the car is; set latitude/longitude/city
+  // (and prayer) in settings.json for another place.
+  location: "manual",
+  city: "Sharjah",
+  latitude: 25.3463,
+  longitude: 55.4209,
+  timezone: "Asia/Dubai",
+  prayerCountry: "AE",
   homeOrder: [
     "com.google.android.apps.maps", "com.waze", "com.spotify.music",
     "com.google.android.apps.youtube.music", "com.google.android.dialer", "com.android.dialer",
   ],
-  homeView: "apps",      // first view: "apps" (icon pages) or "dashboard" (time, weather, prayer)
-  screensaverMinutes: 5, // the screensaver opens after this many minutes on the home screen; 0 = never
 };
 
 // Official calculation per country (as used by the national religious authorities).
@@ -85,7 +91,10 @@ window.PRAYER_METHODS = (function () {
   const TV = window.TV || window.MOCK_TV; // MOCK_TV: previewing in a desktop browser (bridge-mock.js)
   // "tv" or "car", from the app's manifest (app/ or car/AndroidManifest.xml).
   try { C.flavor = TV.flavor(); } catch (e) { C.flavor = "tv"; }
-  if (C.flavor === "car") Object.assign(C, window.CAR_CONFIG);
+  if (C.flavor === "car") {
+    Object.assign(C, window.CAR_CONFIG);
+    C.prayer = JSON.parse(JSON.stringify(window.PRAYER_METHODS[C.prayerCountry]));
+  }
   let overrides = null;
   try { overrides = TV && JSON.parse(TV.settings()); } catch (e) {}
   if (overrides) {
