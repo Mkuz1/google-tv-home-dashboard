@@ -14,6 +14,8 @@ public class MainActivity extends Activity {
 
     private WebView web;
     private CarLocation location; // car only: GPS for prayer times
+    private boolean car;
+    private long unsplitAt;
 
     // App installed, removed or updated: the page re-reads the app list next time it shows.
     private final BroadcastReceiver packages = new BroadcastReceiver() {
@@ -37,7 +39,8 @@ public class MainActivity extends Activity {
         setContentView(web);
         hideSystemUi();
         web.requestFocus();
-        if ("car".equals(Bridge.flavor(this))) {
+        car = "car".equals(Bridge.flavor(this));
+        if (car) {
             location = new CarLocation(this);
             location.start();
         }
@@ -51,6 +54,11 @@ public class MainActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
+        leaveSplit();
+        // Again once laid out, for the width check.
+        getWindow().getDecorView().postDelayed(new Runnable() {
+            @Override public void run() { leaveSplit(); }
+        }, 400);
         PrayerAlert.homeVisible = true;
         hideSystemUi();
         if (web != null) {
@@ -64,6 +72,41 @@ public class MainActivity extends Activity {
         PrayerAlert.homeVisible = false;
         js("window.onTvPause && window.onTvPause()");
         super.onPause();
+    }
+
+    @Override
+    public void onMultiWindowModeChanged(boolean inMultiWindow) {
+        super.onMultiWindowModeChanged(inMultiWindow);
+        leaveSplit();
+    }
+
+    /**
+     * Home pressed while two apps were side by side: Android keeps the split and shows Home squeezed
+     * next to a strip of the first app. With the MK Split Screen helper on, close the split and come
+     * back full screen. Not while a split pair is being opened (Home briefly shows beside the first app).
+     */
+    private void leaveSplit() {
+        if (!car || !inSplit() || !Bridge.splitHelperOn(this)) return;
+        long now = System.currentTimeMillis();
+        if (now - Bridge.splitLaunchAt < 6000 || now - unsplitAt < 4000) return;
+        unsplitAt = now;
+        Bridge.toggleSplit(this);
+        // Leaving split brings the first app to full screen; put Home back in front of it.
+        getWindow().getDecorView().postDelayed(new Runnable() {
+            @Override public void run() {
+                startActivity(new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME)
+                        .setPackage(getPackageName()).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+            }
+        }, 700);
+    }
+
+    /** In split screen, or (on firmwares that don't say so) drawn much narrower than the screen. */
+    private boolean inSplit() {
+        if (isInMultiWindowMode()) return true;
+        android.graphics.Point screen = new android.graphics.Point();
+        getWindowManager().getDefaultDisplay().getRealSize(screen);
+        int w = getWindow().getDecorView().getWidth();
+        return screen.x > screen.y && w > 0 && w < screen.x * 0.85;
     }
 
     @Override

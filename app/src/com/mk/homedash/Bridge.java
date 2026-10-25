@@ -152,6 +152,7 @@ public class Bridge {
         a.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         b.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT | Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
         final boolean helper = splitHelperOn();
+        splitLaunchAt = System.currentTimeMillis(); // Home shows beside the first app for a moment: not a leftover
         main.post(new Runnable() {
             @Override public void run() {
                 try {
@@ -171,10 +172,7 @@ public class Bridge {
         });
         if (helper) {
             main.postDelayed(new Runnable() {
-                @Override public void run() {
-                    context.sendBroadcast(new Intent(SplitReceiver.ACTION)
-                            .setClassName(SplitReceiver.PACKAGE, SplitReceiver.class.getName()));
-                }
+                @Override public void run() { toggleSplit(context); }
             }, 900);
         }
         main.postDelayed(new Runnable() {
@@ -188,9 +186,21 @@ public class Bridge {
     /** True when the MK Split Screen helper app is installed and switched on in Accessibility. */
     @JavascriptInterface
     public boolean splitHelperOn() {
+        return splitHelperOn(context);
+    }
+
+    static boolean splitHelperOn(Context context) {
         String on = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES);
         return on != null && on.contains(SplitReceiver.PACKAGE + "/");
     }
+
+    /** Asks the helper to press the system's split-screen action (enters split, or leaves it). */
+    static void toggleSplit(Context context) {
+        context.sendBroadcast(new Intent(SplitReceiver.ACTION).setClassName(SplitReceiver.PACKAGE, SplitReceiver.class.getName()));
+    }
+
+    /** When the last split-screen pair was opened (ms). */
+    static volatile long splitLaunchAt = 0;
 
     @JavascriptInterface
     public boolean splitHelperInstalled() {
