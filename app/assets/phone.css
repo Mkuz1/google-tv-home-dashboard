@@ -174,11 +174,23 @@ body.editing.library #editBar { opacity: 0; pointer-events: none; }
 .lib-grid .tile { position: relative; width: auto; transition: none; }
 
 /* ---------- folder ---------- */
-#folder { position: fixed; inset: 0; z-index: 12; opacity: 0; pointer-events: none; transition: opacity .25s; background: rgba(4,8,12,0.62); }
+/* Folder: the platter zooms out of the folder icon and back into it (phone.js sets the transforms). */
+#folder { position: fixed; inset: 0; z-index: 12; opacity: 0; pointer-events: none; transition: opacity .2s ease; background: rgba(4,8,12,0.62); }
 body.folder-open #folder { opacity: 1; pointer-events: auto; }
-.fd-title { position: absolute; left: 0; right: 0; text-align: center; font-size: 30px; font-weight: 700; letter-spacing: -.4px; text-shadow: 0 2px 12px rgba(0,0,0,.5); }
-.fd-platter { position: absolute; border-radius: 38px; overflow: hidden; transform: scale(.9); transition: transform .4s var(--spring); }
-body.folder-open .fd-platter { transform: scale(1); }
+.fd-title { position: absolute; left: 0; right: 0; display: flex; justify-content: center; transition: opacity .2s; }
+#fdName {
+  width: min(80vw, 340px); height: 50px; padding: 0 18px; border-radius: 25px; text-align: center;
+  font-size: 30px; font-weight: 700; letter-spacing: -.4px; text-shadow: 0 2px 12px rgba(0,0,0,.5); background: transparent;
+  transition: background .2s, box-shadow .2s;
+}
+#fdName[readonly] { pointer-events: none; user-select: none; -webkit-user-select: none; }
+body.editing #fdName:not([readonly]) { background: rgba(255,255,255,0.14); box-shadow: inset 0 1px 0 rgba(255,255,255,.3); text-shadow: none; }
+.fd-platter { position: absolute; border-radius: 38px; overflow: hidden; transform-origin: 0 0; will-change: transform; }
+.fd-platter.anim { transition: transform .3s cubic-bezier(.2,.85,.25,1), border-radius .3s; }
+.fd-grid { transition: opacity .2s; }
+.fd-platter.mini .fd-grid { opacity: 0; }
+/* Nothing behind an open folder moves (and costs nothing to draw). */
+body.folder-open #viewport .icon-wrap, body.folder-open #viewport .wcard, body.folder-open #dock .icon-wrap { animation: none !important; }
 .fd-grid { position: absolute; inset: 0; overflow-y: auto; touch-action: pan-y; }
 .fd-grid::-webkit-scrollbar { display: none; }
 
@@ -303,7 +315,7 @@ body.sheet-open #sheetScrim { opacity: 1; pointer-events: auto; }
 #toast[hidden] { display: block; opacity: 0; transform: translateX(-50%) translateY(14px); pointer-events: none; }
 
 /* ---------- Arabic ---------- */
-body.rtl .sh-title, body.rtl .mi, body.rtl .set-name, body.rtl .wg-name, body.rtl .fd-title, body.rtl #toast, body.rtl .qb-main { font-family: "Amiri", serif; }
+body.rtl .sh-title, body.rtl .mi, body.rtl .set-name, body.rtl .wg-name, body.rtl #fdName, body.rtl #toast, body.rtl .qb-main { font-family: "Amiri", serif; }
 body.rtl .mi { font-size: 19px; }
 body.rtl .sh-title { font-size: 25px; }
 body.rtl .pr-list .en { display: none; }

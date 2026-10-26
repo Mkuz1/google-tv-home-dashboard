@@ -402,10 +402,12 @@
   function enterEdit() {
     if (has("editing")) return;
     document.body.classList.add("editing");
+    if (openF && !openF.lib) $("fdName").readOnly = false;
   }
   function exitEdit() {
     if (!has("editing")) return;
     document.body.classList.remove("editing");
+    if (openF) { commitName(); $("fdName").blur(); $("fdName").readOnly = true; }
     // Empty pages go away, like on an iPhone.
     const keep = L.pages.filter((p) => p.length);
     L.pages = keep.length ? keep : [[]];
@@ -692,18 +694,22 @@
     if (d.folderHover && d.folderHover.ready) {
       // Dropped on an app: a new folder; on a folder: into it.
       const target = (locate(d.folderHover.id) || {}).item;
+      let made = null;
       if (target) {
         takeOut(d.item.id);
         const at = locate(target.id);
         if (target.t === "f") target.apps.push(d.item.p);
-        else L.pages[at.p][at.i] = { t: "f", id: uid("f"), name: folderName([target.p, d.item.p]), apps: [target.p, d.item.p] };
+        else L.pages[at.p][at.i] = made = { t: "f", id: uid("f"), name: folderName([target.p, d.item.p]), apps: [target.p, d.item.p] };
         const el = els.get(target.id);
         if (el) el.classList.remove("folder-target");
       }
       d.float.remove();
       drag = null;
       save();
-      return render();
+      render();
+      // Like an iPhone: a new folder opens with both apps and its name ready to change.
+      if (made) openFolder(made, true);
+      return;
     }
     // Fly to the gap, then land.
     drag = null;
@@ -744,20 +750,57 @@
     if (!openF || !id.startsWith("a:") || !openF.apps.includes(id.slice(2))) return null;
     return { where: "folder", item: appItem(id.slice(2)) };
   }
-  function openFolder(f) {
+  // Opens zooming out of the folder's icon, like an iPhone. rename: the name ready to type (a folder
+  // just made by dropping an app on another).
+  let fdClosing = null;
+  function openFolder(f, rename = false) {
+    clearTimeout(fdClosing);
     openF = f;
     renderFolder();
+    const pl = $("fdPlatter"), from = folderIconRect(f);
+    pl.classList.remove("anim");
+    if (from) { pl.style.transform = zoomFrom(from); pl.classList.add("mini"); }
     document.body.classList.add("folder-open");
+    requestAnimationFrame(() => {
+      pl.classList.add("anim");
+      pl.classList.remove("mini");
+      pl.style.transform = "none";
+    });
+    if (rename) {
+      $("fdName").focus();
+      $("fdName").select();
+    }
   }
   function closeFolder() {
+    if (!openF) return;
+    const f = openF, wasLib = f.lib;
+    commitName();
+    $("fdName").blur();
+    const pl = $("fdPlatter"), to = folderIconRect(f);
+    pl.classList.add("anim");
+    if (to) { pl.style.transform = zoomFrom(to); pl.classList.add("mini"); }
     document.body.classList.remove("folder-open");
-    const wasLib = openF && openF.lib;
     openF = null;
-    $("fdGrid").innerHTML = "";
+    clearTimeout(fdClosing);
+    fdClosing = setTimeout(() => { pl.classList.remove("anim"); detachFolderTiles(); }, 320);
     if (wasLib) return;
     save();
     render();
   }
+  // The platter's transform that shrinks it onto the folder icon.
+  function zoomFrom(r) {
+    const pl = $("fdPlatter"), w = parseFloat(pl.style.width), h = parseFloat(pl.style.height);
+    const x = parseFloat(pl.style.left), y = parseFloat(pl.style.top);
+    return `translate3d(${r.left - x}px,${r.top - y}px,0) scale(${r.width / w},${r.height / h})`;
+  }
+  function folderIconRect(f) {
+    const el = f.id && els.get(f.id);
+    const icon = el && el.querySelector(".icon-wrap");
+    return icon && icon.isConnected ? icon.getBoundingClientRect() : null;
+  }
+  // Folder tiles are kept (not rebuilt) between openings, so their icons don't decode again.
+  const fdEls = new Map();
+  function detachFolderTiles() { if (!openF) [...$("fdGrid").children].forEach((el) => el.remove()); }
   function renderFolder() {
     const fc = FCOLS(), w = Math.min(M.W - 48, fc * M.cellW + 40);
     const rows = Math.max(1, Math.min(4, Math.ceil(openF.apps.length / fc)));
@@ -765,26 +808,41 @@
     const pl = $("fdPlatter");
     pl.style.width = w + "px"; pl.style.height = h + "px";
     pl.style.left = (M.W - w) / 2 + "px"; pl.style.top = (M.H - h) / 2 + "px";
-    $("fdTitle").style.top = (M.H - h) / 2 - 56 + "px";
-    $("fdTitle").textContent = openF.name;
+    $("fdTitle").style.top = (M.H - h) / 2 - 66 + "px";
+    if (document.activeElement !== $("fdName")) $("fdName").value = openF.name;
+    $("fdName").readOnly = !!openF.lib || !has("editing");
     const g = $("fdGrid"), left = (w - fc * M.cellW) / 2;
-    const keep = new Set();
+    const keep = new Set(), fresh = [];
     openF.apps.forEach((p, i) => {
-      const id = "a:" + p;
-      keep.add(id);
-      let el = g.querySelector(`.tile[data-id="${CSS.escape(id)}"]`);
+      const key = (openF.lib ? "L" : "F") + p;
+      keep.add(key);
+      let el = fdEls.get(key);
       if (!el) {
         el = document.createElement("div");
-        el.className = "tile no-anim" + (openF.lib ? " lib-app" : "");
-        el.dataset.id = id;
+        el.className = "tile" + (openF.lib ? " lib-app" : "");
+        el.dataset.id = "a:" + p;
         el.dataset.pkg = p;
+        el.dataset.key = key;
         el.innerHTML = tileInner(appItem(p));
-        g.appendChild(el); el.offsetWidth; el.classList.remove("no-anim");
+        fdEls.set(key, el);
       }
+      if (el.parentNode !== g) { el.classList.add("no-anim"); g.appendChild(el); fresh.push(el); }
       el.style.transform = `translate3d(${left + (i % fc) * M.cellW}px,${20 + Math.floor(i / fc) * M.cellH}px,0)`;
     });
-    [...g.children].forEach((el) => { if (!keep.has(el.dataset.id)) el.remove(); });
+    [...g.children].forEach((el) => { if (!keep.has(el.dataset.key)) el.remove(); });
+    // Newly shown tiles jump to their place; later moves animate.
+    if (fresh.length) requestAnimationFrame(() => fresh.forEach((el) => el.classList.remove("no-anim")));
   }
+  // The name, edited in place.
+  function commitName() {
+    if (!openF || openF.lib) return;
+    const v = $("fdName").value.trim().slice(0, 24);
+    if (v && v !== openF.name) { openF.name = v; save(); render(); }
+    else $("fdName").value = openF.name;
+  }
+  $("fdName").addEventListener("keydown", (e) => { if (e.key === "Enter") $("fdName").blur(); });
+  $("fdName").addEventListener("blur", commitName);
+  $("fdName").addEventListener("pointerdown", (e) => e.stopPropagation());
   function folderReorder(x, y) {
     const g = $("fdGrid").getBoundingClientRect(), fc = FCOLS(), left = (g.width - fc * M.cellW) / 2;
     const col = clamp(Math.floor((x - g.left - left) / M.cellW), 0, fc - 1), row = Math.max(0, Math.floor((y - g.top - 20 + $("fdGrid").scrollTop) / M.cellH));
@@ -816,12 +874,8 @@
     if (el) el.classList.remove("ghost");
     save();
   }
-  $("fdTitle").addEventListener("click", () => openF && !openF.lib && renameFolder(openF));
+
   $("folder").addEventListener("click", (e) => { if (e.target === $("folder") && !drag) closeFolder(); });
-  function renameFolder(f) {
-    window.onPrompt = (text) => { if (text && text.trim()) { f.name = text.trim().slice(0, 24); if (openF) $("fdTitle").textContent = f.name; save(); render(); } };
-    TV.promptText(T("folderName"), f.name);
-  }
 
   /* ---------------- menus ---------------- */
   const IC = {
@@ -867,7 +921,7 @@
     const at = locate(el.dataset.id) || folderLocate(el.dataset.id);
     if (!at) return;
     const it = at.item, acts = [];
-    if (it.t === "f") acts.push([T("rename"), IC.rename, () => renameFolder(it)], [T("removeFolder"), IC.ungroup, () => ungroup(it)]);
+    if (it.t === "f") acts.push([T("rename"), IC.rename, () => { enterEdit(); openFolder(it, true); }], [T("removeFolder"), IC.ungroup, () => ungroup(it)]);
     if (it.t === "w") acts.push([T("removeWidget"), IC.minus, () => removeItem(it), "danger"]);
     if (!at.where.startsWith("folder")) acts.push([T("editHome"), IC.edit, enterEdit]);
     if (it.t === "a") {

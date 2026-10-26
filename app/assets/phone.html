@@ -44,7 +44,8 @@
 
   <!-- Open folder -->
   <div id="folder">
-    <div class="fd-title" id="fdTitle"></div>
+    <!-- The name: tap to rename in edit mode (a new folder opens with it ready to type) -->
+    <div class="fd-title" id="fdTitle"><input id="fdName" maxlength="24" autocomplete="off" spellcheck="false" readonly></div>
     <div class="fd-platter glass solid" id="fdPlatter"><div class="fd-grid" id="fdGrid"></div></div>
   </div>
 
