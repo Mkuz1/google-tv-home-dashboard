@@ -330,9 +330,10 @@ public class Bridge {
         boolean adaptive = car && d instanceof AdaptiveIconDrawable;
         boolean squared = false;
         if (adaptive) {
-            uri = fullBleed((AdaptiveIconDrawable) d);
+            Bitmap full = fullBleed((AdaptiveIconDrawable) d);
+            uri = png("phone".equals(flavor) ? unplate(full) : full);
         } else if (d != null && "phone".equals(flavor)) {
-            uri = squared(d);
+            uri = png(unplate(squared(d)));
             squared = true;
         } else if (d != null) {
             int w = banner ? 480 : 192;
@@ -360,7 +361,7 @@ public class Bridge {
      * An adaptive icon's layers without the system mask (circle, teardrop...), so every icon
      * gets the same rounded square in the page. The visible part is the middle 72 of 108 dp.
      */
-    private static String fullBleed(AdaptiveIconDrawable d) {
+    private static Bitmap fullBleed(AdaptiveIconDrawable d) {
         int size = 192, pad = size / 4;
         Bitmap bmp = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
         Canvas c = new Canvas(bmp);
@@ -369,16 +370,71 @@ public class Bridge {
             layer.setBounds(-pad, -pad, size + pad, size + pad);
             layer.draw(c);
         }
+        return bmp;
+    }
+
+    private static String png(Bitmap b) {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        bmp.compress(Bitmap.CompressFormat.PNG, 100, out);
+        b.compress(Bitmap.CompressFormat.PNG, 100, out);
         return "data:image/png;base64," + Base64.encodeToString(out.toByteArray(), Base64.NO_WRAP);
+    }
+
+    /**
+     * Phone: some phones (ColorOS, MIUI, One UI themes...) hand out icons already set on a plain
+     * plate, usually white, with the real icon a smaller rounded square in the middle. Find that
+     * inner square and zoom in on it, so it fills the icon like on an iPhone. Icons that really are
+     * a logo on white (Chrome, Drive) have no single-colour inner square and are left alone.
+     */
+    static Bitmap unplate(Bitmap b) {
+        int n = b.getWidth(), mid = n / 2;
+        int plate = b.getPixel(n / 10, n / 2);
+        // The plate: one even, opaque colour all round, just inside the edge.
+        int[][] ring = {{n / 10, n / 2}, {n - 1 - n / 10, n / 2}, {n / 2, n / 10}, {n / 2, n - 1 - n / 10},
+                {n / 6, n / 6}, {n - 1 - n / 6, n / 6}, {n / 6, n - 1 - n / 6}, {n - 1 - n / 6, n - 1 - n / 6}};
+        for (int[] p : ring) {
+            int px = b.getPixel(p[0], p[1]);
+            if ((px >>> 24) < 240 || far(px, plate, 14)) return b;
+        }
+        // Edges of whatever sits on it, walking in from the middle of each side.
+        int left = -1, right = -1, top = -1, bottom = -1;
+        for (int x = 0; x < mid; x++) if (far(b.getPixel(x, mid), plate, 14)) { left = x; break; }
+        for (int x = n - 1; x > mid; x--) if (far(b.getPixel(x, mid), plate, 14)) { right = x; break; }
+        for (int y = 0; y < mid; y++) if (far(b.getPixel(mid, y), plate, 14)) { top = y; break; }
+        for (int y = n - 1; y > mid; y--) if (far(b.getPixel(mid, y), plate, 14)) { bottom = y; break; }
+        if (left < 0 || right < 0 || top < 0 || bottom < 0) return b;
+        int w = right - left + 1, h = bottom - top + 1;
+        // A centred square of at least half the icon...
+        if (w < n * 0.5 || h < n * 0.5 || w > n * 0.97 || Math.abs(w - h) > n * 0.07
+                || Math.abs(left - (n - 1 - right)) > n * 0.06 || Math.abs(top - (n - 1 - bottom)) > n * 0.06) return b;
+        // ...whose sides, just inside its edge, are solid all the way along (a real inner icon
+        // square; a logo on white, like Chrome or WhatsApp, lets the plate show through).
+        int inset = Math.max(3, Math.round(w * 0.06f)), hits = 0, tot = 0;
+        for (int j = 0; j < 20; j++) {
+            float f = 0.2f + 0.6f * j / 19;
+            int[][] pts = {{left + inset, (int) (top + h * f)}, {right - inset, (int) (top + h * f)},
+                    {(int) (left + w * f), top + inset}, {(int) (left + w * f), bottom - inset}};
+            for (int[] q : pts) { tot++; if (far(b.getPixel(q[0], q[1]), plate, 14)) hits++; }
+        }
+        if (hits < tot * 0.9) return b;
+        // Zoom in a little past the square's own rounded corners.
+        int cut = Math.round(w * 0.05f);
+        Bitmap out = Bitmap.createBitmap(n, n, Bitmap.Config.ARGB_8888);
+        Canvas c = new Canvas(out);
+        c.drawBitmap(b, new android.graphics.Rect(left + cut, top + cut, right + 1 - cut, bottom + 1 - cut),
+                new android.graphics.Rect(0, 0, n, n), new android.graphics.Paint(android.graphics.Paint.FILTER_BITMAP_FLAG));
+        return out;
+    }
+
+    private static boolean far(int a, int b, int tol) {
+        return Math.abs(((a >> 16) & 255) - ((b >> 16) & 255)) > tol || Math.abs(((a >> 8) & 255) - ((b >> 8) & 255)) > tol
+                || Math.abs((a & 255) - (b & 255)) > tol;
     }
 
     /**
      * Phone: an old-style icon (round, or any shape) made into a full square like an iPhone icon.
      * A round icon fills the square in its own rim colour; any other shape sits on white.
      */
-    private static String squared(Drawable d) {
+    private static Bitmap squared(Drawable d) {
         int size = 192;
         Bitmap src = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
         Canvas sc = new Canvas(src);
@@ -417,9 +473,7 @@ public class Bridge {
             }
             d.draw(c);
         }
-        ByteArrayOutputStream bo = new ByteArrayOutputStream();
-        out.compress(Bitmap.CompressFormat.PNG, 100, bo);
-        return "data:image/png;base64," + Base64.encodeToString(bo.toByteArray(), Base64.NO_WRAP);
+        return out;
     }
 
     private static boolean opaqueAt(Bitmap b, int x, int y) {
