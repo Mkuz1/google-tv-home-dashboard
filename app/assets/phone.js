@@ -274,7 +274,7 @@
       alive.add(it.id);
       const fresh = el.parentNode !== box;
       if (fresh) { el.classList.add("no-anim"); box.appendChild(el); }
-      const x = (i + 0.5) * (inner / n) - M.cellW / 2, y = (M.dockH - M.icon) / 2 - 6;
+      const x = (i + 0.5) * (inner / n) - M.cellW / 2, y = 0;
       el.style.transform = `translate3d(${x}px,${y}px,0)`;
       if (fresh) { el.offsetWidth; el.classList.remove("no-anim"); }
     });
@@ -986,15 +986,21 @@
     if (!card.isConnected) return requestAnimationFrame(() => card.isConnected && drawWidget(card));
     if (k === "clock") {
       const next = D.nextPrayer(t, today, tomorrow);
-      card.innerHTML = `<div class="w-time" style="font-size:${s === "s" ? 44 : 56}px">${D.hm(t)}<small>${ampm(t)}</small></div>` +
-        `<div class="w-date">${escapeHtml(dateFmt().format(t))}</div><div class="w-hijri">${hijriFmt ? hijriFmt.format(t) : ""}</div>` +
-        (s === "m" ? `<div class="w-row" style="margin-top:auto"><span class="w-label">${escapeHtml(C.city || "")}</span><span class="w-gold">${escapeHtml(T("next", lang === "ar" ? PRAYER_AR[next.key] : next.name, next.minutes))}</span></div>` : "");
+      card.innerHTML = `<div class="w-fill"><div class="w-time">${D.hm(t)}<small>${ampm(t)}</small></div>` +
+        `<div class="w-date">${escapeHtml(dateFmt().format(t))}</div><div class="w-hijri">${hijriFmt ? hijriFmt.format(t) : ""}</div></div>` +
+        (s === "m" ? `<div class="w-row"><span class="w-label">${escapeHtml(C.city || "")}</span><span class="w-gold">${escapeHtml(T("next", lang === "ar" ? PRAYER_AR[next.key] : next.name, next.minutes))}</span></div>` : "");
     } else if (k === "prayer") {
       const next = D.nextPrayer(t, today, tomorrow);
       const name = (k2, en) => (lang === "ar" ? PRAYER_AR[k2] : en);
       const head = `<div class="w-row"><span class="w-label">${escapeHtml(T("prayerTimes", C.city))}</span><span class="w-gold">${escapeHtml(T("next", name(next.key, next.name), next.minutes))}</span></div>`;
       if (s === "m") {
-        card.innerHTML = head + `<div class="w-big" style="margin-top:6px">${escapeHtml(name(next.key, next.name))} <span class="w-gold">${D.hm(next.time)} ${ampm(next.time)}</span></div>` +
+        // How far we are from the last prayer to the next one.
+        const order = D.PRAYERS.filter(([k2]) => k2 !== "sunrise").map(([k2]) => k2);
+        const ni = order.indexOf(next.key);
+        const prev = ni > 0 ? today[order[ni - 1]] : new Date(+today.isha - (next.time > today.isha ? 0 : 86400000));
+        const pct = Math.max(0, Math.min(1, (t - prev) / (next.time - prev)));
+        card.innerHTML = head + `<div class="w-fill"><div class="w-big">${escapeHtml(name(next.key, next.name))} <span style="color:var(--gold-soft)">${D.hm(next.time)}</span> <span class="w-sub" style="display:inline">${ampm(next.time)}</span></div>` +
+          `<div class="pr-bar"><i style="width:${(pct * 100).toFixed(1)}%"></i></div></div>` +
           `<div class="pr-row">${D.PRAYERS.filter(([k2]) => k2 !== "sunrise").map(([k2, en]) => `<div class="${k2 === next.key ? "next" : ""}">${escapeHtml(name(k2, en))}<b>${D.hm(today[k2])}</b></div>`).join("")}</div>`;
       } else {
         card.innerHTML = head + `<ol class="pr-list">${D.PRAYERS.map(([k2, en, ar]) => `<li class="${k2 === next.key ? "next" : today[k2] <= t ? "past" : ""}"><span class="en">${en}</span><span class="ar">${ar}</span><span class="tm">${D.hm(today[k2])} <small>${ampm(today[k2])}</small></span></li>`).join("")}</ol>`;
@@ -1004,7 +1010,7 @@
       card.innerHTML = `<div class="az-head"><span class="t">${set.title}</span><span class="c">${(azIndex % set.items.length) + 1} / ${set.items.length}</span></div><div class="az-text" dir="rtl"></div>`;
       const body = card.querySelector(".az-text");
       body.textContent = item.t;
-      fitText(body, s === "l" ? 26 : 22, 12);
+      fitText(body, Math.round(Math.min(card.clientHeight * (s === "l" ? 0.09 : 0.15), 34)), 12);
     } else if (k === "qibla") {
       card.innerHTML = `<div class="w-row"><span class="w-label">${escapeHtml(T("wQibla"))}</span><span class="w-gold">${Math.round(qiblaBearing())}°</span></div><div class="qb-mini"><div class="ring"><div class="arrow"></div></div></div>`;
       updateQiblaWidgets();

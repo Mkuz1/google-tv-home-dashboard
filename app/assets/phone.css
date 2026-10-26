@@ -137,7 +137,8 @@ body.swiping #searchPill, body.editing #searchPill, body.library #searchPill { o
 }
 #dockApps { position: absolute; inset: 0; }
 #dock .tile .label { display: none; }
-#dock .tile { padding-top: 0; justify-content: center; }
+/* Dock icons sit in the middle of the glass bar (their tile is exactly the bar's height). */
+#dock .tile { height: var(--dock-h); padding-top: 0; justify-content: center; }
 body.library #dock { transform: translateY(140%); opacity: 0; pointer-events: none; }
 body.library #dots { opacity: .9; }
 
@@ -251,16 +252,26 @@ body.sheet-open #sheetScrim { opacity: 1; pointer-events: auto; }
 .qb-sub { margin-top: 4px; font-size: 15px; color: var(--ink-2); text-align: center; padding: 0 20px 8px; }
 
 /* ---------- widget contents ---------- */
-.w-label { font-size: 11px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; color: var(--ink-2); }
-.w-time { font-weight: 200; letter-spacing: -2px; line-height: 1; font-variant-numeric: tabular-nums; }
-.w-time small { font-size: .32em; font-weight: 400; letter-spacing: 0; color: var(--ink-2); margin-left: 4px; }
-.w-date { font-size: 14px; margin-top: 4px; }
-.w-hijri { font-family: "Amiri", serif; color: var(--gold); font-size: 16px; margin-top: 1px; }
+/* Widget text grows with the widget (container units: cqh = 1% of the card's height, cqw of its width),
+   so a big card is filled instead of leaving empty space. */
+.wcard { container-type: size; }
+.w-label { font-size: clamp(11px, min(6.2cqh, 3.2cqw), 15px); font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; color: var(--ink-2); }
+.w-time { font-weight: 200; letter-spacing: -0.04em; line-height: .95; font-variant-numeric: tabular-nums; font-size: clamp(34px, min(40cqh, 21cqw), 120px); }
+.wcard[data-s="s"] .w-time { font-size: clamp(28px, min(30cqh, 26cqw), 80px); }
+.w-time small { font-size: .3em; font-weight: 400; letter-spacing: 0; color: var(--ink-2); margin-left: .2em; }
+.w-date { font-size: clamp(13px, min(8.5cqh, 4.6cqw), 24px); margin-top: 3cqh; }
+.w-hijri { font-family: "Amiri", serif; color: var(--gold); font-size: clamp(14px, min(9.5cqh, 5cqw), 26px); line-height: 1.25; }
+.wcard[data-s="s"] .w-date { font-size: clamp(11px, min(8.5cqh, 7.5cqw), 18px); }
+.wcard[data-s="s"] .w-hijri { font-size: clamp(12px, min(9cqh, 8cqw), 20px); }
 .w-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-.w-gold { color: var(--gold-soft); font-weight: 600; }
-.w-big { font-size: 30px; font-weight: 600; letter-spacing: -.5px; }
+.w-gold { color: var(--gold-soft); font-weight: 600; font-size: clamp(13px, min(8cqh, 4.4cqw), 22px); }
+.w-big { font-size: clamp(22px, min(19cqh, 10cqw), 54px); font-weight: 600; letter-spacing: -.02em; line-height: 1.1; }
+.w-fill { flex: 1; display: flex; flex-direction: column; justify-content: center; min-height: 0; }
+.w-sub { font-size: clamp(12px, min(7.5cqh, 4cqw), 20px); color: var(--ink-2); margin-top: 1cqh; }
+.pr-bar { height: clamp(4px, 2.2cqh, 8px); border-radius: 99px; background: rgba(255,255,255,0.16); overflow: hidden; margin: 4cqh 0 0; }
+.pr-bar i { display: block; height: 100%; border-radius: inherit; background: var(--gold-pill); }
 .pr-list { list-style: none; flex: 1; display: flex; flex-direction: column; justify-content: space-around; margin-top: 6px; }
-.pr-list li { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 10px; padding: 3px 10px; border-radius: 10px; font-size: 15px; }
+.pr-list li { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 10px; padding: 0.6cqh 10px; border-radius: 10px; font-size: clamp(14px, min(5cqh, 4.4cqw), 22px); }
 .pr-list .ar { font-family: "Amiri", serif; color: var(--ink-3); }
 .pr-list .tm { font-variant-numeric: tabular-nums; min-width: 72px; text-align: right; }
 .pr-list .tm small { font-size: 10px; color: var(--ink-2); margin-left: 2px; }
@@ -268,8 +279,8 @@ body.sheet-open #sheetScrim { opacity: 1; pointer-events: auto; }
 .pr-list li.next { color: var(--gold-ink); background: var(--gold-pill); box-shadow: var(--gold-pill-rim); }
 .pr-list li.next .ar, .pr-list li.next small { color: rgba(27,20,7,0.62); }
 .pr-row { display: flex; justify-content: space-between; margin-top: auto; }
-.pr-row div { text-align: center; font-size: 12px; color: var(--ink-2); }
-.pr-row div b { display: block; font-size: 14px; color: var(--ink); font-weight: 600; font-variant-numeric: tabular-nums; }
+.pr-row div { text-align: center; font-size: clamp(11px, min(6.8cqh, 3.6cqw), 18px); color: var(--ink-2); }
+.pr-row div b { display: block; font-size: clamp(13px, min(8.4cqh, 4.4cqw), 22px); color: var(--ink); font-weight: 600; font-variant-numeric: tabular-nums; }
 .pr-row div.next b { color: var(--gold-soft); }
 .az-text { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; text-align: center; font-family: "Amiri", serif; line-height: 1.7; overflow: hidden; transition: opacity .45s; }
 .az-text.fade { opacity: 0; }
