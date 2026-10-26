@@ -43,8 +43,20 @@ public class MainActivity extends Activity {
         phone = "phone".equals(flavor);
         // No FLAG_KEEP_SCREEN_ON here: the screensaver must be able to start on top of Home.
         web = Web.create(this, car ? "car.html" : phone ? "phone.html" : "home.html");
-        setContentView(web);
-        if (phone) { edgeToEdge(); fitOrientation(); } else hideSystemUi();
+        if (phone) {
+            // Other apps' widgets sit in a layer above the page (see AppWidgets).
+            android.widget.FrameLayout root = new android.widget.FrameLayout(this);
+            android.widget.FrameLayout layer = new android.widget.FrameLayout(this);
+            root.addView(web);
+            root.addView(layer);
+            setContentView(root);
+            AppWidgets.instance = new AppWidgets(this, web, layer);
+            edgeToEdge();
+            fitOrientation();
+        } else {
+            setContentView(web);
+            hideSystemUi();
+        }
         web.requestFocus();
         if (car || phone) {
             location = new CarLocation(this);
@@ -60,11 +72,24 @@ public class MainActivity extends Activity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        if (AppWidgets.instance != null && AppWidgets.instance.onResult(requestCode, resultCode, data)) return;
         // Android answers "no" at once, without asking, after the user has declined it before:
         // then open the Home app settings so they can still pick this launcher.
         if (requestCode == 77 && resultCode != RESULT_OK && System.currentTimeMillis() - Bridge.roleAskAt < 700) {
             Bridge.homeSettings(this);
         }
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if (phone && AppWidgets.instance != null) AppWidgets.instance.start();
+    }
+
+    @Override
+    protected void onStop() {
+        if (phone && AppWidgets.instance != null) AppWidgets.instance.stop();
+        super.onStop();
     }
 
     @Override

@@ -148,5 +148,51 @@ window.ISLAMIC = (function () {
     return out;
   }
 
-  return { NAMES, AYAT, TASBIH, hijri, upcoming, reminders };
+
+  // Duas from the Quran and the Sunnah.
+  const DUAS = [
+    { a: "اللَّهُمَّ إِنِّي أَسْأَلُكَ عِلْمًا نَافِعًا، وَرِزْقًا طَيِّبًا، وَعَمَلًا مُتَقَبَّلًا", r: "ابن ماجه", m: "O Allah, I ask You for beneficial knowledge, good provision and accepted deeds." },
+    { a: "يَا مُقَلِّبَ الْقُلُوبِ ثَبِّتْ قَلْبِي عَلَى دِينِكَ", r: "الترمذي", m: "O Turner of hearts, keep my heart firm on Your religion." },
+    { a: "اللَّهُمَّ أَعِنِّي عَلَى ذِكْرِكَ وَشُكْرِكَ وَحُسْنِ عِبَادَتِكَ", r: "أبو داود", m: "O Allah, help me to remember You, thank You and worship You well." },
+    { a: "اللَّهُمَّ إِنَّكَ عَفُوٌّ تُحِبُّ الْعَفْوَ فَاعْفُ عَنِّي", r: "الترمذي", m: "O Allah, You are Pardoning and love to pardon, so pardon me." },
+    { a: "رَبِّ اغْفِرْ لِي وَلِوَالِدَيَّ", r: "نوح ٢٨", m: "My Lord, forgive me and my parents." },
+    { a: "اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنَ الْهَمِّ وَالْحَزَنِ، وَالْعَجْزِ وَالْكَسَلِ، وَالْبُخْلِ وَالْجُبْنِ، وَضَلَعِ الدَّيْنِ وَغَلَبَةِ الرِّجَالِ", r: "البخاري", m: "O Allah, I seek refuge in You from worry and grief, weakness and laziness, miserliness and cowardice, the burden of debt and being overpowered by men." },
+    { a: "لَا إِلَٰهَ إِلَّا أَنتَ سُبْحَانَكَ إِنِّي كُنتُ مِنَ الظَّالِمِينَ", r: "الأنبياء ٨٧", m: "There is no god but You, glory be to You; I have been among the wrongdoers." },
+    { a: "اللَّهُمَّ اهْدِنِي وَسَدِّدْنِي", r: "مسلم", m: "O Allah, guide me and keep me on the right course." },
+    { a: "رَبَّنَا هَبْ لَنَا مِنْ أَزْوَاجِنَا وَذُرِّيَّاتِنَا قُرَّةَ أَعْيُنٍ وَاجْعَلْنَا لِلْمُتَّقِينَ إِمَامًا", r: "الفرقان ٧٤", m: "Our Lord, grant us joy in our spouses and children, and make us leaders of the God-conscious." },
+    { a: "رَبِّ اجْعَلْنِي مُقِيمَ الصَّلَاةِ وَمِن ذُرِّيَّتِي ۚ رَبَّنَا وَتَقَبَّلْ دُعَاءِ", r: "إبراهيم ٤٠", m: "My Lord, make me steadfast in prayer, and my descendants too. Our Lord, accept my prayer." },
+    { a: "اللَّهُمَّ أَصْلِحْ لِي دِينِي الَّذِي هُوَ عِصْمَةُ أَمْرِي، وَأَصْلِحْ لِي دُنْيَايَ الَّتِي فِيهَا مَعَاشِي، وَأَصْلِحْ لِي آخِرَتِي الَّتِي فِيهَا مَعَادِي", r: "مسلم", m: "O Allah, set right my religion, which safeguards my affairs, my world, in which I live, and my Hereafter, to which I return." },
+    { a: "رَبَّنَا ظَلَمْنَا أَنفُسَنَا وَإِن لَّمْ تَغْفِرْ لَنَا وَتَرْحَمْنَا لَنَكُونَنَّ مِنَ الْخَاسِرِينَ", r: "الأعراف ٢٣", m: "Our Lord, we have wronged ourselves; if You do not forgive us and have mercy on us, we will be among the losers." },
+    { a: "اللَّهُمَّ إِنِّي أَسْأَلُكَ الْهُدَى وَالتُّقَى وَالْعَفَافَ وَالْغِنَى", r: "مسلم", m: "O Allah, I ask You for guidance, piety, chastity and self-sufficiency." },
+    { a: "رَبَّنَا تَقَبَّلْ مِنَّا ۖ إِنَّكَ أَنتَ السَّمِيعُ الْعَلِيمُ", r: "البقرة ١٢٧", m: "Our Lord, accept this from us; You are the All-Hearing, the All-Knowing." },
+  ];
+
+  // Short hadiths with their sources.
+  const HADITH = [
+    { a: "إِنَّمَا الْأَعْمَالُ بِالنِّيَّاتِ، وَإِنَّمَا لِكُلِّ امْرِئٍ مَا نَوَى", r: "البخاري ومسلم", m: "Actions are only by intentions, and everyone gets only what they intended." },
+    { a: "مَنْ كَانَ يُؤْمِنُ بِاللَّهِ وَالْيَوْمِ الْآخِرِ فَلْيَقُلْ خَيْرًا أَوْ لِيَصْمُتْ", r: "البخاري ومسلم", m: "Whoever believes in Allah and the Last Day, let them speak good or stay silent." },
+    { a: "لَا يُؤْمِنُ أَحَدُكُمْ حَتَّى يُحِبَّ لِأَخِيهِ مَا يُحِبُّ لِنَفْسِهِ", r: "البخاري ومسلم", m: "None of you truly believes until they love for their brother what they love for themselves." },
+    { a: "الْكَلِمَةُ الطَّيِّبَةُ صَدَقَةٌ", r: "البخاري ومسلم", m: "A good word is charity." },
+    { a: "تَبَسُّمُكَ فِي وَجْهِ أَخِيكَ لَكَ صَدَقَةٌ", r: "الترمذي", m: "Your smile in your brother's face is charity." },
+    { a: "خَيْرُكُمْ مَنْ تَعَلَّمَ الْقُرْآنَ وَعَلَّمَهُ", r: "البخاري", m: "The best of you are those who learn the Quran and teach it." },
+    { a: "الْمُسْلِمُ مَنْ سَلِمَ الْمُسْلِمُونَ مِنْ لِسَانِهِ وَيَدِهِ", r: "البخاري ومسلم", m: "A Muslim is one from whose tongue and hand the Muslims are safe." },
+    { a: "اتَّقِ اللَّهَ حَيْثُمَا كُنْتَ، وَأَتْبِعِ السَّيِّئَةَ الْحَسَنَةَ تَمْحُهَا، وَخَالِقِ النَّاسَ بِخُلُقٍ حَسَنٍ", r: "الترمذي", m: "Fear Allah wherever you are, follow a bad deed with a good one to erase it, and treat people with good character." },
+    { a: "مَنْ سَلَكَ طَرِيقًا يَلْتَمِسُ فِيهِ عِلْمًا سَهَّلَ اللَّهُ لَهُ بِهِ طَرِيقًا إِلَى الْجَنَّةِ", r: "مسلم", m: "Whoever takes a path seeking knowledge, Allah makes easy for them a path to Paradise." },
+    { a: "أَحَبُّ الْأَعْمَالِ إِلَى اللَّهِ أَدْوَمُهَا وَإِنْ قَلَّ", r: "البخاري ومسلم", m: "The deeds most loved by Allah are the most constant, even if small." },
+    { a: "كَلِمَتَانِ خَفِيفَتَانِ عَلَى اللِّسَانِ، ثَقِيلَتَانِ فِي الْمِيزَانِ، حَبِيبَتَانِ إِلَى الرَّحْمَنِ: سُبْحَانَ اللَّهِ وَبِحَمْدِهِ، سُبْحَانَ اللَّهِ الْعَظِيمِ", r: "البخاري ومسلم", m: "Two phrases light on the tongue, heavy on the scale and beloved to the Most Merciful: SubhanAllahi wa bihamdihi, SubhanAllahil-Azim." },
+    { a: "لَا تَغْضَبْ", r: "البخاري", m: "Do not become angry." },
+    { a: "الطُّهُورُ شَطْرُ الْإِيمَانِ", r: "مسلم", m: "Purity is half of faith." },
+    { a: "يَسِّرُوا وَلَا تُعَسِّرُوا، وَبَشِّرُوا وَلَا تُنَفِّرُوا", r: "البخاري ومسلم", m: "Make things easy, not hard; give good news and do not drive people away." },
+    { a: "مَنْ دَلَّ عَلَى خَيْرٍ فَلَهُ مِثْلُ أَجْرِ فَاعِلِهِ", r: "مسلم", m: "Whoever guides to good has a reward like the one who does it." },
+    { a: "إِنَّ اللَّهَ رَفِيقٌ يُحِبُّ الرِّفْقَ فِي الْأَمْرِ كُلِّهِ", r: "البخاري ومسلم", m: "Allah is Gentle and loves gentleness in all things." },
+    { a: "لَيْسَ الشَّدِيدُ بِالصُّرَعَةِ، إِنَّمَا الشَّدِيدُ الَّذِي يَمْلِكُ نَفْسَهُ عِنْدَ الْغَضَبِ", r: "البخاري ومسلم", m: "The strong one is not the wrestler; the strong one controls themselves when angry." },
+  ];
+
+  // The moon tonight: its age in days (0 = new moon) and how much of it is lit (0-1).
+  function moon(t) {
+    const syn = 29.530588853, age = ((((t - Date.UTC(2000, 0, 6, 18, 14)) / 86400000) % syn) + syn) % syn;
+    return { age, lit: (1 - Math.cos((2 * Math.PI * age) / syn)) / 2, waxing: age < syn / 2 };
+  }
+
+  return { NAMES, AYAT, TASBIH, DUAS, HADITH, hijri, upcoming, reminders, moon };
 })();

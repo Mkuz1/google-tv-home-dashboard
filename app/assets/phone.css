@@ -499,3 +499,55 @@ body.rtl .sn-ar { text-align: right; }
 .ring-svg .val.zero { opacity: 0; }
 .wcard[data-k="names"][data-s="s"] .w-row .w-label + .w-label { display: none; }
 .wcard[data-k="names"][data-s="s"] .w-label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Resize handle on widgets in edit mode: tap for the next size */
+.rsz { display: none; position: absolute; right: 0; bottom: 0; width: 30px; height: 30px; border-radius: 50%; z-index: 3;
+  background: var(--glass-solid); box-shadow: var(--glass-rim), 0 4px 10px rgba(0,0,0,.35); align-items: center; justify-content: center; }
+.rsz::before { content: ""; width: 11px; height: 11px; border-right: 2.4px solid #fff; border-bottom: 2.4px solid #fff; border-radius: 0 0 3px 0; }
+body.editing .tile.widget .rsz { display: flex; }
+#dragLayer .rsz, #dragLayer .minus { display: none !important; }
+
+/* More Islamic widgets */
+.gold-l { color: var(--gold) !important; letter-spacing: 0 !important; font-family: "Amiri", serif; text-transform: none !important; }
+.pt { flex: 1; display: flex; justify-content: space-between; align-items: center; gap: 4px; min-height: 0; }
+.pt-p { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 1.2cqh; color: var(--ink-2); font-size: clamp(10px, min(7cqh, 3.4cqw), 16px); font-weight: 600; }
+.pt-p i { width: clamp(28px, min(30cqh, 13cqw), 56px); aspect-ratio: 1; border-radius: 50%; display: grid; place-items: center; font-style: normal;
+  box-shadow: inset 0 0 0 2px rgba(255,255,255,.25); color: var(--gold-ink); font-weight: 800; font-size: clamp(14px, min(14cqh, 6cqw), 26px); transition: background .2s, transform .2s var(--ease); }
+.pt-p.due i { box-shadow: inset 0 0 0 2px rgba(226,188,116,.7); }
+.pt-p.on { color: var(--gold-soft); }
+.pt-p.on i { background: var(--gold-pill); box-shadow: var(--gold-pill-rim); }
+.pt-p:active i { transform: scale(.9); }
+.wcard[data-k="tracker"][data-s="w"] { padding: 6px 12px; }
+.wcard[data-k="tracker"][data-s="w"] .pt-p { flex-direction: row; justify-content: center; gap: 6px; }
+.wcard[data-k="tracker"][data-s="w"] .pt-p i { width: clamp(22px, 46cqh, 34px); font-size: 14px; }
+.pt-streak { text-align: center; font-size: clamp(11px, min(7cqh, 3.6cqw), 16px); color: var(--ink-2); }
+.tb-in b small { font-size: .45em; margin-left: 1px; }
+.kh-b { display: flex; gap: 8px; margin-top: 1cqh; }
+.kh-b button { height: clamp(28px, 17cqh, 40px); padding: 0 12px; border-radius: 99px; background: rgba(255,255,255,0.14); box-shadow: inset 0 1px 0 rgba(255,255,255,.3); font-weight: 700; font-size: clamp(12px, min(8cqh, 3.6cqw), 16px); }
+.kh-b button:first-child { background: var(--gold-pill); color: var(--gold-ink); box-shadow: var(--gold-pill-rim); }
+.fs-row { display: flex; justify-content: space-between; gap: 8px; font-size: clamp(12px, min(8.5cqh, 4cqw), 20px); color: var(--ink-2); padding: .6cqh 0; }
+.fs-row b { font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
+.fs-row.on span, .fs-row.on b { color: var(--gold-soft); }
+.mn { flex: 1; display: flex; align-items: center; gap: 5cqw; min-height: 0; }
+.mn.s { flex-direction: column; justify-content: center; gap: 2cqh; text-align: center; }
+.mn-svg { height: 100%; aspect-ratio: 1; flex: 0 0 auto; filter: drop-shadow(0 0 14px rgba(255,230,170,.25)); }
+.mn.s .mn-svg { height: 62%; }
+.mn-side { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1cqh; }
+.mn.s .mn-side { flex: 0 0 auto; }
+.mn-name { font-weight: 700; color: var(--gold-soft); font-size: clamp(14px, min(12cqh, 7cqw), 30px); }
+.mn.s .mn-name { font-size: clamp(13px, 10cqh, 20px); }
+body.rtl .mn-name { font-family: "Amiri", serif; }
+
+/* Other apps' widgets: a picture (or the app's icon) while the real one is hidden */
+.wcard.aw { padding: 0; background: rgba(255,255,255,0.10); }
+.aw-shot { width: 100%; height: 100%; object-fit: cover; display: block; }
+.aw-ph { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: var(--ink-2); font-size: 13px; font-weight: 600; }
+.aw-ph img { width: 44px; height: 44px; border-radius: 22%; }
+.aw-app { display: flex; align-items: center; gap: 10px; font-size: 17px; font-weight: 700; padding: 16px 0 6px; }
+.aw-app img { width: 30px; height: 30px; border-radius: 22%; }
+.aw-item { display: flex; gap: 14px; align-items: center; padding: 8px 0; }
+.aw-prev { width: 132px; height: 92px; flex: 0 0 auto; border-radius: 16px; background: rgba(255,255,255,0.08); box-shadow: inset 0 0 0 1px rgba(255,255,255,.12); display: grid; place-items: center; overflow: hidden; }
+.aw-prev img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.aw-info { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
+.tb-zikr.kh-t { font-size: clamp(15px, min(11cqh, 6cqw), 28px); }
+.tb.s .tb-zikr.kh-t { font-size: clamp(13px, 9cqh, 20px); }

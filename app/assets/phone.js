@@ -2,7 +2,9 @@
 // pages of apps, folders and widgets with a dock, then the App Library. Hold an app for its menu, or
 // hold and drag to arrange: the others slide out of the way, edges change page, dropping on an app
 // makes a folder. Widgets: the M&D logo, clock and Hijri date, prayer times, next-prayer ring, Hijri calendar,
-// tasbih, verse of the day, Names of Allah, Sunnah reminders, azkar, Qibla, places, weather. Until it is the
+// tasbih, verse, dua and hadith of the day, Names of Allah, Sunnah reminders, prayer tracker, khatma, iftar &
+// suhoor, moon phase, azkar, Qibla, places, weather, and other apps' widgets (AppWidgets.java), all resizable and
+// placed anywhere (empty cells are kept). Until it is the
 // Home app it asks to be (Android's own dialog).
 // Made for foldables: the grid follows the screen (4 columns folded, 6-8 unfolded) without reloading.
 // Smoothness: nothing is blurred live (the wallpaper is pre-blurred), tiles move with transform only,
@@ -47,6 +49,12 @@
       wCount: "Next Prayer", wCountD: "A ring counting down to the next prayer", wTasbih: "Tasbih", wTasbihD: "Tap to count: SubhanAllah, Alhamdulillah, Allahu Akbar",
       wAyah: "Verse of the Day", wAyahD: "A verse from the Quran each day; tap for another", wNames: "Names of Allah", wNamesD: "One of the 99 Names each day, with its meaning; tap for the next",
       wSunnah: "Sunnah Reminders", wSunnahD: "Fasting days, Friday, Duha, the last third of the night",
+      wDua: "Dua of the Day", wDuaD: "A dua from the Quran and Sunnah each day; tap for another", wHadith: "Hadith of the Day", wHadithD: "A short hadith with its source; tap for another",
+      wTracker: "Prayer Tracker", wTrackerD: "Tick off each prayer today and keep your streak", wKhatma: "Quran Khatma", wKhatmaD: "Track your reading to a full khatma: tap to add a page",
+      wFast: "Iftar & Suhoor", wFastD: "Countdown to Iftar (Maghrib) or the end of Suhoor (Fajr)", wMoon: "Moon Phase", wMoonD: "Tonight's moon with the Hijri day",
+      resetKhatma: "Restart Khatma", addAppWidget: "Add App Widget", appWidgets: "App Widgets", noAppWidgets: "No app widgets found on this phone",
+      iftar: "Iftar", suhoor: "Suhoor ends", streak: (n) => `${n} day${n === 1 ? "" : "s"} in a row`, pageOf: (n) => `Page ${n} of 604`, juzN: (n) => `Juz ${n}`,
+      todayPages: (n) => `${n} page${n === 1 ? "" : "s"} today`, plusPage: "+1 page", plusJuz: "+1 juz",
       islamic: "Islamic", general: "General", resetCount: "Reset Counter", today: "Today", inDays: (n) => (n === 1 ? "Tomorrow" : `in ${n} days`),
       setHome: "Make MK Launcher your Home app", setHomeSub: "So the Home button and swiping up always bring you here, with your pages, widgets and prayer times.",
       setHomeBtn: "Set as Home app", notNow: "Not now", homeApp: "Home app", homeAppOn: "MK Launcher is your Home app", homeAppOff: "Not your Home app yet", setBtn: "Set",
@@ -73,6 +81,12 @@
       wCount: "الصلاة القادمة", wCountD: "حلقة تعدّ الوقت حتى الصلاة القادمة", wTasbih: "المسبحة", wTasbihD: "اضغط للتسبيح: سبحان الله، الحمد لله، الله أكبر",
       wAyah: "آية اليوم", wAyahD: "آية من القرآن الكريم كل يوم؛ اضغط لآية أخرى", wNames: "أسماء الله الحسنى", wNamesD: "اسم من الأسماء الحسنى كل يوم مع معناه؛ اضغط للتالي",
       wSunnah: "تذكير بالسنن", wSunnahD: "أيام الصيام والجمعة والضحى والثلث الأخير من الليل",
+      wDua: "دعاء اليوم", wDuaD: "دعاء من القرآن والسنة كل يوم؛ اضغط لدعاء آخر", wHadith: "حديث اليوم", wHadithD: "حديث قصير مع مصدره؛ اضغط لحديث آخر",
+      wTracker: "متابعة الصلوات", wTrackerD: "سجّل كل صلاة اليوم وحافظ على استمرارك", wKhatma: "ختمة القرآن", wKhatmaD: "تابع قراءتك حتى الختمة: اضغط لإضافة صفحة",
+      wFast: "الإفطار والسحور", wFastD: "العد التنازلي للإفطار (المغرب) أو نهاية السحور (الفجر)", wMoon: "طور القمر", wMoonD: "قمر الليلة مع اليوم الهجري",
+      resetKhatma: "بدء ختمة جديدة", addAppWidget: "إضافة أداة تطبيق", appWidgets: "أدوات التطبيقات", noAppWidgets: "لا توجد أدوات تطبيقات على هذا الهاتف",
+      iftar: "الإفطار", suhoor: "نهاية السحور", streak: (n) => `${n} يوماً متتالية`, pageOf: (n) => `الصفحة ${n} من ٦٠٤`, juzN: (n) => `الجزء ${n}`,
+      todayPages: (n) => `${n} صفحة اليوم`, plusPage: "+ صفحة", plusJuz: "+ جزء",
       islamic: "إسلامية", general: "عامة", resetCount: "تصفير العداد", today: "اليوم", inDays: (n) => (n === 1 ? "غداً" : n === 2 ? "بعد يومين" : `بعد ${n} ${n <= 10 ? "أيام" : "يوماً"}`),
       setHome: "اجعل MK Launcher التطبيق الرئيسي", setHomeSub: "ليعيدك زر الرئيسية دائماً إلى صفحاتك وأدواتك ومواقيت الصلاة.",
       setHomeBtn: "تعيين كتطبيق رئيسي", notNow: "ليس الآن", homeApp: "التطبيق الرئيسي", homeAppOn: "MK Launcher هو التطبيق الرئيسي", homeAppOff: "ليس التطبيق الرئيسي بعد", setBtn: "تعيين",
@@ -130,7 +144,8 @@
 
   /* ---------------- layout model ---------------- */
   // Saved as {pages: [[item]], dock: [pkg]}. Items: {t:"a", id, p} app, {t:"f", id, name, apps:[pkg]}
-  // folder, {t:"w", id, k: kind, s: size} widget. Every app sits somewhere on the pages (like an
+  // folder, {t:"w", id, k: kind, s: size} widget ({k:"app", wid, pkg, label} for another app's widget),
+  // {t:"g", id} an empty cell, so things can sit anywhere on a page. Every app sits somewhere on the pages (like an
   // iPhone) unless you removed it from the Home Screen; the App Library always has all of them.
   const SIZES = { s: [2, 2], m: [4, 2], l: [4, 4], w: [4, 1] };
   let L = null, removed = new Set();
@@ -174,6 +189,7 @@
   // moves to the start of the next page while smaller ones after it still fill the gaps (so folding
   // the phone just pushes things along, nothing is lost and no page is left half empty).
   const span = (it) => (it.t === "w" ? [Math.min(SIZES[it.s][0], M.cols), Math.min(SIZES[it.s][1], M.rows)] : [1, 1]);
+  const gap = () => ({ t: "g", id: uid("g") });
   function flow(items) {
     const occ = Array.from({ length: M.rows }, () => new Array(M.cols).fill(false));
     const placed = [], over = [];
@@ -198,15 +214,67 @@
     flows = [];
     for (let p = 0; p < L.pages.length; p++) {
       const f = flow(L.pages[p]);
-      if (f.over.length) {
-        L.pages[p] = f.placed.map((x) => x.it);
+      // Empty cells that don't fit, or come after everything, mean nothing.
+      const over = f.over.filter((it) => it.t !== "g");
+      if (f.over.length) L.pages[p] = f.placed.map((x) => x.it);
+      if (over.length) {
         if (!L.pages[p + 1]) L.pages[p + 1] = [];
-        L.pages[p + 1].unshift(...f.over);
+        L.pages[p + 1].unshift(...over);
       }
-      flows.push(f.placed);
+      const pg = L.pages[p];
+      while (pg.length && pg[pg.length - 1].t === "g") pg.pop();
+      flows.push(f.placed.filter((x) => x.it.t !== "g" && pg.includes(x.it)));
     }
   }
   const pos = (x) => [M.gridLeft + x.c * M.cellW, M.gridTop + x.r * M.cellH];
+
+  // Free placement: a page written back from where things are, row by row, with an empty cell (gap)
+  // wherever nothing sits. Laid out again it gives exactly the same places.
+  function serialize(placed) {
+    const at = new Map(), cover = Array.from({ length: M.rows }, () => new Array(M.cols).fill(false));
+    for (const x of placed) {
+      at.set(x.r * M.cols + x.c, x.it);
+      for (let y = x.r; y < x.r + x.h; y++) for (let c = x.c; c < x.c + x.w; c++) if (cover[y]) cover[y][c] = true;
+    }
+    const out = [];
+    for (let r = 0; r < M.rows; r++) for (let c = 0; c < M.cols; c++) {
+      const it = at.get(r * M.cols + c);
+      if (it) out.push(it); else if (!cover[r][c]) out.push(gap());
+    }
+    while (out.length && out[out.length - 1].t === "g") out.pop();
+    return out;
+  }
+  // What's on page p and where, without the item `skip` (its place left empty).
+  function solid(p, skip) {
+    return flow(L.pages[p] || []).placed.filter((x) => x.it.t !== "g" && (!skip || x.it.id !== skip));
+  }
+  const fits = (placed, r, c, w, h) => r >= 0 && c >= 0 && r + h <= M.rows && c + w <= M.cols &&
+    !placed.some((x) => r < x.r + x.h && x.r < r + h && c < x.c + x.w && x.c < c + w);
+  // Takes an item off its page leaving its place empty (the others stay where they are), or out of the dock.
+  function lift(id) {
+    const at = locate(id);
+    if (!at) return null;
+    if (at.where === "page") L.pages[at.p] = serialize(solid(at.p, id));
+    else L.dock.splice(at.i, 1);
+    return at;
+  }
+  // Puts an item exactly at row r, column c of page p if that area is free. false if it isn't.
+  function placeAt(item, p, r, c) {
+    const [w, h] = span(item);
+    const at = locate(item.id);
+    const placed = solid(p, item.id);
+    if (!fits(placed, r, c, w, h)) return false;
+    if (at && !(at.where === "page" && at.p === p)) lift(item.id);
+    placed.push({ it: item, r, c, w, h });
+    L.pages[p] = serialize(placed);
+    return true;
+  }
+  // The first free area on page p an item fits in, [r, c], or null.
+  function freeSpot(item, p) {
+    const [w, h] = span(item), placed = solid(p, item.id);
+    for (let r = 0; r < M.rows; r++) for (let c = 0; c < M.cols; c++) if (fits(placed, r, c, w, h)) return [r, c];
+    return null;
+  }
 
   /* ---------------- rendering ---------------- */
   // One element per item, kept across renders, so moving an item animates it to its new place.
@@ -226,7 +294,7 @@
   function tileInner(it) {
     if (it.t === "a") { const a = byPkg[it.p]; return `<div class="icon-wrap">${artHtml(a)}<span class="minus"></span></div><div class="label">${escapeHtml(a ? a.label : it.p)}</div>`; }
     if (it.t === "f") return `<div class="icon-wrap">${folderArt(it)}<span class="minus"></span></div><div class="label">${escapeHtml(it.name)}</div>`;
-    return `<div class="wcard" data-k="${it.k}" data-s="${it.s}"></div><span class="minus"></span>`;
+    return `<div class="wcard${it.k === "app" ? " aw" : ""}" data-k="${it.k}" data-s="${it.s}"${it.k === "app" ? ` data-wid="${it.wid}"` : ""}></div><span class="minus"></span><span class="rsz"></span>`;
   }
   function elFor(it) {
     let el = els.get(it.id);
@@ -308,6 +376,7 @@
   function setTrack(offset) { $("track").style.transform = `translate3d(${Math.round(-page * M.W + offset)}px,0,0)`; }
   function goPage(p, glide = true) {
     page = clamp(p, 0, homeCount());
+    if (glide) awQuiet = Date.now() + 450;
     $("track").classList.toggle("glide", glide);
     setTrack(0);
     markDots();
@@ -425,7 +494,7 @@
     document.body.classList.remove("editing");
     if (openF) { commitName(); $("fdName").blur(); $("fdName").readOnly = true; }
     // Empty pages go away, like on an iPhone.
-    const keep = L.pages.filter((p) => p.length);
+    const keep = L.pages.filter((p) => p.some((it) => it.t !== "g"));
     L.pages = keep.length ? keep : [[]];
     save();
     render();
@@ -452,7 +521,7 @@
     if (e.button > 0 || press || drag) return;
     const el = tileFrom(e);
     press = { el, x0: e.clientX, y0: e.clientY, t0: performance.now(), id: e.pointerId, mode: null, long: false,
-      minus: !!e.target.closest(".minus"), lib: el && el.classList.contains("lib-app"), inFolder: !!e.target.closest("#folder"),
+      minus: !!e.target.closest(".minus"), rsz: !!e.target.closest(".rsz"), lib: el && el.classList.contains("lib-app"), inFolder: !!e.target.closest("#folder"),
       inDock: !!e.target.closest("#dock") };
     if (el) el.classList.add("pressed");
     press.timer = setTimeout(() => {
@@ -527,6 +596,7 @@
     if (!at) return;
     if (has("editing")) {
       if (p.minus) return minusTap(p.el, at.item);
+      if (p.rsz && at.item.t === "w") return resizeWidget(at.item, nextSize(at.item));
       if (at.item.t === "f") openFolder(at.item);
       return;
     }
@@ -623,9 +693,12 @@
     drag.edge = null;
     const to = page + dir;
     if (to < 0 || to > homeCount()) return;
-    takeOut(drag.item.id);
+    lift(drag.item.id);
     if (to === homeCount()) L.pages.push([]);
-    L.pages[to].push(drag.item);
+    // Onto the new page: in its first free place, or at the start if it's full (the rest moves along).
+    const spot = freeSpot(drag.item, to);
+    if (!spot || !placeAt(drag.item, to, spot[0], spot[1])) L.pages[to].unshift(drag.item);
+    drag.lastTarget = null;
     goPage(to);
     render();
     ghost(true);
@@ -635,6 +708,24 @@
     if (isLibrary()) return;
     const placed = flows[page] || [];
     const col = Math.floor((x - M.gridLeft) / M.cellW), row = Math.floor((y - M.gridTop) / M.cellH);
+    // Over an empty part of the page: it goes exactly there, nothing else moves (a widget by where
+    // its top-left corner is).
+    const [sw, sh] = span(drag.item);
+    const tr = drag.item.t === "w" ? clamp(Math.round((y - drag.offY - M.gridTop) / M.cellH), 0, M.rows - sh) : row;
+    const tc = drag.item.t === "w" ? clamp(Math.round((x - drag.offX - M.gridLeft) / M.cellW), 0, M.cols - sw) : col;
+    if (row >= 0 && row < M.rows && col >= 0 && col < M.cols && fits(solid(page, drag.item.id), tr, tc, sw, sh)) {
+      folderHover(null);
+      const key = "cell:" + page + ":" + tr + ":" + tc;
+      if (key === drag.lastTarget) return;
+      drag.lastTarget = key;
+      clearTimeout(drag.moveT);
+      drag.moveT = setTimeout(() => {
+        if (!drag || !placeAt(drag.item, page, tr, tc)) return;
+        render();
+        ghost(true);
+      }, 120);
+      return;
+    }
     let under = null;
     for (const p of placed) if (row >= p.r && row < p.r + p.h && col >= p.c && col < p.c + p.w) under = p;
     if (under && under.it.id === drag.item.id) under = null;
@@ -900,6 +991,8 @@
     trash: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/></svg>',
     plus: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M12 8v8M8 12h8"/></svg>',
     rename: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16zM14 6l4 4"/></svg>',
+    apps: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7.5" height="7.5" rx="2"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="2"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="2"/><path d="M17.25 13.5v7.5M13.5 17.25H21"/></svg>',
+    resize: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="4"/><path d="M14 10h-4v4M10 10l7 7M17 13v4h-4"/></svg>',
     ungroup: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7.5" height="7.5" rx="2"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="2"/></svg>',
   };
   let menuActions = [];
@@ -939,6 +1032,8 @@
     const it = at.item, acts = [];
     if (it.t === "f") acts.push([T("rename"), IC.rename, () => { enterEdit(); openFolder(it, true); }], [T("removeFolder"), IC.ungroup, () => ungroup(it)]);
     if (it.t === "w" && it.k === "tasbih") acts.push([T("resetCount"), IC.ungroup, resetTasbih]);
+    if (it.t === "w") for (const sz of sizesOf(it)) if (sz !== it.s) acts.push([T({ s: "small", m: "medium", l: "large", w: "wide" }[sz]), IC.resize, () => resizeWidget(it, sz)]);
+    if (it.t === "w" && it.k === "khatma") acts.push([T("resetKhatma"), IC.ungroup, resetKhatma]);
     if (it.t === "w") acts.push([T("removeWidget"), IC.minus, () => removeItem(it), "danger"]);
     if (!at.where.startsWith("folder")) acts.push([T("editHome"), IC.edit, enterEdit]);
     if (it.t === "a") {
@@ -955,7 +1050,33 @@
     if (byPkg[it.p] && !byPkg[it.p].system) acts.push([T("deleteApp"), IC.trash, () => TV.uninstall(it.p), "danger"]);
     showMenu(acts, r);
   }
-  function removeItem(it) { takeOut(it.id); save(); render(); }
+  function removeItem(it) {
+    if (it.k === "app") { try { TV.deleteAppWidget(it.wid); } catch (e) {} }
+    lift(it.id); save(); render();
+  }
+  // Widget sizes: each widget's own list; other apps' widgets take any.
+  const sizesOf = (it) => (it.k === "app" ? ["s", "m", "w", "l"] : (WIDGETS[it.k] || { sizes: [it.s] }).sizes);
+  const nextSize = (it) => { const l = sizesOf(it); return l[(l.indexOf(it.s) + 1) % l.length]; };
+  // A new size, keeping its top-left corner if there's room there (nearby if not; else the rest moves).
+  function resizeWidget(it, sz) {
+    const at = locate(it.id);
+    if (!at || at.where !== "page" || sz === it.s) return;
+    const me = flow(L.pages[at.p]).placed.find((x) => x.it.id === it.id);
+    const placed = solid(at.p, it.id);
+    it.s = sz;
+    const [w, h] = span(it);
+    let spot = null;
+    if (me) {
+      const c0 = clamp(me.c, 0, M.cols - w), r0 = clamp(me.r, 0, M.rows - h);
+      if (fits(placed, r0, c0, w, h)) spot = [r0, c0];
+      for (let dr = 0; !spot && dr < M.rows; dr++) for (const r of [r0 + dr, r0 - dr]) for (let c = 0; c + w <= M.cols && !spot; c++) if (fits(placed, r, c, w, h)) spot = [r, c];
+    }
+    if (spot) { placed.push({ it, r: spot[0], c: spot[1], w, h }); L.pages[at.p] = serialize(placed); }
+    save();
+    render();
+    const el = els.get(it.id);
+    if (el) { const c = el.querySelector(".wcard"); if (c) { c.dataset.s = sz; drawWidget(c); } }
+  }
   function removeApp(p) {
     if (openF) { openF.apps = openF.apps.filter((x) => x !== p); renderFolder(); }
     else takeOut("a:" + p);
@@ -988,13 +1109,62 @@
     ayah: { sizes: ["m", "l"], name: "wAyah", desc: "wAyahD", islamic: true },
     names: { sizes: ["s", "m"], name: "wNames", desc: "wNamesD", islamic: true },
     sunnah: { sizes: ["m", "l"], name: "wSunnah", desc: "wSunnahD", islamic: true },
+    dua: { sizes: ["m", "l"], name: "wDua", desc: "wDuaD", islamic: true },
+    hadith: { sizes: ["m", "l"], name: "wHadith", desc: "wHadithD", islamic: true },
+    tracker: { sizes: ["m", "w"], name: "wTracker", desc: "wTrackerD", islamic: true },
+    khatma: { sizes: ["s", "m"], name: "wKhatma", desc: "wKhatmaD", islamic: true },
+    fasting: { sizes: ["s", "m"], name: "wFast", desc: "wFastD", islamic: true },
+    moon: { sizes: ["s", "m"], name: "wMoon", desc: "wMoonD", islamic: true },
   };
   for (const k of ["prayer", "azkar", "qibla"]) WIDGETS[k].islamic = true;
   const I = window.ISLAMIC;
   // Tasbih count, and how far the verse and Name widgets have been tapped on today.
   let tas = store.get("phone.tasbih", { n: 0, total: 0, day: "" });
   const dayNo = (t) => Math.floor((t - new Date(t.getFullYear(), 0, 0)) / 86400000) + t.getFullYear() * 366;
-  let ayahShift = 0, nameShift = 0;
+  let ayahShift = 0, nameShift = 0, duaShift = 0, hadithShift = 0;
+  const dayKey = (t) => `${t.getFullYear()}-${t.getMonth() + 1}-${t.getDate()}`;
+  // Prayer tracker: the prayers ticked off on each of the last days.
+  let track = store.get("phone.tracker", {});
+  function trackStreak(t) {
+    let n = 0;
+    const d = new Date(t);
+    if ((track[dayKey(d)] || []).length < 5) d.setDate(d.getDate() - 1); // today still in progress
+    while ((track[dayKey(d)] || []).length >= 5 && n < 999) { n++; d.setDate(d.getDate() - 1); }
+    return n;
+  }
+  function toggleTrack(k) {
+    const key = dayKey(now()), l = track[key] || [];
+    track[key] = l.includes(k) ? l.filter((x) => x !== k) : l.concat(k);
+    const keep = Object.keys(track).sort((a, b) => new Date(b) - new Date(a)).slice(0, 400);
+    track = Object.fromEntries(keep.map((x) => [x, track[x]]));
+    store.set("phone.tracker", track);
+    redraw("tracker");
+  }
+  // Khatma: the page reached (0-604) and the pages read today.
+  let kh = store.get("phone.khatma", { page: 0, day: "", today: 0 });
+  const juzOf = (pg) => (pg < 22 ? 1 : Math.min(30, Math.floor((pg - 22) / 20) + 2));
+  function addPages(n) {
+    const key = dayKey(now());
+    if (kh.day !== key) { kh.day = key; kh.today = 0; }
+    const before = kh.page;
+    kh.page = Math.min(604, kh.page + n);
+    kh.today += kh.page - before;
+    store.set("phone.khatma", kh);
+    redraw("khatma");
+    if (kh.page === 604 && before < 604) toast(lang === "ar" ? "ختمة مباركة! تقبّل الله منك" : "Khatma complete! May Allah accept it");
+  }
+  function resetKhatma() { kh = { page: 0, day: dayKey(now()), today: 0 }; store.set("phone.khatma", kh); redraw("khatma"); }
+  function moonSvg(m) {
+    const r = 46, k = m.lit, rx = Math.abs(2 * k - 1) * r;
+    const lit = k < 0.01 ? "" : k > 0.99 ? `<circle cx="50" cy="50" r="${r}" fill="url(#mlit)"/>` :
+      `<path d="M50 ${50 - r} A${r} ${r} 0 0 1 50 ${50 + r} A${rx.toFixed(1)} ${r} 0 0 ${k > 0.5 ? 1 : 0} 50 ${50 - r}Z" fill="url(#mlit)"${m.waxing ? "" : ' transform="translate(100 0) scale(-1 1)"'}/>`;
+    return `<svg class="mn-svg" viewBox="0 0 100 100"><defs><radialGradient id="mlit" cx="40%" cy="35%" r="75%"><stop offset="0" stop-color="#FFF6DD"/><stop offset="1" stop-color="#E2C27E"/></radialGradient></defs>` +
+      `<circle cx="50" cy="50" r="${r}" fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.18)"/>${lit}</svg>`;
+  }
+  const MOON_NAMES = [["New Moon", "محاق"], ["Waxing Crescent", "هلال"], ["First Quarter", "تربيع أول"], ["Waxing Gibbous", "أحدب متزايد"],
+    ["Full Moon", "بدر"], ["Waning Gibbous", "أحدب متناقص"], ["Last Quarter", "تربيع ثانٍ"], ["Waning Crescent", "هلال متناقص"]];
+  // Other apps' widgets: their last picture, shown whenever the real widget is hidden.
+  const awShots = {};
   const ring = (pct, cls) => `<svg class="ring-svg ${cls || ""}" viewBox="0 0 100 100"><circle cx="50" cy="50" r="44" class="trk"/><circle cx="50" cy="50" r="44" class="val${pct <= 0.004 ? " zero" : ""}" pathLength="100" stroke-dasharray="${(pct * 100).toFixed(1)} 100"/></svg>`;
   const mounted = new Set();
   function mountWidget(card, it) { mounted.add(card); drawWidget(card); }
@@ -1107,7 +1277,50 @@
       list = list.slice(0, s === "l" ? 7 : 3);
       card.innerHTML = `<div class="w-row"><span class="w-label">${escapeHtml(T("wSunnah"))}</span><span class="w-gold">${hijriFmt ? hijriFmt.format(t) : ""}</span></div>` +
         `<ul class="sn">${list.map(([ar, en]) => `<li><i></i><div><div class="sn-ar" dir="rtl">${ar}</div>${lang === "ar" ? "" : `<div class="sn-en">${escapeHtml(en)}</div>`}</div></li>`).join("")}</ul>`;
+    } else if (k === "dua" || k === "hadith") {
+      const list = k === "dua" ? I.DUAS : I.HADITH, v = list[(dayNo(t) + (k === "dua" ? duaShift : hadithShift)) % list.length];
+      card.innerHTML = `<div class="w-row"><span class="w-label">${escapeHtml(T(k === "dua" ? "wDua" : "wHadith"))}</span><span class="w-label gold-l">${v.r}</span></div>` +
+        `<div class="ay-text" dir="rtl">${k === "hadith" ? "«" + v.a + "»" : v.a}</div>` + (s === "l" || lang !== "ar" ? `<div class="ay-mean">${escapeHtml(v.m)}</div>` : "");
+      fitText(card.querySelector(".ay-text"), Math.round(Math.min(card.clientHeight * (s === "l" ? 0.12 : 0.17), 48)), 12);
+    } else if (k === "tracker") {
+      const done = track[dayKey(t)] || [], st = trackStreak(t);
+      const keys = ["fajr", "dhuhr", "asr", "maghrib", "isha"];
+      card.innerHTML = (s === "w" ? "" : `<div class="w-row"><span class="w-label">${escapeHtml(T("wTracker"))}</span><span class="w-gold">${done.length} / 5</span></div>`) +
+        `<div class="pt">${keys.map((k2) => { const due = today[k2] <= t, on = done.includes(k2);
+          return `<button class="pt-p${on ? " on" : due ? " due" : ""}" data-p="${k2}"><i>${on ? "✓" : ""}</i><span>${escapeHtml(lang === "ar" ? PRAYER_AR[k2] : D.PRAYERS.find((x) => x[0] === k2)[1])}</span></button>`; }).join("")}</div>` +
+        (s === "w" ? "" : `<div class="pt-streak">${st ? "🔥 " + escapeHtml(T("streak", st)) : escapeHtml(dateFmt().format(t))}</div>`);
+    } else if (k === "khatma") {
+      if (kh.day !== dayKey(t)) { kh.day = dayKey(t); kh.today = 0; }
+      const pct = kh.page / 604;
+      card.innerHTML = `<div class="tb ${s}"><div class="tb-ring">${ring(pct, "gold")}<div class="tb-in"><b>${Math.round(pct * 100)}<small>%</small></b><span>${escapeHtml(T("juzN", juzOf(Math.max(1, kh.page))))}</span></div></div>` +
+        `<div class="tb-side"><div class="tb-zikr kh-t">${escapeHtml(T("wKhatma"))}</div>` +
+        (s === "m" ? `<div class="w-sub">${escapeHtml(T("pageOf", kh.page))}</div><div class="w-sub">${escapeHtml(T("todayPages", kh.today))}</div><div class="kh-b"><button data-n="1">${T("plusPage")}</button><button data-n="20">${T("plusJuz")}</button></div>` : "") + `</div></div>`;
+    } else if (k === "fasting") {
+      const iftarNow = t >= today.fajr && t < today.maghrib;
+      const target = iftarNow ? today.maghrib : t < today.fajr ? today.fajr : tomorrow.fajr;
+      const from = iftarNow ? today.fajr : t < today.fajr ? new Date(+today.maghrib - 86400000) : today.maghrib;
+      const mins = Math.max(0, Math.ceil((target - t) / 60000)), hh = Math.floor(mins / 60), mm = mins % 60;
+      const label = T(iftarNow ? "iftar" : "suhoor"), sTime = iftarNow ? tomorrow.fajr : target;
+      card.innerHTML = `<div class="cd ${s}"><div class="cd-ring">${ring(Math.max(0, Math.min(1, (t - from) / (target - from))))}<div class="cd-in"><div class="cd-left">${hh ? hh + ":" + String(mm).padStart(2, "0") : mm + (lang === "ar" ? " د" : "m")}</div><div class="cd-name">${escapeHtml(label)}</div></div></div>` +
+        (s === "m" ? `<div class="cd-side"><div class="w-label">${escapeHtml(T("wFast"))}</div><div class="fs-row${iftarNow ? " on" : ""}"><span>${escapeHtml(T("iftar"))}</span><b>${D.hm(today.maghrib)} ${ampm(today.maghrib)}</b></div>` +
+          `<div class="fs-row${iftarNow ? "" : " on"}"><span>${escapeHtml(T("suhoor"))}</span><b>${D.hm(sTime)} ${ampm(sTime)}</b></div></div>` : "") + `</div>`;
+    } else if (k === "moon") {
+      const m = I.moon(t), n = MOON_NAMES[Math.round(m.age / 29.530588853 * 8) % 8];
+      card.innerHTML = `<div class="mn ${s}">${moonSvg(m)}<div class="mn-side"><div class="mn-name">${escapeHtml(lang === "ar" ? n[1] : n[0])}</div>` +
+        `<div class="w-sub">${h ? (lang === "ar" ? `${h.d} من الشهر الهجري` : `Hijri day ${h.d}`) : ""}</div>` + (s === "m" ? `<div class="w-sub">${Math.round(m.lit * 100)}% ${lang === "ar" ? "مضاء" : "lit"}</div>` : "") + `</div></div>`;
+    } else if (k === "app") {
+      const it = itemByWid(+card.dataset.wid), shot = awShots[card.dataset.wid];
+      const v = shot ? "shot:" + shot.length : "ph";
+      if (card.dataset.v === v) return;
+      card.dataset.v = v;
+      const a = it && byPkg[it.pkg];
+      card.innerHTML = shot ? `<img class="aw-shot" src="${shot}" alt="">` :
+        `<div class="aw-ph">${a && a.icon ? `<img src="${a.icon}" alt="">` : ""}<span>${escapeHtml(it ? it.label : "")}</span></div>`;
     }
+  }
+  function itemByWid(wid) {
+    for (const pg of L.pages) for (const it of pg) if (it.k === "app" && it.wid === wid) return it;
+    return null;
   }
   function redraw(k) { for (const c of mounted) if (c.dataset.k === k) drawWidget(c); }
   function resetTasbih() { tas = { n: 0, total: 0, day: now().toDateString() }; store.set("phone.tasbih", tas); redraw("tasbih"); }
@@ -1125,6 +1338,10 @@
       try { navigator.vibrate && navigator.vibrate(tas.n === 0 || tas.n === 33 || tas.n === 66 ? [30, 60, 30] : 12); } catch (e) {}
     }
     else if (it.k === "ayah") { ayahShift++; redraw("ayah"); }
+    else if (it.k === "dua") { duaShift++; redraw("dua"); }
+    else if (it.k === "hadith") { hadithShift++; redraw("hadith"); }
+    else if (it.k === "tracker") { const b = pressTarget && pressTarget.closest(".pt-p"); if (b) toggleTrack(b.dataset.p); }
+    else if (it.k === "khatma") { const b = pressTarget && pressTarget.closest(".kh-b button"); addPages(b ? +b.dataset.n : 1); }
     else if (it.k === "names") { nameShift++; redraw("names"); }
 
     else if (it.k === "qibla") openSheet("qiblaSheet");
@@ -1168,22 +1385,119 @@
         return `<div class="wg-size"><div class="wg-preview" style="width:${cw * unit - 14}px;height:${ch * Math.min(M.cellH, unit * 1.1) - 14}px"><div class="wcard" data-k="${k}" data-s="${s}"></div></div><button class="wg-add" data-k="${k}" data-s="${s}">${T("add")} · ${T({ s: "small", m: "medium", l: "large", w: "wide" }[s])}</button></div>`;
       }).join("") + `</div></div>`).join("");
     $("widgetList").querySelectorAll(".wcard").forEach((c) => drawWidget(c));
+    $("widgetSheet").querySelector(".sh-title").textContent = T("widgets");
+    $("widgetSheet").dataset.mode = "";
     openSheet("widgetSheet");
   }
   $("widgetList").addEventListener("click", (e) => {
     const b = e.target.closest(".wg-add");
-    if (!b) return;
-    const it = { t: "w", id: uid("w"), k: b.dataset.k, s: b.dataset.s };
+    if (!b || b.classList.contains("aw-add")) return;
+    addWidget({ t: "w", id: uid("w"), k: b.dataset.k, s: b.dataset.s });
+  });
+  // Into the first free place on this page, or at its top if there's none (the rest moves along).
+  function addWidget(it) {
     const p = isLibrary() ? homeCount() - 1 : page;
-    L.pages[p].unshift(it); // like an iPhone: new widgets go to the top of the page
+    const spot = freeSpot(it, p);
+    if (!spot || !placeAt(it, p, spot[0], spot[1])) L.pages[p].unshift(it);
     closeSheets();
     enterEdit();
     save();
     render();
     goPage(p);
+  }
+
+  /* ---------------- other apps' widgets ---------------- */
+  // The gallery lists every app widget on the phone with its preview; Add asks Android (and the
+  // widget's own setup screen, if it has one), then it lands on the page like any widget.
+  let awPending = null;
+  function awSize(pv) {
+    if (pv.cw && pv.ch) return pv.ch <= 1 ? "w" : pv.cw <= 2 && pv.ch <= 2 ? "s" : pv.ch <= 2 ? "m" : "l";
+    return pv.h <= 90 ? "w" : pv.w <= 2 * M.cellW + 10 ? "s" : pv.h <= 2 * M.cellH + 20 ? "m" : "l";
+  }
+  function openAppWidgetSheet() {
+    let list = [];
+    try { list = JSON.parse(TV.appWidgetProviders()) || []; } catch (e) {}
+    list.sort((a, b) => a.app.localeCompare(b.app) || a.label.localeCompare(b.label));
+    let lastApp = null;
+    $("widgetList").innerHTML = list.length ? list.map((pv, i) => {
+      const head = pv.app !== lastApp ? `<div class="aw-app">${byPkg[pv.pkg] && byPkg[pv.pkg].icon ? `<img src="${byPkg[pv.pkg].icon}" alt="">` : ""}<span>${escapeHtml((lastApp = pv.app))}</span></div>` : "";
+      const sz = awSize(pv);
+      return head + `<div class="aw-item"><div class="aw-prev" data-i="${i}"></div><div class="aw-info"><div class="wg-name">${escapeHtml(pv.label)}</div>` +
+        `<div class="wg-desc">${escapeHtml(T({ s: "small", m: "medium", l: "large", w: "wide" }[sz]))}</div><button class="wg-add aw-add" data-i="${i}">${T("add")}</button></div></div>`;
+    }).join("") : `<div class="sp-empty">${T("noAppWidgets")}</div>`;
+    $("widgetSheet").querySelector(".sh-title").textContent = T("appWidgets");
+    $("widgetSheet").dataset.mode = "apps";
+    awList = list;
+    openSheet("widgetSheet");
+    // Previews load a few at a time, so the sheet opens at once.
+    const prevs = [...$("widgetList").querySelectorAll(".aw-prev")];
+    let n = 0;
+    const next = () => {
+      if (openSheetId !== "widgetSheet" || n >= prevs.length) return;
+      for (const el of prevs.slice(n, n + 3)) {
+        let src = "";
+        try { src = TV.appWidgetPreview(awList[+el.dataset.i].prov); } catch (e) {}
+        if (src) el.innerHTML = `<img src="${src}" alt="">`;
+      }
+      n += 3;
+      setTimeout(next, 30);
+    };
+    setTimeout(next, 260);
+  }
+  let awList = [];
+  $("widgetList").addEventListener("click", (e) => {
+    const b = e.target.closest(".aw-add");
+    if (!b) return;
+    const pv = awList[+b.dataset.i];
+    awPending = { pv, size: awSize(pv) };
+    try { TV.bindAppWidget(pv.prov); } catch (er) {}
   });
+  window.onAppWidgetBound = (wid, ok) => {
+    const pv = awPending && awPending.pv;
+    if (!ok || !pv) { awPending = null; return; }
+    const size = awPending.size;
+    awPending = null;
+    addWidget({ t: "w", id: uid("w"), k: "app", s: size, wid, pkg: pv.pkg, label: pv.label, prov: pv.prov });
+  };
+  window.onAppWidgetShot = (wid, src) => {
+    awShots[wid] = src;
+    for (const c of mounted) if (c.dataset.k === "app" && +c.dataset.wid === wid) drawWidget(c);
+  };
+  // A hold on the real widget: the same menu as any widget.
+  window.onAppWidgetHold = (wid) => {
+    for (const c of mounted) if (c.dataset.k === "app" && +c.dataset.wid === wid && c.isConnected) {
+      const tile = c.closest(".tile");
+      if (tile) openMenuFor(tile);
+      return;
+    }
+  };
+  // Where the real widgets go: over their cards on the page you're looking at, unless something
+  // is moving or covers the page (then they hide and their picture shows).
+  let awLast = "", awQuiet = 0, awShown = [];
+  function syncAppWidgets() {
+    const calm = !paused && !drag && !(press && press.mode) && !isLibrary() && Date.now() > awQuiet &&
+      !["editing", "menu-open", "sheet-open", "spot-open", "folder-open", "swiping"].some(has);
+    const list = [];
+    if (calm) for (const c of mounted) {
+      if (c.dataset.k !== "app" || !c.isConnected) continue;
+      const pg = c.closest(".home-page");
+      if (!pg || homePageIndex(pg) !== page) continue;
+      const r = c.getBoundingClientRect();
+      if (r.width < 4) continue;
+      list.push({ id: +c.dataset.wid, x: Math.round(r.left), y: Math.round(r.top), w: Math.round(r.width), h: Math.round(r.height), r: 24 });
+    }
+    const j = JSON.stringify(list);
+    if (j === awLast) return;
+    awLast = j;
+    awShown = list.map((o) => o.id);
+    try { TV.placeAppWidgets(j); } catch (e) {}
+    for (const id of awShown) setTimeout(() => { try { TV.appWidgetShot(id); } catch (e) {} }, 1500);
+  }
+  setInterval(syncAppWidgets, 120);
+  setInterval(() => { for (const id of awShown) { try { TV.appWidgetShot(id); } catch (e) {} } }, 60000);
   $("editBtn").addEventListener("click", () => showMenu([
     [T("addWidget"), IC.plus, openWidgetSheet],
+    [T("addAppWidget"), IC.apps, openAppWidgetSheet],
     [T("customize"), IC.edit, openSettings],
   ], $("editBtn").getBoundingClientRect()));
   $("doneBtn").addEventListener("click", exitEdit);

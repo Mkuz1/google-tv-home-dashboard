@@ -704,6 +704,37 @@ public class Bridge {
         start(new Intent(Settings.ACTION_SETTINGS));
     }
 
+    /* Phone: other apps' widgets (AppWidgets). */
+    @JavascriptInterface
+    public String appWidgetProviders() {
+        return AppWidgets.instance == null ? "[]" : AppWidgets.instance.providers();
+    }
+
+    @JavascriptInterface
+    public String appWidgetPreview(String prov) {
+        return AppWidgets.instance == null ? "" : AppWidgets.instance.preview(prov);
+    }
+
+    @JavascriptInterface
+    public void bindAppWidget(String prov) {
+        if (AppWidgets.instance != null) AppWidgets.instance.bind(prov);
+    }
+
+    @JavascriptInterface
+    public void placeAppWidgets(String json) {
+        if (AppWidgets.instance != null) AppWidgets.instance.place(json);
+    }
+
+    @JavascriptInterface
+    public void appWidgetShot(int id) {
+        if (AppWidgets.instance != null) AppWidgets.instance.shot(id);
+    }
+
+    @JavascriptInterface
+    public void deleteAppWidget(int id) {
+        if (AppWidgets.instance != null) AppWidgets.instance.delete(id);
+    }
+
     static long roleAskAt;
 
     /** Home app settings, where the user picks the Home app themselves. */
