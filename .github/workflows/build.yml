@@ -49,6 +49,7 @@ jobs:
             out/mk-tv-launcher.apk
             out/mk-car-launcher.apk
             out/mk-split-helper.apk
+            out/mk-phone-launcher.apk
 
       # A pushed tag (v2.0.0) publishes that release. A push to main publishes the version in
       # app/AndroidManifest.xml (versionName) once, if there is no release for it yet.
@@ -73,8 +74,9 @@ jobs:
           cp out/mk-tv-launcher.apk "out/mk-tv-launcher-$TAG.apk"
           cp out/mk-car-launcher.apk "out/mk-car-launcher-$TAG.apk"
           cp out/mk-split-helper.apk "out/mk-split-helper-$TAG.apk"
+          cp out/mk-phone-launcher.apk "out/mk-phone-launcher-$TAG.apk"
           SUMS=$(cd out && sha256sum mk-*-launcher-$TAG.apk)
-          gh release create "$TAG" "out/mk-tv-launcher-$TAG.apk" "out/mk-car-launcher-$TAG.apk" "out/mk-split-helper-$TAG.apk" --target "$GITHUB_SHA" --title "MK TV & Car Launcher ${TAG#v}" --notes "**Google TV / Android TV:** \`mk-tv-launcher-$TAG.apk\` (Android TV 9+). **Car head unit:** \`mk-car-launcher-$TAG.apk\` (Android 8+), and optionally \`mk-split-helper-$TAG.apk\` for the Split button (then switch on *MK Split Screen* in Accessibility). Install steps are in the README.
+          gh release create "$TAG" "out/mk-tv-launcher-$TAG.apk" "out/mk-car-launcher-$TAG.apk" "out/mk-split-helper-$TAG.apk" "out/mk-phone-launcher-$TAG.apk" --target "$GITHUB_SHA" --title "MK TV & Car Launcher ${TAG#v}" --notes "**Google TV / Android TV:** \`mk-tv-launcher-$TAG.apk\` (Android TV 9+). **Car head unit:** \`mk-car-launcher-$TAG.apk\` (Android 8+), and optionally \`mk-split-helper-$TAG.apk\` for the Split button (then switch on *MK Split Screen* in Accessibility). **Phone:** \`mk-phone-launcher-$TAG.apk\` (Android 8+, foldables too). Install steps are in the README.
 
           SHA-256:
           \`\`\`

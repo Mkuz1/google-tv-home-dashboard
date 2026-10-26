@@ -13,8 +13,9 @@
     ["com.sony.dtv.timers", "Timers", "#333"], ["com.mk.homedash", "MK TV & Car Launcher", "#0E2A2B"],
   ].map(([pkg, label, bg, fg]) => ({ pkg, label, banner: true, system: pkg.startsWith("com.sony") || pkg === "com.android.vending", icon: banner(label, bg, fg) }));
   // Car build: square app icons, like the head unit's launcher apps.
-  const flavor = /car\.html$/.test(location.pathname) || /flavor=car/.test(location.search) ? "car" : "tv";
-  if (flavor === "car") {
+  const flavor = /car\.html$/.test(location.pathname) || /flavor=car/.test(location.search) ? "car"
+    : /phone\.html$/.test(location.pathname) ? "phone" : "tv";
+  if (flavor === "car" || flavor === "phone") {
     const square = (label, bg, fg = "#fff") => "data:image/svg+xml," + encodeURIComponent(
       `<svg xmlns="http://www.w3.org/2000/svg" width="192" height="192"><rect width="192" height="192" fill="${bg}"/><text x="96" y="${label.length > 2 ? 112 : 124}" font-family="Helvetica" font-weight="700" font-size="${label.length > 2 ? 44 : 72}" fill="${fg}" text-anchor="middle">${label}</text></svg>`);
     apps = [
@@ -29,7 +30,15 @@
       ["com.audible.application", "Audible", "A", "#F7991C", "#000"], ["com.google.android.apps.photos", "Photos", "✿", "#EA4335"],
       ["com.android.documentsui", "Files", "F", "#1E88E5"], ["com.android.camera2", "Camera", "◉", "#37474F"],
       ["com.mk.carlauncher", "MK TV & Car Launcher", "MK", "#0E2A2B"],
-    ].map(([pkg, label, mark, bg, fg]) => ({ pkg, label, banner: false, small: false, system: /android\.(settings|fmradio|camera2|documentsui|vending)/.test(pkg), icon: square(mark, bg, fg) }));
+    ].concat(flavor === "phone" ? [
+      ["com.android.chrome2", "Gmail", "M", "#EA4335"], ["com.instagram.android", "Instagram", "◎", "#C13584"],
+      ["com.snapchat.android", "Snapchat", "☺", "#FFFC00", "#000"], ["com.twitter.android", "X", "X", "#000"],
+      ["com.android.calculator2", "Calculator", "=", "#FF9500"], ["com.android.deskclock", "Clock", "◷", "#222"],
+      ["com.google.android.keep", "Keep", "K", "#FBBC04", "#202124"], ["com.android.contacts", "Contacts", "☻", "#4285F4"],
+      ["com.careem.acma", "Careem", "C", "#4CAF50"], ["com.talabat", "Talabat", "t", "#FF5A00"],
+      ["com.emiratesnbd.android", "Emirates NBD", "E", "#0B2D71"], ["ae.gov.dubaipolice", "Dubai Police", "P", "#00563F"],
+      ["com.android.camera", "Gallery", "▣", "#6A1B9A"], ["com.zoom.us", "Zoom", "Z", "#2D8CFF"],
+    ] : []).map(([pkg, label, mark, bg, fg]) => ({ pkg, label, banner: false, small: false, system: /android\.(settings|fmradio|camera2|documentsui|vending)/.test(pkg), icon: square(mark, bg, fg) }));
   }
   const q = new URLSearchParams(location.search).get("photos");
   window.MOCK_TV = {
@@ -37,6 +46,7 @@
     flavor: () => flavor,
     appsStamp: () => 0,
     setBrightness: (v) => console.log("brightness", v),
+    insets: () => JSON.stringify({ top: 32, bottom: 18, left: 0, right: 0 }),
     carLocation: () => JSON.stringify({ lat: 25.2048, lon: 55.2708, city: "Dubai", country: "AE", at: Date.now() }),
     schedulePrayerAlerts: (json) => console.log("alerts", json),
     carMotion: () => JSON.stringify({ bearing: 120, speed: 14, at: Date.now() }),

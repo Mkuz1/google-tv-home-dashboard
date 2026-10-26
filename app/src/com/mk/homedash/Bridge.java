@@ -59,7 +59,7 @@ import java.util.regex.Pattern;
 /** Methods the web pages call as TV.methodName(). Shared by the home screen and the screensaver. */
 public class Bridge {
 
-    /** "tv" or "car": the manifest's flavor meta-data (app/ or car/AndroidManifest.xml). */
+    /** "tv", "car" or "phone": the manifest's flavor meta-data (app/, car/ or phone/AndroidManifest.xml). */
     static String flavor(Context context) {
         try {
             Bundle meta = context.getPackageManager()
@@ -72,7 +72,8 @@ public class Bridge {
     }
 
     private final Context context;
-    private final boolean car;
+    private final String flavor;
+    private final boolean car; // car or phone: touch screens with ordinary (non-TV) apps
     private final Handler main = new Handler(Looper.getMainLooper());
     private static final Map<String, String> iconCache = new HashMap<>();
 
@@ -80,12 +81,13 @@ public class Bridge {
 
     public Bridge(Context context) {
         this.context = context;
-        this.car = "car".equals(flavor(context));
+        this.flavor = flavor(context);
+        this.car = !"tv".equals(flavor);
     }
 
     @JavascriptInterface
     public String flavor() {
-        return car ? "car" : "tv";
+        return flavor;
     }
 
     /**
@@ -117,6 +119,14 @@ public class Bridge {
     @JavascriptInterface
     public void schedulePrayerAlerts(String json) {
         PrayerAlert.schedule(context, json);
+    }
+
+    /** Phone: the system bars over the page, in CSS px {top, bottom, left, right} (MainActivity). */
+    static volatile String insets = "{\"top\":24,\"bottom\":0,\"left\":0,\"right\":0}";
+
+    @JavascriptInterface
+    public String insets() {
+        return insets;
     }
 
     /** Direction and speed of the car from its last GPS fix: {bearing (-1 unknown), speed m/s, at}. */

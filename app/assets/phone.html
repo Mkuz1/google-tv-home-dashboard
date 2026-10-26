@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover">
+  <title>Phone Home</title>
+  <link rel="stylesheet" href="phone.css">
+</head>
+<body>
+  <!-- Liquid Glass wallpaper: pre-blurred, so nothing is blurred live -->
+  <div id="wall"></div>
+
+  <!-- Home pages and, after the last one, the App Library; swiped sideways -->
+  <main id="viewport">
+    <div id="track"></div>
+  </main>
+
+  <!-- Page dots (the last one is the App Library) -->
+  <div id="dots"></div>
+
+  <!-- Dock -->
+  <nav id="dock" class="glass"><div id="dockApps"></div></nav>
+
+  <!-- Edit mode: add a widget, settings, done -->
+  <div id="editBar">
+    <button class="pill" id="addWidget" aria-label="Add widget"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+    <button class="pill" id="settingsBtn" aria-label="Settings"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M19.14 12.94a7.07 7.07 0 0 0 .05-.94 7.07 7.07 0 0 0-.05-.94l2.03-1.58a.48.48 0 0 0 .12-.61l-1.92-3.32a.48.48 0 0 0-.59-.21l-2.39.96a7.03 7.03 0 0 0-1.62-.94l-.36-2.54a.48.48 0 0 0-.48-.41h-3.84a.48.48 0 0 0-.47.41l-.36 2.54a7.36 7.36 0 0 0-1.62.94l-2.39-.96a.48.48 0 0 0-.59.21L2.74 8.87a.47.47 0 0 0 .12.61l2.03 1.58a7.4 7.4 0 0 0 0 1.88l-2.03 1.58a.48.48 0 0 0-.12.61l1.92 3.32c.12.21.37.3.59.21l2.39-.96c.5.38 1.04.7 1.62.94l.36 2.54c.05.24.25.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54a7.36 7.36 0 0 0 1.62-.94l2.39.96c.22.08.47 0 .59-.21l1.92-3.32a.48.48 0 0 0-.12-.61zM12 15.6A3.6 3.6 0 1 1 12 8.4a3.6 3.6 0 0 1 0 7.2z"/></svg></button>
+    <div class="spacer"></div>
+    <button class="pill text" id="doneBtn" data-t="done"></button>
+  </div>
+
+  <!-- The app or widget being dragged floats here, above everything -->
+  <div id="dragLayer"></div>
+
+  <!-- Open folder -->
+  <div id="folder">
+    <div class="fd-title" id="fdTitle"></div>
+    <div class="fd-platter glass solid" id="fdPlatter"><div class="fd-grid" id="fdGrid"></div></div>
+  </div>
+
+  <!-- Bottom sheets: add widget, settings, Qibla -->
+  <div id="sheetScrim"></div>
+  <section class="sheet glass solid" id="widgetSheet">
+    <div class="grabber"></div>
+    <div class="sh-title" data-t="widgets"></div>
+    <div class="sh-scroll" id="widgetList"></div>
+  </section>
+  <section class="sheet glass solid" id="settingsSheet">
+    <div class="grabber"></div>
+    <div class="sh-title" data-t="settings"></div>
+    <div class="sh-scroll" id="settingsList"></div>
+  </section>
+  <section class="sheet glass solid" id="qiblaSheet">
+    <div class="grabber"></div>
+    <div class="sh-title" data-t="qiblaTitle"></div>
+    <div class="qb-dial">
+      <div id="qbRose">
+        <svg viewBox="0 0 200 200">
+          <circle cx="100" cy="100" r="92" fill="none" stroke="rgba(255,255,255,.22)" stroke-width="2"/>
+          <g stroke="rgba(255,255,255,.45)" stroke-width="2" id="qbTicks"></g>
+          <text x="100" y="32" text-anchor="middle" class="qb-n">N</text>
+          <g id="qbKaaba"><line x1="100" y1="100" x2="100" y2="24" stroke="#E2BC74" stroke-width="5" stroke-linecap="round"/>
+            <rect x="88" y="6" width="24" height="24" rx="3" fill="#1B1407" stroke="#E2BC74" stroke-width="2.5"/>
+            <rect x="88" y="12" width="24" height="4" fill="#E2BC74"/></g>
+        </svg>
+      </div>
+      <svg class="qb-phone" viewBox="0 0 24 24" fill="#fff"><path d="M12 2l7 19-7-4-7 4z"/></svg>
+    </div>
+    <div class="qb-main" id="qbMain"></div>
+    <div class="qb-sub" id="qbSub"></div>
+  </section>
+
+  <!-- Long-press menu -->
+  <div id="scrim"></div>
+  <div id="menu" class="glass solid" hidden></div>
+
+  <!-- Silent prayer banner -->
+  <div id="alert" class="glass solid" hidden></div>
+  <div id="toast" hidden></div>
+
+  <script src="bridge-mock.js"></script>
+  <script src="config.js"></script>
+  <script src="praytimes.js"></script>
+  <script src="azkar.js"></script>
+  <script src="dash.js"></script>
+  <script src="phone.js"></script>
+</body>
+</html>

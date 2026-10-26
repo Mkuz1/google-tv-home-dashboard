@@ -2,6 +2,7 @@
 # Builds the APKs from app/ using the Android SDK command-line tools (no Gradle):
 #   ./build.sh          both: out/mk-tv-launcher.apk and out/mk-car-launcher.apk
 #   ./build.sh tv       Google TV / Android TV only (app/AndroidManifest.xml)
+#   ./build.sh phone    out/mk-phone-launcher.apk: the phone home screen (phone/AndroidManifest.xml)
 #   ./build.sh helper   out/mk-split-helper.apk: the optional split-screen helper for the car (helper/)
 #   ./build.sh car      car head unit only (car/AndroidManifest.xml); same code and pages,
 #                       the app picks the car home screen from the manifest's "flavor".
@@ -78,9 +79,11 @@ mkdir -p "$OUT"
 case "${1:-all}" in
   tv)  build tv app/AndroidManifest.xml 28 mk-tv-launcher.apk ;;
   car) build car car/AndroidManifest.xml 26 mk-car-launcher.apk ;;
+  phone) build phone phone/AndroidManifest.xml 26 mk-phone-launcher.apk ;;
   helper) build helper helper/AndroidManifest.xml 24 mk-split-helper.apk helper/res ;;
   all) build tv app/AndroidManifest.xml 28 mk-tv-launcher.apk
        build car car/AndroidManifest.xml 26 mk-car-launcher.apk
+       build phone phone/AndroidManifest.xml 26 mk-phone-launcher.apk
        build helper helper/AndroidManifest.xml 24 mk-split-helper.apk helper/res ;;
-  *)   echo "usage: ./build.sh [tv|car|helper|all]" >&2; exit 1 ;;
+  *)   echo "usage: ./build.sh [tv|car|phone|helper|all]" >&2; exit 1 ;;
 esac

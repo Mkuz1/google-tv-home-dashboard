@@ -71,6 +71,13 @@ window.CAR_CONFIG = {
   ],
 };
 
+// Phone build (phone/AndroidManifest.xml): on top of the car settings above.
+window.PHONE_CONFIG = {
+  homeOrder: [],
+  dockApps: ["com.google.android.dialer", "com.android.dialer", "com.google.android.apps.messaging", "com.whatsapp",
+    "com.android.chrome", "com.google.android.apps.maps", "com.android.camera2", "com.google.android.GoogleCamera"],
+};
+
 // Official calculation per country (as used by the national religious authorities).
 window.PRAYER_METHODS = (function () {
   const m = (fajrAngle, isha, extra) => Object.assign(
@@ -109,8 +116,8 @@ window.applyCarLocation = function (C, loc) {
   const TV = window.TV || window.MOCK_TV; // MOCK_TV: previewing in a desktop browser (bridge-mock.js)
   // "tv" or "car", from the app's manifest (app/ or car/AndroidManifest.xml).
   try { C.flavor = TV.flavor(); } catch (e) { C.flavor = "tv"; }
-  if (C.flavor === "car") {
-    Object.assign(C, window.CAR_CONFIG);
+  if (C.flavor === "car" || C.flavor === "phone") {
+    Object.assign(C, window.CAR_CONFIG, C.flavor === "phone" ? window.PHONE_CONFIG : {});
     C.prayer = JSON.parse(JSON.stringify(window.PRAYER_METHODS[C.prayerCountry]));
     C.country = C.prayerCountry;
   }

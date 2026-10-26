@@ -8,6 +8,7 @@ Two APKs are built from the same code:
 |---|---|---|
 | `mk-tv-launcher.apk` | Google TV / Android TV 9+ | Apple TV style, remote control |
 | `mk-car-launcher.apk` | Android car head units 8+ (made for 12" screens, e.g. 1920×720) | Azkar, Sharjah prayer times, app drawer; touch first |
+| `mk-phone-launcher.apk` | Android phones 8+, foldables too | iPhone-style pages, widgets and drag and drop |
 
 ![Home screen](docs/home.jpg)
 
@@ -63,6 +64,23 @@ A smooth, touch-first home screen for the car (made for 12" screens such as 1920
 1. Check the file is complete (about 4.9 MB; a half-finished download won't open).
 2. Allow installing for the app you open it with: Settings → Apps → (your file manager or browser) → *Install unknown apps* → Allow. On Android 8 and later, a file manager without this permission gets exactly this error.
 3. Copy the APK from the USB stick to the head unit's internal storage and open it from there, or open it with another file manager (*Files by Google*, *X-plore*); or download it straight on the head unit with Chrome from the Releases page and open it from Chrome's downloads. Then press **Home** and choose *MK TV & Car Launcher* → **Always** (or Settings → Apps → Default apps → Home app). If the head unit has adb over Wi-Fi, the `tv.sh` install and settings commands work with `CAR=1` in front, e.g. `CAR=1 ./tv.sh install`, `CAR=1 ./tv.sh settings settings.json`.
+
+## Phone (`mk-phone-launcher.apk`)
+
+The matching home screen for your phone, in the same Liquid Glass look, laid out like an iPhone:
+
+| Folded | Unfolded | Widgets | App Library |
+|---|---|---|---|
+| ![Phone](docs/phone-home.jpg) | ![Unfolded](docs/phone-unfolded.jpg) | ![Widgets](docs/phone-widgets.jpg) | ![App Library](docs/phone-library.jpg) |
+
+- **Home pages** you swipe through, with a glass **dock** at the bottom. Every app sits on a page (new ones go to the last page) unless you remove it from the Home Screen; the **App Library** after the last page always has all of them, alphabetically, with a search box.
+- **Arrange like an iPhone**: hold an app for its menu (*Edit Home Screen*, *Remove from Home Screen*, *Delete App*), or hold and drag to start editing: everything jiggles, the other apps slide out of the way as you move, hold at the screen edge to change page (past the last page makes a new one), drag into or out of the dock. Hold an app over another one to make a **folder** (over a folder to add to it); in a folder, drag to reorder or out of the glass to take it out; tap the folder name to rename it. Drag apps from the App Library onto a page. Tap **Done** (or an empty spot) to finish; empty pages go away.
+- **Widgets**: in edit mode tap **+** for the gallery: **Clock & Date** (with the Hijri date and next prayer), **Prayer Times** (next prayer, or the full list), **Azkar** (tap for the next), **Qibla** (turns with the phone; tap for the full compass), **Places** (Home and Work from your Google Maps, nearest mosque and petrol), **Weather**; in small, medium, large or wide sizes. Drag them around like apps; the minus badge removes one.
+- **Foldables**: the grid follows the screen as you fold, unfold or turn it: 4 columns on a phone or the folded screen, 6–8 unfolded, without reloading; apps that no longer fit move to the next page. Upright on phone-sized screens, any way round on big ones.
+- **Prayer**: times for where you are (GPS), a soft silent banner before and at each prayer (also over other apps), Arabic or English (Settings in edit mode, the gear).
+- **Smooth**: the Liquid Glass wallpaper is pre-blurred so nothing is blurred live; tiles move with transform only; finger movement is applied once per frame.
+
+Install: open `mk-phone-launcher.apk` on the phone (allow installing from your browser or file manager), then press Home and choose *MK Launcher* → **Always** (or Settings → Apps → Default apps → Home app). It's a separate app from the car one, with its own layout. App widgets of other apps (e.g. Gmail's) aren't supported; the widgets are the launcher's own.
 
 ## What you need
 
