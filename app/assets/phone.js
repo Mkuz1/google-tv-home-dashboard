@@ -39,6 +39,9 @@
       wAzkar: "Azkar", wAzkarD: "Morning, general and evening azkar; tap for the next", wQibla: "Qibla", wQiblaD: "Which way to Makkah; tap for the compass",
       wPlaces: "Places", wPlacesD: "Home, Work, nearest mosque and petrol in Google Maps", wWeather: "Weather", wWeatherD: "Now and the next days",
       small: "Small", medium: "Medium", large: "Large", wide: "Wide", newFolder: "Folder",
+      edit: "Edit", addWidget: "Add Widget", customize: "Customize", cancel: "Cancel", searchShort: "Search",
+      suggestions: "Suggestions", recent: "Recently Added", searchWeb: (q) => `Search the web for “${q}”`, apps: "Apps", noResults: "No results",
+      groups: ["Social", "Entertainment", "Photo & Video", "Productivity & Finance", "Travel", "News & Reading", "Games", "Utilities"],
     },
     ar: {
       done: "تم", widgets: "الأدوات", settings: "الإعدادات", search: "مكتبة التطبيقات", add: "إضافة",
@@ -55,6 +58,9 @@
       wAzkar: "الأذكار", wAzkarD: "أذكار الصباح والمساء والأذكار العامة؛ اضغط للتالي", wQibla: "القبلة", wQiblaD: "اتجاه مكة المكرمة؛ اضغط للبوصلة",
       wPlaces: "الأماكن", wPlacesD: "المنزل والعمل وأقرب مسجد ومحطة وقود في خرائط Google", wWeather: "الطقس", wWeatherD: "الآن والأيام القادمة",
       small: "صغير", medium: "متوسط", large: "كبير", wide: "عريض", newFolder: "مجلد",
+      edit: "تعديل", addWidget: "إضافة أداة", customize: "تخصيص", cancel: "إلغاء", searchShort: "بحث",
+      suggestions: "اقتراحات", recent: "أضيفت مؤخراً", searchWeb: (q) => `ابحث في الويب عن «${q}»`, apps: "التطبيقات", noResults: "لا توجد نتائج",
+      groups: ["تواصل اجتماعي", "ترفيه", "صور وفيديو", "إنتاجية ومال", "سفر", "أخبار وقراءة", "ألعاب", "أدوات"],
     },
   };
   let lang = store.get("phone.lang", /^ar/.test(navigator.language || "") ? "ar" : "en");
@@ -87,6 +93,7 @@
     st.setProperty("--icon", M.icon + "px"); st.setProperty("--cell-w", M.cellW + "px"); st.setProperty("--cell-h", M.cellH + "px");
     st.setProperty("--dock-h", M.dockH + "px");
     st.setProperty("--lib-cols", String(M.cols));
+    st.setProperty("--box-cols", String(M.cols === 4 ? 2 : M.cols === 6 ? 3 : 4));
   }
 
   /* ---------------- apps ---------------- */
@@ -98,8 +105,11 @@
     installed = installed.filter((a) => !exclude.has(a.pkg)).sort((a, b) => a.label.localeCompare(b.label));
     byPkg = Object.fromEntries(installed.map((a) => [a.pkg, a]));
   }
+  // Recently opened apps feed Search and the App Library's Suggestions.
   function launch(pkg) {
     TV.launch(pkg);
+    store.set("phone.recent", [pkg].concat(store.get("phone.recent", []).filter((p) => p !== pkg)).slice(0, 12));
+    setTimeout(() => { if (isLibrary()) renderLibrary(); }, 500);
   }
 
   /* ---------------- layout model ---------------- */
@@ -291,29 +301,102 @@
   }
 
   /* ---------------- App Library ---------------- */
-  let libQuery = "";
+  // Like iOS: a search field, then boxes: Suggestions, Recently Added and one per kind of app (three
+  // big icons and a cluster that opens the rest). Searching shows every app A to Z.
+  let libQuery = "", libSearching = false;
   function libraryPage() {
     let el = $("track").querySelector(".library-page");
     if (!el) {
       el = document.createElement("div");
       el.className = "page library-page";
-      el.innerHTML = `<label class="lib-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input id="libSearch" type="search" autocomplete="off"></label><div class="lib-scroll" id="libScroll"></div>`;
+      el.innerHTML = `<div class="lib-head"><label class="lib-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input id="libSearch" type="search" autocomplete="off"></label><button class="lib-cancel" id="libCancel"></button></div><div class="lib-scroll" id="libScroll"></div>`;
       $("track").appendChild(el);
       $("libSearch").addEventListener("input", (e) => { libQuery = e.target.value.trim().toLowerCase(); renderLibrary(); });
+      $("libSearch").addEventListener("focus", () => { libSearching = true; document.body.classList.add("lib-searching"); renderLibrary(); });
+      $("libCancel").addEventListener("click", () => { $("libSearch").value = ""; libQuery = ""; $("libSearch").blur(); libSearching = false; document.body.classList.remove("lib-searching"); renderLibrary(); });
+      $("libScroll").addEventListener("click", (e) => { const m = e.target.closest(".lb-more"); if (m) openGroup(+m.dataset.g); });
     }
     el.style.left = homeCount() * M.W + "px";
     el.style.width = M.W + "px";
     $("libSearch").placeholder = T("search");
+    $("libCancel").textContent = T("cancel");
     renderLibrary();
   }
-  function renderLibrary() {
-    const list = installed.filter((a) => !libQuery || a.label.toLowerCase().includes(libQuery));
-    const groups = {};
-    for (const a of list) { const k = /^[a-z]/i.test(a.label) ? a.label[0].toUpperCase() : "#"; (groups[k] = groups[k] || []).push(a); }
-    $("libScroll").innerHTML = Object.keys(groups).sort().map((k) =>
-      `<div class="lib-letter">${k}</div><div class="lib-grid">` + groups[k].map((a) =>
-        `<div class="tile lib-app" data-pkg="${escapeHtml(a.pkg)}"><div class="icon-wrap">${artHtml(a)}</div><div class="label">${escapeHtml(a.label)}</div></div>`).join("") + "</div>").join("");
+  const GROUP_OF = { 4: 0, 1: 1, 2: 1, 3: 2, 7: 3, 6: 4, 5: 5, 0: 6 };
+  let libGroups = [];
+  function recentApps() {
+    const rec = store.get("phone.recent", []).filter((p) => byPkg[p]);
+    for (const a of installed) { if (rec.length >= 8) break; if (!rec.includes(a.pkg)) rec.push(a.pkg); }
+    return rec;
   }
+  function renderLibrary() {
+    const libIcon = (p) => `<div class="tile lib-app" data-pkg="${escapeHtml(p)}"><div class="icon-wrap">${artHtml(byPkg[p])}</div></div>`;
+    if (libSearching || libQuery) {
+      const list = installed.filter((a) => !libQuery || a.label.toLowerCase().includes(libQuery));
+      $("libScroll").innerHTML = list.length ? `<div class="lib-list">` + list.map((a) =>
+        `<div class="tile lib-app" data-pkg="${escapeHtml(a.pkg)}"><div class="icon-wrap">${artHtml(a)}</div><div class="label">${escapeHtml(a.label)}</div></div>`).join("") + `</div>`
+        : `<div class="sp-empty">${T("noResults")}</div>`;
+      return;
+    }
+    const groups = [[T("suggestions"), recentApps().slice(0, 4)]];
+    const added = installed.filter((a) => a.installed).sort((a, b) => b.installed - a.installed).slice(0, 7).map((a) => a.pkg);
+    if (added.length) groups.push([T("recent"), added]);
+    const byGroup = T("groups").map(() => []);
+    for (const a of installed) byGroup[GROUP_OF[a.category] != null ? GROUP_OF[a.category] : 7].push(a.pkg);
+    byGroup.forEach((pk, i) => { if (pk.length) groups.push([T("groups")[i], pk]); });
+    libGroups = groups;
+    $("libScroll").innerHTML = `<div class="lib-boxes">` + groups.map(([name, pk], g) => {
+      const big = pk.length > 4 ? pk.slice(0, 3) : pk.slice(0, 4);
+      const more = pk.length > 4 ? `<div class="lb-more" data-g="${g}">${pk.slice(3, 7).map((p) => artHtml(byPkg[p])).join("")}</div>` : "";
+      return `<div class="lib-box"><div class="lb-tile">${big.map(libIcon).join("")}${more}</div><div class="lb-name">${escapeHtml(name)}</div></div>`;
+    }).join("") + `</div>`;
+  }
+  // A box's cluster: all its apps, in a folder-like glass platter (tap to open, drag to a home page).
+  function openGroup(g) {
+    const [name, pk] = libGroups[g] || [];
+    if (!pk) return;
+    openF = { name, apps: pk.slice(), lib: true };
+    renderFolder();
+    document.body.classList.add("folder-open");
+  }
+
+  /* ---------------- Search (swipe down) ---------------- */
+  function openSpot() {
+    closeMenu();
+    document.body.classList.add("spot-open");
+    $("spInput").value = "";
+    renderSpot();
+    $("spInput").focus();
+  }
+  function closeSpot() {
+    $("spInput").blur();
+    document.body.classList.remove("spot-open");
+  }
+  function renderSpot() {
+    const q = $("spInput").value.trim(), ql = q.toLowerCase();
+    const tile = (a) => `<div class="tile" data-pkg="${escapeHtml(a.pkg)}"><div class="icon-wrap">${artHtml(a)}</div><div class="label">${escapeHtml(a.label)}</div></div>`;
+    if (!q) {
+      $("spResults").innerHTML = `<div class="sp-head">${T("suggestions")}</div><div class="sp-apps">${recentApps().slice(0, M.cols * 2).map((p) => tile(byPkg[p])).join("")}</div>`;
+      return;
+    }
+    const apps = installed.filter((a) => a.label.toLowerCase().includes(ql))
+      .sort((a, b) => (a.label.toLowerCase().startsWith(ql) ? 0 : 1) - (b.label.toLowerCase().startsWith(ql) ? 0 : 1));
+    $("spResults").innerHTML = (apps.length ? `<div class="sp-head">${T("apps")}</div><div class="sp-apps">${apps.slice(0, M.cols * 3).map(tile).join("")}</div>` : "") +
+      `<button class="sp-row" id="spWeb"><i><svg viewBox="0 0 24 24"><path fill="#4285F4" d="M21.6 12.2c0-.7-.1-1.4-.2-2H12v3.9h5.4a4.6 4.6 0 0 1-2 3v2.5h3.2c1.9-1.7 3-4.3 3-7.4z"/><path fill="#34A853" d="M12 22c2.7 0 5-.9 6.6-2.4l-3.2-2.5c-.9.6-2 1-3.4 1-2.6 0-4.8-1.8-5.6-4.1H3.1v2.6A10 10 0 0 0 12 22z"/><path fill="#FBBC04" d="M6.4 14a6 6 0 0 1 0-3.9V7.5H3.1a10 10 0 0 0 0 9z"/><path fill="#EA4335" d="M12 5.9c1.5 0 2.8.5 3.8 1.5l2.9-2.9A10 10 0 0 0 3.1 7.5L6.4 10C7.2 7.7 9.4 5.9 12 5.9z"/></svg></i><span>${escapeHtml(T("searchWeb", q))}</span></button>`;
+  }
+  $("spInput").addEventListener("input", renderSpot);
+  $("spInput").addEventListener("keydown", (e) => { if (e.key === "Enter") { const first = $("spResults").querySelector(".tile"); if (first) { launch(first.dataset.pkg); closeSpot(); } } });
+  $("spCancel").addEventListener("click", closeSpot);
+  $("spResults").addEventListener("click", (e) => {
+    const t = e.target.closest(".tile");
+    if (t) { launch(t.dataset.pkg); return closeSpot(); }
+    if (e.target.closest("#spWeb")) {
+      try { TV.openUrl("https://www.google.com/search?q=" + encodeURIComponent($("spInput").value.trim())); } catch (er) {}
+      closeSpot();
+    }
+  });
+  $("spot").addEventListener("pointerdown", (e) => { if (e.target === $("spot") || e.target === $("spResults")) closeSpot(); });
+  $("searchPill").addEventListener("click", openSpot);
 
   /* ---------------- edit mode ---------------- */
   function enterEdit() {
@@ -345,13 +428,14 @@
   }
 
   /* ---------------- touch: tap, hold, swipe, drag ---------------- */
-  let press = null, frame = 0, pending = null;
+  let press = null, frame = 0, pending = null, swipeT = null;
   function tileFrom(e) { return e.target.closest(".tile"); }
   function onDown(e) {
     if (e.button > 0 || press || drag) return;
     const el = tileFrom(e);
     press = { el, x0: e.clientX, y0: e.clientY, t0: performance.now(), id: e.pointerId, mode: null, long: false,
-      minus: !!e.target.closest(".minus"), lib: el && el.classList.contains("lib-app"), inFolder: !!e.target.closest("#folder") };
+      minus: !!e.target.closest(".minus"), lib: el && el.classList.contains("lib-app"), inFolder: !!e.target.closest("#folder"),
+      inDock: !!e.target.closest("#dock") };
     if (el) el.classList.add("pressed");
     press.timer = setTimeout(() => {
       if (!press || press.mode) return;
@@ -383,8 +467,10 @@
         press.mode = "drag";
         return startDrag(press.el, e);
       }
-      press.mode = Math.abs(dx) > Math.abs(dy) && !press.inFolder ? "swipe" : "scroll";
-      if (press.mode === "swipe") { $("track").classList.remove("glide"); press.x0 = e.clientX; }
+      press.mode = Math.abs(dx) > Math.abs(dy) && !press.inFolder ? "swipe"
+        // Down on a home page: Search, like on an iPhone.
+        : dy > 0 && !press.inFolder && !isLibrary() && !has("editing") && !press.inDock ? "pull" : "scroll";
+      if (press.mode === "swipe") { $("track").classList.remove("glide"); press.x0 = e.clientX; document.body.classList.add("swiping"); }
       return;
     }
     if (press.mode === "swipe") {
@@ -402,7 +488,10 @@
     clearTimeout(p.timer);
     if (p.el) p.el.classList.remove("pressed");
     if (drag) return endDrag(e);
+    if (p.mode === "pull") { if (e.clientY - p.y0 > 40) openSpot(); return; }
     if (p.mode === "swipe") {
+      clearTimeout(swipeT);
+      swipeT = setTimeout(() => document.body.classList.remove("swiping"), 700);
       const dx = e.clientX - p.x0, v = p.vx || 0;
       let to = page;
       if ((dx < -M.W * 0.18 || v < -0.4) && page < homeCount()) to++;
@@ -442,9 +531,12 @@
   function startDrag(el, e) {
     const r = el.getBoundingClientRect();
     let item, origin;
+    let src = el;
     if (el.classList.contains("lib-app")) {
-      // From the App Library: a new home-screen copy, dropped on the last home page.
+      // From the App Library: onto the last home page (moved there if it was on a page already).
       const p = el.dataset.pkg;
+      if (openF && openF.lib) { document.body.classList.remove("folder-open"); openF = null; }
+      src = null;
       const at = locate("a:" + p);
       item = at ? at.item : appItem(p);
       if (at) takeOut(item.id);
@@ -460,11 +552,22 @@
       origin = "home";
     }
     if (!item) return;
-    const float = el.cloneNode(true);
-    float.classList.remove("pressed", "ghost");
-    float.style.width = r.width + "px"; float.style.height = r.height + "px";
+    let float, offX = e.clientX - r.left, offY = e.clientY - r.top;
+    if (src) {
+      float = el.cloneNode(true);
+      float.classList.remove("pressed", "ghost");
+      float.style.width = r.width + "px"; float.style.height = r.height + "px";
+    } else {
+      // A Library icon (no label, any size): float a home-screen tile centred on the icon.
+      float = document.createElement("div");
+      float.className = "tile";
+      float.innerHTML = tileInner(item);
+      const ir = el.querySelector(".icon-wrap").getBoundingClientRect();
+      offX = e.clientX - (ir.left + ir.width / 2 - M.cellW / 2);
+      offY = e.clientY - (ir.top + ir.height / 2 - 6 - M.icon / 2);
+    }
     $("dragLayer").appendChild(float);
-    drag = { item, origin, float, offX: e.clientX - r.left, offY: e.clientY - r.top, folderHover: null, hoverAt: 0, lastTarget: null, edge: null };
+    drag = { item, origin, float, offX, offY, folderHover: null, hoverAt: 0, lastTarget: null, edge: null };
     placeFloat(e.clientX, e.clientY);
     if (origin === "folder") return;
     render();
@@ -517,11 +620,12 @@
     let under = null;
     for (const p of placed) if (row >= p.r && row < p.r + p.h && col >= p.c && col < p.c + p.w) under = p;
     if (under && under.it.id === drag.item.id) under = null;
-    // Folder: an app held over the middle of another app or folder.
+    // Over another app's or folder's icon: a folder (iPhone). Nothing moves out of the way then,
+    // so the icon stays under your finger; apps only slide aside when you're between icons.
     if (under && drag.item.t === "a" && under.it.t !== "w") {
       const [ux, uy] = pos(under);
-      const cx = ux + M.cellW / 2, cy = uy + 6 + M.icon / 2;
-      if (Math.abs(x - cx) < M.icon * 0.42 && Math.abs(y - cy) < M.icon * 0.42) return folderHover(under.it);
+      const cx = ux + M.cellW / 2, cy = uy + 6 + M.icon / 2, half = M.icon * 0.62;
+      if (Math.abs(x - cx) < half && Math.abs(y - cy) < half) { clearTimeout(drag.moveT); drag.lastTarget = null; return folderHover(under.it); }
     }
     folderHover(null);
     // Otherwise: the gap moves to that place.
@@ -547,7 +651,7 @@
       L.pages[page].splice(clamp(index, 0, L.pages[page].length), 0, drag.item);
       render();
       ghost(true);
-    }, 90);
+    }, 160);
   }
   function hoverDock(x) {
     folderHover(null);
@@ -578,7 +682,7 @@
       drag.folderHover.ready = true;
       const el = els.get(id);
       if (el) el.classList.add("folder-target");
-    }, 380) };
+    }, 300) };
   }
   function endDrag() {
     const d = drag;
@@ -647,7 +751,10 @@
   }
   function closeFolder() {
     document.body.classList.remove("folder-open");
+    const wasLib = openF && openF.lib;
     openF = null;
+    $("fdGrid").innerHTML = "";
+    if (wasLib) return;
     save();
     render();
   }
@@ -666,7 +773,14 @@
       const id = "a:" + p;
       keep.add(id);
       let el = g.querySelector(`.tile[data-id="${CSS.escape(id)}"]`);
-      if (!el) { el = document.createElement("div"); el.className = "tile no-anim"; el.dataset.id = id; el.innerHTML = tileInner(appItem(p)); g.appendChild(el); el.offsetWidth; el.classList.remove("no-anim"); }
+      if (!el) {
+        el = document.createElement("div");
+        el.className = "tile no-anim" + (openF.lib ? " lib-app" : "");
+        el.dataset.id = id;
+        el.dataset.pkg = p;
+        el.innerHTML = tileInner(appItem(p));
+        g.appendChild(el); el.offsetWidth; el.classList.remove("no-anim");
+      }
       el.style.transform = `translate3d(${left + (i % fc) * M.cellW}px,${20 + Math.floor(i / fc) * M.cellH}px,0)`;
     });
     [...g.children].forEach((el) => { if (!keep.has(el.dataset.id)) el.remove(); });
@@ -702,7 +816,7 @@
     if (el) el.classList.remove("ghost");
     save();
   }
-  $("fdTitle").addEventListener("click", () => openF && renameFolder(openF));
+  $("fdTitle").addEventListener("click", () => openF && !openF.lib && renameFolder(openF));
   $("folder").addEventListener("click", (e) => { if (e.target === $("folder") && !drag) closeFolder(); });
   function renameFolder(f) {
     window.onPrompt = (text) => { if (text && text.trim()) { f.name = text.trim().slice(0, 24); if (openF) $("fdTitle").textContent = f.name; save(); render(); } };
@@ -911,7 +1025,10 @@
     render();
     goPage(p);
   });
-  $("addWidget").addEventListener("click", openWidgetSheet);
+  $("editBtn").addEventListener("click", () => showMenu([
+    [T("addWidget"), IC.plus, openWidgetSheet],
+    [T("customize"), IC.edit, openSettings],
+  ], $("editBtn").getBoundingClientRect()));
   $("doneBtn").addEventListener("click", exitEdit);
 
   /* ---------------- sheets ---------------- */
@@ -956,7 +1073,7 @@
     });
     if (openSheetId !== "settingsSheet") openSheet("settingsSheet");
   }
-  $("settingsBtn").addEventListener("click", openSettings);
+
 
   /* ---------------- Qibla ---------------- */
   const KAABA = [21.4225, 39.8262], rad = Math.PI / 180;
@@ -1143,12 +1260,14 @@
   };
   window.onTvHome = () => {
     closeMenu(); closeSheets();
+    if (has("spot-open")) return closeSpot();
     if (openF) return closeFolder();
     if (has("editing")) return exitEdit();
     goPage(0);
   };
   window.onTvBack = () => {
     if (!$("menu").hidden) return closeMenu();
+    if (has("spot-open")) return closeSpot();
     if (openSheetId) return closeSheets();
     if (openF) return closeFolder();
     if (has("editing")) return exitEdit();

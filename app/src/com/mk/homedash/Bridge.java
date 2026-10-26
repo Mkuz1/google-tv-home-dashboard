@@ -328,8 +328,12 @@ public class Bridge {
         if (d == null) d = info.loadIcon(pm);
         String uri = "";
         boolean adaptive = car && d instanceof AdaptiveIconDrawable;
+        boolean squared = false;
         if (adaptive) {
             uri = fullBleed((AdaptiveIconDrawable) d);
+        } else if (d != null && "phone".equals(flavor)) {
+            uri = squared(d);
+            squared = true;
         } else if (d != null) {
             int w = banner ? 480 : 192;
             int h = banner ? 270 : 192;
@@ -347,7 +351,7 @@ public class Bridge {
             uri = "data:image/png;base64," + Base64.encodeToString(out.toByteArray(), Base64.NO_WRAP);
         }
         // B = banner, F = full-bleed square icon, I = any other icon (shown smaller on a tile).
-        String result = (banner ? "B" : adaptive ? "F" : "I") + uri;
+        String result = (banner ? "B" : adaptive || squared ? "F" : "I") + uri;
         iconCache.put(key, result);
         return result;
     }
@@ -368,6 +372,64 @@ public class Bridge {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         bmp.compress(Bitmap.CompressFormat.PNG, 100, out);
         return "data:image/png;base64," + Base64.encodeToString(out.toByteArray(), Base64.NO_WRAP);
+    }
+
+    /**
+     * Phone: an old-style icon (round, or any shape) made into a full square like an iPhone icon.
+     * A round icon fills the square in its own rim colour; any other shape sits on white.
+     */
+    private static String squared(Drawable d) {
+        int size = 192;
+        Bitmap src = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
+        Canvas sc = new Canvas(src);
+        d.setBounds(0, 0, size, size);
+        d.draw(sc);
+        Bitmap out;
+        if (opaqueAt(src, 2, 2) && opaqueAt(src, size - 3, 2) && opaqueAt(src, 2, size - 3) && opaqueAt(src, size - 3, size - 3)) {
+            out = src; // already a full square
+        } else {
+            // Sample a ring just inside the edge: one even colour there means a round icon.
+            long r = 0, g = 0, b = 0;
+            int n = 0, opaque = 0;
+            float[] mins = {255, 255, 255}, maxs = {0, 0, 0};
+            for (int i = 0; i < 48; i++) {
+                double a = i * Math.PI * 2 / 48;
+                int x = (int) (size / 2 + Math.cos(a) * size * 0.45), y = (int) (size / 2 + Math.sin(a) * size * 0.45);
+                int px = src.getPixel(x, y);
+                n++;
+                if ((px >>> 24) < 220) continue;
+                opaque++;
+                int[] ch = {(px >> 16) & 255, (px >> 8) & 255, px & 255};
+                r += ch[0]; g += ch[1]; b += ch[2];
+                for (int k = 0; k < 3; k++) { mins[k] = Math.min(mins[k], ch[k]); maxs[k] = Math.max(maxs[k], ch[k]); }
+            }
+            boolean even = opaque > n * 0.85 && maxs[0] - mins[0] < 40 && maxs[1] - mins[1] < 40 && maxs[2] - mins[2] < 40;
+            out = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
+            Canvas c = new Canvas(out);
+            if (even) {
+                c.drawColor(0xFF000000 | ((int) (r / opaque) << 16) | ((int) (g / opaque) << 8) | (int) (b / opaque));
+                int grow = size / 25; // a little larger, so the circle's soft edge disappears
+                d.setBounds(-grow, -grow, size + grow, size + grow);
+            } else {
+                c.drawColor(0xFFFFFFFF);
+                int pad = size / 9;
+                d.setBounds(pad, pad, size - pad, size - pad);
+            }
+            d.draw(c);
+        }
+        ByteArrayOutputStream bo = new ByteArrayOutputStream();
+        out.compress(Bitmap.CompressFormat.PNG, 100, bo);
+        return "data:image/png;base64," + Base64.encodeToString(bo.toByteArray(), Base64.NO_WRAP);
+    }
+
+    private static boolean opaqueAt(Bitmap b, int x, int y) {
+        return (b.getPixel(x, y) >>> 24) > 200;
+    }
+
+    /** Opens a web page or any other link (phone search: "Search the web"). */
+    @JavascriptInterface
+    public void openUrl(String url) {
+        start(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
     }
 
     /** All launchable TV apps: [{pkg, label, banner, system, icon}]. */
@@ -395,6 +457,9 @@ public class Bridge {
                     o.put("small", icon.startsWith("I"));
                     o.put("system", (ai.flags & ApplicationInfo.FLAG_SYSTEM) != 0);
                     o.put("category", ai.category); // used to name new folders, like Apple TV does
+                    if (car) {
+                        try { o.put("installed", pm.getPackageInfo(pkg, 0).firstInstallTime); } catch (Exception e) { o.put("installed", 0); }
+                    }
                     o.put("icon", icon.substring(1));
                     arr.put(o);
                 } catch (Exception ignored) {

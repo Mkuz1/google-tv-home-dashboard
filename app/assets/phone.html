@@ -15,18 +15,28 @@
     <div id="track"></div>
   </main>
 
-  <!-- Page dots (the last one is the App Library) -->
+  <!-- Page dots (the last one is the App Library), and the Search pill shown in their place -->
   <div id="dots"></div>
+  <button id="searchPill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><span data-t="searchShort"></span></button>
 
   <!-- Dock -->
   <nav id="dock" class="glass"><div id="dockApps"></div></nav>
 
   <!-- Edit mode: add a widget, settings, done -->
   <div id="editBar">
-    <button class="pill" id="addWidget" aria-label="Add widget"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
-    <button class="pill" id="settingsBtn" aria-label="Settings"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M19.14 12.94a7.07 7.07 0 0 0 .05-.94 7.07 7.07 0 0 0-.05-.94l2.03-1.58a.48.48 0 0 0 .12-.61l-1.92-3.32a.48.48 0 0 0-.59-.21l-2.39.96a7.03 7.03 0 0 0-1.62-.94l-.36-2.54a.48.48 0 0 0-.48-.41h-3.84a.48.48 0 0 0-.47.41l-.36 2.54a7.36 7.36 0 0 0-1.62.94l-2.39-.96a.48.48 0 0 0-.59.21L2.74 8.87a.47.47 0 0 0 .12.61l2.03 1.58a7.4 7.4 0 0 0 0 1.88l-2.03 1.58a.48.48 0 0 0-.12.61l1.92 3.32c.12.21.37.3.59.21l2.39-.96c.5.38 1.04.7 1.62.94l.36 2.54c.05.24.25.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54a7.36 7.36 0 0 0 1.62-.94l2.39.96c.22.08.47 0 .59-.21l1.92-3.32a.48.48 0 0 0-.12-.61zM12 15.6A3.6 3.6 0 1 1 12 8.4a3.6 3.6 0 0 1 0 7.2z"/></svg></button>
+    <!-- Like iOS: Edit → Add Widget / Customize; Done -->
+    <button class="pill text" id="editBtn" data-t="edit"></button>
     <div class="spacer"></div>
     <button class="pill text" id="doneBtn" data-t="done"></button>
+  </div>
+
+  <!-- Search: swipe down on a home page, or tap the Search pill -->
+  <div id="spot">
+    <div class="sp-bar">
+      <label class="sp-field"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input id="spInput" type="search" autocomplete="off"></label>
+      <button class="sp-cancel" id="spCancel" data-t="cancel"></button>
+    </div>
+    <div class="sp-scroll" id="spResults"></div>
   </div>
 
   <!-- The app or widget being dragged floats here, above everything -->

@@ -56,19 +56,14 @@ input { font: inherit; color: inherit; outline: none; border: 0; background: non
 }
 .tile.no-anim { transition: none; }
 .icon-wrap { position: relative; width: var(--icon); height: var(--icon); transition: transform .16s var(--ease); }
-.art {
-  position: relative; width: 100%; height: 100%; border-radius: 23%; overflow: hidden;
-  background: linear-gradient(160deg, #4A505A, #262A30); box-shadow: 0 5px 12px rgba(0,0,0,0.28);
-}
+/* App icons like an iPhone's: the icon itself in a rounded square, nothing behind or around it.
+   (Round or odd-shaped Android icons are made square by the app before they get here.) */
+.art { position: relative; width: 100%; height: 100%; border-radius: 22.5%; overflow: hidden; }
 .art img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.art.small img { width: 74%; height: 74%; margin: 13%; object-fit: contain; }
-.art::after {
-  content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.45), inset 0 0 0 1px rgba(255,255,255,0.10);
-  background: linear-gradient(165deg, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0.03) 34%, rgba(255,255,255,0) 52%);
-}
+.art.small { background: #fff; }
+.art.small img { width: 78%; height: 78%; margin: 11%; object-fit: contain; }
 .label {
-  margin-top: 6px; max-width: calc(var(--cell-w) - 6px); font-size: 12.5px; font-weight: 500; text-align: center;
+  margin-top: 5px; max-width: calc(var(--cell-w) - 6px); font-size: 12.5px; font-weight: 500; text-align: center;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: 0 1px 4px rgba(0,0,0,.6);
 }
 .tile.pressed .icon-wrap { transform: scale(.88); }
@@ -119,9 +114,19 @@ body.editing .minus { display: flex; }
 
 /* ---------- dots and dock ---------- */
 #dots {
-  position: fixed; left: 0; right: 0; bottom: calc(var(--bottom) + var(--dock-h, 96px) + 18px); height: 22px;
+  position: fixed; left: 0; right: 0; bottom: calc(var(--bottom) + var(--dock-h, 96px) + 22px); height: 22px;
   display: flex; justify-content: center; align-items: center; gap: 9px; z-index: 5; direction: ltr;
+  opacity: 0; pointer-events: none; transition: opacity .2s;
 }
+/* Like iOS: a Search pill above the dock; the page dots show while you swipe (and in edit mode). */
+body.swiping #dots, body.editing #dots, body.library #dots { opacity: 1; pointer-events: auto; }
+#searchPill {
+  position: fixed; left: 50%; bottom: calc(var(--bottom) + var(--dock-h, 96px) + 18px); transform: translateX(-50%); z-index: 5;
+  height: 30px; padding: 0 14px; border-radius: 15px; display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 600;
+  background: var(--glass-fill); box-shadow: var(--glass-rim); transition: opacity .2s;
+}
+#searchPill svg { width: 15px; height: 15px; }
+body.swiping #searchPill, body.editing #searchPill, body.library #searchPill { opacity: 0; pointer-events: none; }
 .dot { width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,0.38); transition: background .2s, transform .2s; }
 .dot.on { background: #fff; }
 .dot.lib { width: 9px; height: 9px; border-radius: 2.5px; background: none; box-shadow: inset 0 0 0 1.6px rgba(255,255,255,0.45); }
@@ -307,3 +312,49 @@ body.rtl .pr-list .ar { color: inherit; font-size: 17px; }
 body.rtl #alert .al-en { display: none; }
 body.rtl .w-label { letter-spacing: 0; font-size: 13px; font-family: "Amiri", serif; }
 #track, #dockApps, .fd-grid { direction: ltr; }
+
+/* ---------- Search (swipe down on a home page) ---------- */
+#spot {
+  position: fixed; inset: 0; z-index: 25; background: rgba(6,10,14,0.88); opacity: 0; pointer-events: none; transition: opacity .25s;
+  padding: calc(var(--top) + 12px) calc(var(--right) + 16px) 0 calc(var(--left) + 16px); display: flex; flex-direction: column;
+}
+body.spot-open #spot { opacity: 1; pointer-events: auto; }
+body.spot-open #viewport, body.spot-open #dock { transform: scale(.94); transition: transform .3s var(--ease); }
+#viewport, #dock { transition: transform .3s var(--ease); }
+.sp-bar { display: flex; align-items: center; gap: 10px; transform: translateY(-30px); transition: transform .35s var(--ease); }
+body.spot-open .sp-bar { transform: none; }
+.sp-field { flex: 1; height: 46px; border-radius: 23px; display: flex; align-items: center; gap: 10px; padding: 0 16px; background: var(--glass-solid); box-shadow: var(--glass-rim); }
+.sp-field svg { width: 19px; height: 19px; opacity: .75; }
+.sp-field input { flex: 1; height: 100%; font-size: 17px; }
+.sp-field input::placeholder { color: var(--ink-3); }
+.sp-cancel { font-size: 16px; font-weight: 600; color: var(--gold-soft); padding: 0 4px; }
+.sp-scroll { flex: 1; overflow-y: auto; touch-action: pan-y; padding: 14px 0 40px; }
+.sp-scroll::-webkit-scrollbar { display: none; }
+.sp-head { font-size: 13px; font-weight: 700; color: var(--ink-2); letter-spacing: .5px; margin: 10px 4px 8px; }
+.sp-apps { display: grid; grid-template-columns: repeat(var(--lib-cols, 4), 1fr); border-radius: 22px; padding: 10px 0 4px; background: var(--glass-fill); box-shadow: var(--glass-rim); }
+.sp-apps .tile, .lib-grid .tile { position: relative; width: auto; transition: none; }
+.sp-row { display: flex; align-items: center; gap: 12px; height: 54px; padding: 0 14px; border-radius: 16px; background: var(--glass-fill); box-shadow: var(--glass-rim); margin-top: 8px; font-size: 16px; width: 100%; text-align: start; }
+.sp-row i { width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; background: #fff; flex: 0 0 auto; }
+.sp-row i svg { width: 20px; height: 20px; }
+.sp-row:active { transform: scale(.98); }
+.sp-empty { color: var(--ink-3); text-align: center; margin-top: 30px; font-size: 15px; }
+
+/* ---------- App Library: category boxes like iOS ---------- */
+.lib-boxes { display: grid; grid-template-columns: repeat(var(--box-cols, 2), 1fr); gap: 18px 16px; padding: 4px 4px 20px; }
+.lib-box { display: flex; flex-direction: column; align-items: center; gap: 7px; }
+.lb-tile { width: 100%; aspect-ratio: 1; border-radius: 26px; padding: 12%; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 10%;
+  background: var(--glass-fill); box-shadow: var(--glass-rim); }
+.lb-tile .lib-app { position: relative; width: 100%; height: 100%; padding: 0; display: block; }
+.lb-tile .lib-app .icon-wrap { width: 100%; height: 100%; }
+.lb-more { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 12%; }
+.lb-more .art { border-radius: 24%; }
+.lb-name { font-size: 13px; font-weight: 600; color: var(--ink-2); }
+.lib-list .lib-app { position: relative; width: 100%; height: 56px; flex-direction: row; justify-content: flex-start; gap: 14px; padding: 0 6px; transition: none; }
+.lib-list .lib-app .icon-wrap { width: 40px; height: 40px; flex: 0 0 auto; }
+.lib-list .lib-app .label { margin: 0; font-size: 16px; max-width: none; text-shadow: none; }
+.lib-list .lib-app + .lib-app { box-shadow: inset 0 1px 0 rgba(255,255,255,0.08); }
+.lib-cancel { font-size: 15px; font-weight: 600; color: var(--gold-soft); display: none; }
+body.lib-searching .lib-cancel { display: block; }
+.lib-head { display: flex; align-items: center; gap: 10px; }
+.lib-head .lib-search { flex: 1; }
+body.lib-searching #dots { opacity: 0; pointer-events: none; }
