@@ -381,3 +381,121 @@ body.lib-searching .lib-cancel { display: block; }
 .lib-head { display: flex; align-items: center; gap: 10px; }
 .lib-head .lib-search { flex: 1; }
 body.lib-searching #dots { opacity: 0; pointer-events: none; }
+
+/* ---------- Islamic widgets ---------- */
+.wg-group { font-size: 13px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; color: var(--gold-soft); padding: 14px 0 0; }
+.ring-svg { width: 100%; height: 100%; transform: rotate(-90deg); display: block; }
+.ring-svg circle { fill: none; stroke-width: 7; }
+.ring-svg .trk { stroke: rgba(255,255,255,0.14); }
+.ring-svg .val { stroke: var(--gold); stroke-linecap: round; transition: stroke-dasharray .45s var(--ease); }
+
+/* M&D logo */
+.lg { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2cqh; text-align: center; }
+.lg-mark { display: flex; align-items: center; gap: 4cqw; }
+.lg .mono { font-family: "Amiri", serif; font-weight: 700; line-height: 1; letter-spacing: .12em; font-size: clamp(30px, min(34cqh, 15cqw), 96px);
+  background: linear-gradient(180deg, #fff 30%, rgba(255,255,255,.72)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.lg .mono em { font-style: normal; font-weight: 400; margin: 0 .14em; font-size: .84em;
+  background: linear-gradient(180deg, #F7DDA4, #C9974A); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.lg .rule { width: clamp(24px, 12cqw, 90px); height: 1.5px; background: linear-gradient(90deg, rgba(226,188,116,0), var(--gold)); }
+.lg .rule:last-child { background: linear-gradient(90deg, var(--gold), rgba(226,188,116,0)); }
+.lg-salam { font-family: "Amiri", serif; color: var(--ink-2); font-size: clamp(14px, min(10cqh, 6cqw), 28px); }
+.lg-hijri { font-family: "Amiri", serif; color: var(--gold); font-size: clamp(13px, min(9cqh, 5cqw), 24px); }
+.wcard[data-k="logo"][data-s="w"] .lg { flex-direction: row; gap: 5cqw; }
+.wcard[data-k="logo"][data-s="w"] .lg .mono { font-size: clamp(24px, min(52cqh, 9.5cqw), 60px); }
+.wcard[data-k="logo"][data-s="w"] .lg .rule { width: clamp(16px, 7cqw, 60px); }
+.wcard[data-k="logo"][data-s="w"] .lg-hijri { font-size: clamp(12px, min(24cqh, 4.6cqw), 22px); }
+.wcard[data-k="logo"][data-s="s"] .lg .rule { display: none; }
+.wcard[data-k="logo"][data-s="s"] .lg .mono { font-size: clamp(26px, 24cqw, 64px); }
+.wcard[data-k="logo"][data-s="s"] .lg-salam { font-size: clamp(12px, 11cqw, 20px); }
+.wcard[data-k="logo"][data-s="s"] .lg-hijri { font-size: clamp(11px, 9.5cqw, 18px); }
+
+/* Hijri calendar */
+.hj-day { display: flex; align-items: center; gap: 4cqw; }
+.hj-day b { font-weight: 200; line-height: .9; letter-spacing: -.04em; font-size: clamp(40px, min(46cqh, 26cqw), 120px); color: var(--gold-soft); font-variant-numeric: tabular-nums; }
+.hj-month { font-family: "Amiri", serif; font-weight: 700; font-size: clamp(18px, min(15cqh, 8cqw), 44px); line-height: 1.2; }
+.wcard[data-k="hijri"][data-s="s"] .hj-day { flex-direction: column; align-items: flex-start; gap: 0; }
+.wcard[data-k="hijri"][data-s="s"] .hj-day b { font-size: clamp(36px, 34cqh, 80px); }
+.wcard[data-k="hijri"][data-s="s"] .hj-month { font-size: clamp(16px, 13cqh, 30px); }
+.wcard[data-k="hijri"][data-s="s"] .w-sub, .wcard[data-k="hijri"][data-s="s"] .w-label { display: none; }
+.hj-ups { display: flex; flex-direction: column; gap: 1.4cqh; }
+.hj-ups div { display: flex; justify-content: space-between; gap: 8px; font-size: clamp(11px, min(7.4cqh, 4cqw), 18px); }
+.hj-ups span { color: var(--ink-2); }
+.hj-ups b { font-weight: 600; color: var(--gold-soft); white-space: nowrap; }
+.wcard[data-k="hijri"][data-s="s"] .hj-ups div { flex-direction: column; gap: 0; font-size: clamp(11px, 8cqh, 16px); }
+
+/* Next prayer ring */
+.cd { flex: 1; display: flex; align-items: center; justify-content: center; gap: 6cqw; min-height: 0; }
+.cd-ring { position: relative; height: 100%; aspect-ratio: 1; max-width: 100%; }
+.cd.s .cd-ring { height: 96%; }
+.cd-in { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.cd-left { font-weight: 300; letter-spacing: -.03em; font-variant-numeric: tabular-nums; font-size: clamp(22px, min(22cqh, 18cqw), 56px); line-height: 1; }
+.cd-name { color: var(--gold-soft); font-weight: 600; font-size: clamp(12px, min(10cqh, 9cqw), 22px); margin-top: 1cqh; }
+.cd.m .cd-left { font-size: clamp(20px, 20cqh, 48px); }
+.cd.m .cd-name { font-size: clamp(11px, 9cqh, 20px); }
+.cd-side { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1cqh; }
+
+/* Tasbih */
+.tb { flex: 1; display: flex; align-items: center; gap: 5cqw; min-height: 0; }
+.tb.s { flex-direction: column; gap: 2cqh; }
+.tb-ring { position: relative; height: 100%; aspect-ratio: 1; flex: 0 0 auto; }
+.tb.s .tb-ring { height: 66%; }
+.tb-in { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.tb-in b { font-weight: 300; font-size: clamp(22px, min(26cqh, 20cqw), 64px); line-height: 1; font-variant-numeric: tabular-nums; }
+.tb.s .tb-in b { font-size: clamp(20px, 18cqh, 44px); }
+.tb-in span { font-size: clamp(10px, min(7cqh, 5cqw), 15px); color: var(--ink-3); }
+.tb-side { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: 1.4cqh; }
+.tb.s .tb-side { align-items: center; text-align: center; flex: 0 0 auto; }
+.tb-zikr { font-family: "Amiri", serif; font-weight: 700; color: var(--gold-soft); font-size: clamp(18px, min(16cqh, 8.5cqw), 42px); line-height: 1.25; }
+.tb.s .tb-zikr { font-size: clamp(14px, 11cqh, 26px); }
+.tb-total { font-size: clamp(10px, min(7cqh, 4cqw), 15px); color: var(--ink-3); }
+.tb.s .tb-total { display: none; }
+.tb-dots { display: flex; gap: 6px; }
+.tb-dots i { width: 22px; height: 5px; border-radius: 3px; background: rgba(255,255,255,0.16); }
+.tb-dots i.done { background: rgba(226,188,116,0.55); }
+.tb-dots i.on { background: var(--gold); }
+
+/* Verse of the day */
+.ay-text { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; text-align: center; font-family: "Amiri", serif; line-height: 1.75; overflow: hidden; }
+.ay-mean { text-align: center; color: var(--ink-2); font-size: clamp(11px, min(5.4cqh, 3.4cqw), 17px); line-height: 1.35; margin-top: 1cqh; }
+.ay-ref { text-align: center; font-family: "Amiri", serif; color: var(--gold); font-size: clamp(11px, min(6cqh, 3.6cqw), 17px); margin-top: .6cqh; }
+
+/* Names of Allah */
+.nm { align-items: center; text-align: center; gap: .6cqh; }
+.nm-ar { font-family: "Amiri", serif; font-weight: 700; line-height: 1.25; font-size: clamp(26px, min(30cqh, 14cqw), 84px);
+  background: linear-gradient(180deg, #FBE7BC, #D6A55A); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.wcard[data-s="s"] .nm-ar { font-size: clamp(22px, min(24cqh, 19cqw), 52px); }
+.nm-t { font-size: clamp(12px, min(8cqh, 4.4cqw), 22px); font-weight: 600; }
+.nm-m { font-size: clamp(11px, min(7cqh, 4cqw), 19px); color: var(--ink-2); }
+.wcard[data-s="s"] .nm-m { font-size: clamp(10px, 8.5cqw, 15px); }
+
+/* Sunnah reminders */
+.sn { list-style: none; flex: 1; display: flex; flex-direction: column; justify-content: space-evenly; margin-top: 1cqh; min-height: 0; overflow: hidden; }
+.sn li { display: flex; align-items: center; gap: 10px; }
+.sn li i { flex: 0 0 auto; width: 8px; height: 8px; border-radius: 50%; background: var(--gold); box-shadow: 0 0 10px rgba(226,188,116,.7); }
+.sn-ar { font-family: "Amiri", serif; font-size: clamp(13px, min(7.6cqh, 4.4cqw), 22px); line-height: 1.35; }
+.sn-en { font-size: clamp(10px, min(5.6cqh, 3.2cqw), 15px); color: var(--ink-3); }
+.wcard[data-s="l"] .sn-ar { font-size: clamp(14px, min(5cqh, 4.6cqw), 24px); }
+.wcard[data-s="l"] .sn-en { font-size: clamp(11px, min(3.6cqh, 3.4cqw), 16px); }
+
+/* Settings: Home app row */
+.set-btn { height: 34px; padding: 0 18px; border-radius: 17px; background: var(--gold-pill); color: var(--gold-ink); box-shadow: var(--gold-pill-rim); font-weight: 700; font-size: 14px; flex: 0 0 auto; }
+.set-ok { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; background: var(--gold-pill); color: var(--gold-ink); font-weight: 800; flex: 0 0 auto; }
+
+/* Ask to be the Home app */
+#homeSheet { align-items: center; text-align: center; padding-bottom: calc(var(--bottom) + 22px); }
+.hm-logo { display: flex; align-items: center; justify-content: center; gap: 14px; margin: 10px 0 14px; }
+.hm-logo .mono { font-family: "Amiri", serif; font-weight: 700; font-size: 46px; letter-spacing: 6px; line-height: 1; }
+.hm-logo .mono em { font-style: normal; font-weight: 400; color: var(--gold); margin: 0 8px; font-size: 38px; }
+.hm-logo .rule { width: 46px; height: 1.5px; background: linear-gradient(90deg, rgba(226,188,116,0), var(--gold)); }
+.hm-logo .rule:last-child { background: linear-gradient(90deg, var(--gold), rgba(226,188,116,0)); }
+.hm-sub { font-size: 15px; color: var(--ink-2); padding: 0 28px; max-width: 460px; line-height: 1.45; }
+.hm-btn { margin-top: 20px; height: 52px; width: min(100% - 48px, 380px); border-radius: 26px; background: var(--gold-pill); color: var(--gold-ink); box-shadow: var(--gold-pill-rim), 0 10px 24px rgba(0,0,0,.3); font-size: 17px; font-weight: 700; }
+.hm-later { margin-top: 8px; height: 44px; padding: 0 24px; color: var(--ink-2); font-size: 15px; font-weight: 600; }
+body.rtl .hm-sub, body.rtl .hm-btn, body.rtl .hm-later { font-family: "Amiri", serif; }
+body:not(.rtl) .sn-ar { text-align: left; }
+body.rtl .sn li { flex-direction: row-reverse; }
+body.rtl .sn-ar { text-align: right; }
+.wcard[data-k="logo"][data-s="w"] .lg-hijri { white-space: nowrap; }
+.ring-svg .val.zero { opacity: 0; }
+.wcard[data-k="names"][data-s="s"] .w-row .w-label + .w-label { display: none; }
+.wcard[data-k="names"][data-s="s"] .w-label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

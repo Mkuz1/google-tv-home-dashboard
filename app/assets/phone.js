@@ -1,7 +1,9 @@
 // Phone home screen (phone/AndroidManifest.xml), in English or Arabic. Like an iPhone home screen:
 // pages of apps, folders and widgets with a dock, then the App Library. Hold an app for its menu, or
 // hold and drag to arrange: the others slide out of the way, edges change page, dropping on an app
-// makes a folder. Widgets: clock and Hijri date, prayer times, azkar, Qibla, places, weather.
+// makes a folder. Widgets: the M&D logo, clock and Hijri date, prayer times, next-prayer ring, Hijri calendar,
+// tasbih, verse of the day, Names of Allah, Sunnah reminders, azkar, Qibla, places, weather. Until it is the
+// Home app it asks to be (Android's own dialog).
 // Made for foldables: the grid follows the screen (4 columns folded, 6-8 unfolded) without reloading.
 // Smoothness: nothing is blurred live (the wallpaper is pre-blurred), tiles move with transform only,
 // finger movement is applied once per frame, and the app list is re-read only when apps change.
@@ -41,6 +43,13 @@
       small: "Small", medium: "Medium", large: "Large", wide: "Wide", newFolder: "Folder",
       edit: "Edit", addWidget: "Add Widget", customize: "Customize", cancel: "Cancel", searchShort: "Search",
       suggestions: "Suggestions", recent: "Recently Added", searchWeb: (q) => `Search the web for “${q}”`, apps: "Apps", noResults: "No results",
+      wLogo: "M&D", wLogoD: "The M&D logo with the Hijri date", wHijri: "Hijri Calendar", wHijriD: "Today's Hijri date and the days to Ramadan, Eid and more",
+      wCount: "Next Prayer", wCountD: "A ring counting down to the next prayer", wTasbih: "Tasbih", wTasbihD: "Tap to count: SubhanAllah, Alhamdulillah, Allahu Akbar",
+      wAyah: "Verse of the Day", wAyahD: "A verse from the Quran each day; tap for another", wNames: "Names of Allah", wNamesD: "One of the 99 Names each day, with its meaning; tap for the next",
+      wSunnah: "Sunnah Reminders", wSunnahD: "Fasting days, Friday, Duha, the last third of the night",
+      islamic: "Islamic", general: "General", resetCount: "Reset Counter", today: "Today", inDays: (n) => (n === 1 ? "Tomorrow" : `in ${n} days`),
+      setHome: "Make MK Launcher your Home app", setHomeSub: "So the Home button and swiping up always bring you here, with your pages, widgets and prayer times.",
+      setHomeBtn: "Set as Home app", notNow: "Not now", homeApp: "Home app", homeAppOn: "MK Launcher is your Home app", homeAppOff: "Not your Home app yet", setBtn: "Set",
       groups: ["Social", "Entertainment", "Photo & Video", "Productivity & Finance", "Travel", "News & Reading", "Games", "Utilities"],
     },
     ar: {
@@ -60,6 +69,13 @@
       small: "صغير", medium: "متوسط", large: "كبير", wide: "عريض", newFolder: "مجلد",
       edit: "تعديل", addWidget: "إضافة أداة", customize: "تخصيص", cancel: "إلغاء", searchShort: "بحث",
       suggestions: "اقتراحات", recent: "أضيفت مؤخراً", searchWeb: (q) => `ابحث في الويب عن «${q}»`, apps: "التطبيقات", noResults: "لا توجد نتائج",
+      wLogo: "M&D", wLogoD: "شعار M&D مع التاريخ الهجري", wHijri: "التقويم الهجري", wHijriD: "التاريخ الهجري والأيام المتبقية لرمضان والعيد وغيرها",
+      wCount: "الصلاة القادمة", wCountD: "حلقة تعدّ الوقت حتى الصلاة القادمة", wTasbih: "المسبحة", wTasbihD: "اضغط للتسبيح: سبحان الله، الحمد لله، الله أكبر",
+      wAyah: "آية اليوم", wAyahD: "آية من القرآن الكريم كل يوم؛ اضغط لآية أخرى", wNames: "أسماء الله الحسنى", wNamesD: "اسم من الأسماء الحسنى كل يوم مع معناه؛ اضغط للتالي",
+      wSunnah: "تذكير بالسنن", wSunnahD: "أيام الصيام والجمعة والضحى والثلث الأخير من الليل",
+      islamic: "إسلامية", general: "عامة", resetCount: "تصفير العداد", today: "اليوم", inDays: (n) => (n === 1 ? "غداً" : n === 2 ? "بعد يومين" : `بعد ${n} ${n <= 10 ? "أيام" : "يوماً"}`),
+      setHome: "اجعل MK Launcher التطبيق الرئيسي", setHomeSub: "ليعيدك زر الرئيسية دائماً إلى صفحاتك وأدواتك ومواقيت الصلاة.",
+      setHomeBtn: "تعيين كتطبيق رئيسي", notNow: "ليس الآن", homeApp: "التطبيق الرئيسي", homeAppOn: "MK Launcher هو التطبيق الرئيسي", homeAppOff: "ليس التطبيق الرئيسي بعد", setBtn: "تعيين",
       groups: ["تواصل اجتماعي", "ترفيه", "صور وفيديو", "إنتاجية ومال", "سفر", "أخبار وقراءة", "ألعاب", "أدوات"],
     },
   };
@@ -124,7 +140,7 @@
     const dock = C.dockApps.filter((p) => byPkg[p]).slice(0, 4);
     const rest = installed.map((a) => a.pkg).filter((p) => !dock.includes(p));
     return {
-      pages: [[{ t: "w", id: uid("w"), k: "clock", s: "m" }, { t: "w", id: uid("w"), k: "prayer", s: "m" }, ...rest.map(appItem)]],
+      pages: [[{ t: "w", id: uid("w"), k: "logo", s: "w" }, { t: "w", id: uid("w"), k: "clock", s: "m" }, { t: "w", id: uid("w"), k: "prayer", s: "m" }, ...rest.map(appItem)]],
       dock,
     };
   }
@@ -922,6 +938,7 @@
     if (!at) return;
     const it = at.item, acts = [];
     if (it.t === "f") acts.push([T("rename"), IC.rename, () => { enterEdit(); openFolder(it, true); }], [T("removeFolder"), IC.ungroup, () => ungroup(it)]);
+    if (it.t === "w" && it.k === "tasbih") acts.push([T("resetCount"), IC.ungroup, resetTasbih]);
     if (it.t === "w") acts.push([T("removeWidget"), IC.minus, () => removeItem(it), "danger"]);
     if (!at.where.startsWith("folder")) acts.push([T("editHome"), IC.edit, enterEdit]);
     if (it.t === "a") {
@@ -964,7 +981,21 @@
     qibla: { sizes: ["s"], name: "wQibla", desc: "wQiblaD" },
     places: { sizes: ["w", "m"], name: "wPlaces", desc: "wPlacesD" },
     weather: { sizes: ["s", "m"], name: "wWeather", desc: "wWeatherD" },
+    logo: { sizes: ["w", "s", "m"], name: "wLogo", desc: "wLogoD", islamic: true },
+    hijri: { sizes: ["s", "m"], name: "wHijri", desc: "wHijriD", islamic: true },
+    countdown: { sizes: ["s", "m"], name: "wCount", desc: "wCountD", islamic: true },
+    tasbih: { sizes: ["s", "m"], name: "wTasbih", desc: "wTasbihD", islamic: true },
+    ayah: { sizes: ["m", "l"], name: "wAyah", desc: "wAyahD", islamic: true },
+    names: { sizes: ["s", "m"], name: "wNames", desc: "wNamesD", islamic: true },
+    sunnah: { sizes: ["m", "l"], name: "wSunnah", desc: "wSunnahD", islamic: true },
   };
+  for (const k of ["prayer", "azkar", "qibla"]) WIDGETS[k].islamic = true;
+  const I = window.ISLAMIC;
+  // Tasbih count, and how far the verse and Name widgets have been tapped on today.
+  let tas = store.get("phone.tasbih", { n: 0, total: 0, day: "" });
+  const dayNo = (t) => Math.floor((t - new Date(t.getFullYear(), 0, 0)) / 86400000) + t.getFullYear() * 366;
+  let ayahShift = 0, nameShift = 0;
+  const ring = (pct, cls) => `<svg class="ring-svg ${cls || ""}" viewBox="0 0 100 100"><circle cx="50" cy="50" r="44" class="trk"/><circle cx="50" cy="50" r="44" class="val${pct <= 0.004 ? " zero" : ""}" pathLength="100" stroke-dasharray="${(pct * 100).toFixed(1)} 100"/></svg>`;
   const mounted = new Set();
   function mountWidget(card, it) { mounted.add(card); drawWidget(card); }
   function unmountWidget(el) { el.querySelectorAll(".wcard").forEach((c) => mounted.delete(c)); }
@@ -1023,8 +1054,63 @@
       card.innerHTML = `<div class="w-row"><span class="w-label">${escapeHtml(C.city || T("wWeather"))}</span><span class="w-label">${escapeHtml(D.WMO[c.weather_code] || "")}</span></div>` +
         `<div class="wx-now">${D.weatherIcon(c.weather_code, c.is_day === 1)}<span class="wx-temp">${Math.round(c.temperature_2m)}°</span></div>` +
         (s === "m" ? `<div class="wx-days">${dd.time.map((d, i) => `<div><span>${D.dayName(d, i)}</span>${D.weatherIcon(dd.weather_code[i])}${Math.round(dd.temperature_2m_max[i])}°</div>`).join("")}</div>` : "");
+    } else drawIslamic(card, k, s, t);
+  }
+  function drawIslamic(card, k, s, t) {
+    const h = I.hijri(t);
+    if (k === "logo") {
+      const hij = hijriFmt ? `<div class="lg-hijri">${hijriFmt.format(t)}</div>` : "";
+      card.innerHTML = `<div class="lg"><div class="lg-mark">${D.logoHtml(C.logoText || "M&D")}</div>` +
+        (s === "w" ? "" : `<div class="lg-salam">السَّلَامُ عَلَيْكُمْ</div>`) + hij + `</div>`;
+    } else if (k === "hijri") {
+      const months = ["محرم", "صفر", "ربيع الأول", "ربيع الآخر", "جمادى الأولى", "جمادى الآخرة", "رجب", "شعبان", "رمضان", "شوال", "ذو القعدة", "ذو الحجة"];
+      const en = ["Muharram", "Safar", "Rabi' al-Awwal", "Rabi' al-Thani", "Jumada al-Ula", "Jumada al-Akhirah", "Rajab", "Sha'ban", "Ramadan", "Shawwal", "Dhul-Qa'dah", "Dhul-Hijjah"];
+      if (!h) { card.innerHTML = `<div class="w-label">${escapeHtml(T("wHijri"))}</div>`; return; }
+      const big = `<div class="hj-day"><b>${h.d}</b><div><div class="hj-month">${months[h.m - 1]}</div><div class="w-sub">${lang === "ar" ? `${h.y} هـ` : `${en[h.m - 1]} ${h.y} AH`}</div></div></div>`;
+      const ups = I.upcoming(t).slice(0, s === "m" ? 3 : 1);
+      card.innerHTML = `<div class="w-label">${escapeHtml(dateFmt().format(t))}</div><div class="w-fill">${big}</div>` +
+        `<div class="hj-ups">${ups.map((o) => `<div><span>${escapeHtml(lang === "ar" ? o.ar : o.en)}</span><b>${escapeHtml(o.days ? T("inDays", o.days) : T("today"))}</b></div>`).join("")}</div>`;
+    } else if (k === "countdown") {
+      const next = D.nextPrayer(t, today, tomorrow);
+      const order = D.PRAYERS.filter(([k2]) => k2 !== "sunrise").map(([k2]) => k2);
+      const ni = order.indexOf(next.key);
+      const prev = ni > 0 ? today[order[ni - 1]] : new Date(+today.isha - (next.time > today.isha ? 0 : 86400000));
+      const pct = Math.max(0, Math.min(1, (t - prev) / (next.time - prev)));
+      const hh = Math.floor(next.minutes / 60), mm = next.minutes % 60;
+      const name = lang === "ar" ? PRAYER_AR[next.key] : next.name;
+      const center = `<div class="cd-in"><div class="cd-left">${hh ? hh + ":" + String(mm).padStart(2, "0") : mm + (lang === "ar" ? " د" : "m")}</div><div class="cd-name">${escapeHtml(name)}</div></div>`;
+      card.innerHTML = `<div class="cd ${s}"><div class="cd-ring">${ring(pct)}${center}</div>` +
+        (s === "m" ? `<div class="cd-side"><div class="w-label">${escapeHtml(T("wCount"))}</div><div class="w-big">${escapeHtml(name)}</div><div class="w-gold">${D.hm(next.time)} ${ampm(next.time)}</div><div class="w-sub">${escapeHtml(C.city || "")}</div></div>` : "") + `</div>`;
+    } else if (k === "tasbih") {
+      const key = t.toDateString();
+      if (tas.day !== key) tas = { n: 0, total: 0, day: key };
+      let n = tas.n, i = 0;
+      while (i < 2 && n >= I.TASBIH[i].n) { n -= I.TASBIH[i].n; i++; }
+      const z = I.TASBIH[i];
+      card.innerHTML = `<div class="tb ${s}"><div class="tb-ring">${ring(n / z.n, "gold")}<div class="tb-in"><b>${n}</b><span>/ ${z.n}</span></div></div>` +
+        `<div class="tb-side"><div class="tb-zikr">${z.a}</div>${s === "m" ? `<div class="w-sub">${z.t}</div><div class="tb-dots">${I.TASBIH.map((x, j) => `<i class="${j < i ? "done" : j === i ? "on" : ""}"></i>`).join("")}</div>` : ""}` +
+        `<div class="tb-total">${lang === "ar" ? `اليوم: ${tas.total}` : `Today: ${tas.total}`}</div></div></div>`;
+    } else if (k === "ayah") {
+      const v = I.AYAT[(dayNo(t) + ayahShift) % I.AYAT.length];
+      card.innerHTML = `<div class="az-head"><span class="t">${lang === "ar" ? "آية اليوم" : ""}</span><span class="c">${lang === "ar" ? "" : escapeHtml(T("wAyah"))}</span></div>` +
+        `<div class="ay-text" dir="rtl">﴿${v.a}﴾</div>` + (s === "l" || lang !== "ar" ? `<div class="ay-mean">${escapeHtml(v.m)}</div>` : "") + `<div class="ay-ref">${v.r}</div>`;
+      const body = card.querySelector(".ay-text");
+      fitText(body, Math.round(Math.min(card.clientHeight * (s === "l" ? 0.11 : 0.17), 40)), 12);
+    } else if (k === "names") {
+      const i = (dayNo(t) + nameShift) % I.NAMES.length, n = I.NAMES[i];
+      card.innerHTML = `<div class="w-row"><span class="w-label">${escapeHtml(T("wNames"))}</span><span class="w-label">${i + 1} / 99</span></div>` +
+        `<div class="w-fill nm"><div class="nm-ar">${n.a}</div>${s === "m" ? `<div class="nm-t">${escapeHtml(n.t)}</div>` : ""}<div class="nm-m">${escapeHtml(n.m)}</div></div>`;
+    } else if (k === "sunnah") {
+      let list = I.reminders(t, today, tomorrow);
+      // A large card also shows the coming occasions.
+      if (s === "l") list = list.concat(I.upcoming(t).map((o) => [`${o.ar} · ${o.days ? STR.ar.inDays(o.days) : "اليوم"}`, `${o.en} ${o.days ? (o.days === 1 ? "tomorrow" : `in ${o.days} days`) : "today"}`]));
+      list = list.slice(0, s === "l" ? 7 : 3);
+      card.innerHTML = `<div class="w-row"><span class="w-label">${escapeHtml(T("wSunnah"))}</span><span class="w-gold">${hijriFmt ? hijriFmt.format(t) : ""}</span></div>` +
+        `<ul class="sn">${list.map(([ar, en]) => `<li><i></i><div><div class="sn-ar" dir="rtl">${ar}</div>${lang === "ar" ? "" : `<div class="sn-en">${escapeHtml(en)}</div>`}</div></li>`).join("")}</ul>`;
     }
   }
+  function redraw(k) { for (const c of mounted) if (c.dataset.k === k) drawWidget(c); }
+  function resetTasbih() { tas = { n: 0, total: 0, day: now().toDateString() }; store.set("phone.tasbih", tas); redraw("tasbih"); }
   function fitText(el, max, min) {
     let size = max;
     el.style.fontSize = size + "px";
@@ -1032,6 +1118,15 @@
   }
   function widgetTap(el, it) {
     if (it.k === "azkar") { azIndex++; azChanged(); }
+    else if (it.k === "tasbih") {
+      tas.n = (tas.n + 1) % 100; tas.total++;
+      store.set("phone.tasbih", tas);
+      redraw("tasbih");
+      try { navigator.vibrate && navigator.vibrate(tas.n === 0 || tas.n === 33 || tas.n === 66 ? [30, 60, 30] : 12); } catch (e) {}
+    }
+    else if (it.k === "ayah") { ayahShift++; redraw("ayah"); }
+    else if (it.k === "names") { nameShift++; redraw("names"); }
+
     else if (it.k === "qibla") openSheet("qiblaSheet");
     else if (it.k === "places") {
       const b = pressTarget && pressTarget.closest(".place");
@@ -1065,7 +1160,9 @@
   // Widget gallery: every widget in its sizes, shown as it will look; tap Add.
   function openWidgetSheet() {
     const avail = Math.min(M.W - 40, 680);
-    $("widgetList").innerHTML = Object.entries(WIDGETS).map(([k, w]) => `<div class="wg-item"><div class="wg-name">${escapeHtml(T(w.name))}</div><div class="wg-desc">${escapeHtml(T(w.desc))}</div><div class="wg-sizes">` +
+    const entries = Object.entries(WIDGETS).sort((a, b) => !!b[1].islamic - !!a[1].islamic);
+    let lastGroup = null;
+    $("widgetList").innerHTML = entries.map(([k, w]) => (lastGroup !== !!w.islamic ? `<div class="wg-group">${T((lastGroup = !!w.islamic) ? "islamic" : "general")}</div>` : "") + `<div class="wg-item"><div class="wg-name">${escapeHtml(T(w.name))}</div><div class="wg-desc">${escapeHtml(T(w.desc))}</div><div class="wg-sizes">` +
       w.sizes.map((s) => {
         const [cw, ch] = SIZES[s], unit = Math.min(M.cellW, (avail - 20) / 4);
         return `<div class="wg-size"><div class="wg-preview" style="width:${cw * unit - 14}px;height:${ch * Math.min(M.cellH, unit * 1.1) - 14}px"><div class="wcard" data-k="${k}" data-s="${s}"></div></div><button class="wg-add" data-k="${k}" data-s="${s}">${T("add")} · ${T({ s: "small", m: "medium", l: "large", w: "wide" }[s])}</button></div>`;
@@ -1119,10 +1216,13 @@
   });
 
   function openSettings() {
-    const alertsOn = C.prayerAlert.enabled;
+    const alertsOn = C.prayerAlert.enabled, isHome = defaultHome();
     $("settingsList").innerHTML =
+      `<div class="set-row"><div><div class="set-name">${T("homeApp")}</div><div class="set-sub">${T(isHome ? "homeAppOn" : "homeAppOff")}</div></div>` +
+      (isHome ? `<div class="set-ok">✓</div>` : `<button class="set-btn" id="setHomeRow">${T("setBtn")}</button>`) + `</div>` +
       `<div class="set-row"><div><div class="set-name">${T("language")}</div></div><div class="seg" id="segLang"><button data-v="en" class="${lang === "en" ? "on" : ""}">English</button><button data-v="ar" class="${lang === "ar" ? "on" : ""}">العربية</button></div></div>` +
       `<div class="set-row"><div><div class="set-name">${T("alerts")}</div><div class="set-sub">${T("alertsSub")}</div></div><div class="seg" id="segAlerts"><button data-v="1" class="${alertsOn ? "on" : ""}">${T("on")}</button><button data-v="0" class="${alertsOn ? "" : "on"}">${T("off")}</button></div></div>`;
+    if ($("setHomeRow")) $("setHomeRow").addEventListener("click", () => { closeSheets(); askHome(); });
     $("segLang").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) { lang = b.dataset.v; store.set("phone.lang", lang); applyLang(); openSettings(); } });
     $("segAlerts").addEventListener("click", (e) => {
       const b = e.target.closest("button");
@@ -1267,6 +1367,20 @@
     if (force || !w || Date.now() - w.at > C.weatherMinutes * 60000) loadWeather();
   }
 
+  /* ---------------- default Home app ---------------- */
+  // Until it's the Home app, ask: when the launcher opens, and again a day after "Not now".
+  function defaultHome() { try { return TV.isDefaultHome(); } catch (e) { return true; } }
+  function askHome() { try { TV.requestDefaultHome(); } catch (e) {} }
+  function checkHome(force) {
+    if (defaultHome()) { if (openSheetId === "homeSheet") closeSheets(); return; }
+    if (!force && Date.now() - store.get("phone.homeSnooze", 0) < 86400000) return;
+    if (openSheetId || has("editing") || has("spot-open") || openF) return;
+    $("homeLogo").innerHTML = D.logoHtml(C.logoText || "M&D");
+    openSheet("homeSheet");
+  }
+  $("homeSet").addEventListener("click", () => { closeSheets(); askHome(); });
+  $("homeLater").addEventListener("click", () => { store.set("phone.homeSnooze", Date.now()); closeSheets(); });
+
   /* ---------------- toast ---------------- */
   let toastT = null;
   function toast(text) { const el = $("toast"); el.textContent = text; el.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => { el.hidden = true; }, 3000); }
@@ -1317,6 +1431,7 @@
     azChanged();
     refreshWeather(false);
     updateQiblaWidgets();
+    setTimeout(() => checkHome(false), 500);
   };
   window.onTvHome = () => {
     closeMenu(); closeSheets();
@@ -1341,6 +1456,11 @@
   loadApps();
   removed = new Set(store.get("phone.removed", []));
   L = store.get("phone.layout", null) || defaultLayout();
+  // Once: the M&D logo at the top of the first page, for layouts made before it existed.
+  if (!store.get("phone.logoAdded", false)) {
+    if (!L.pages.some((pg) => pg.some((it) => it.t === "w" && it.k === "logo"))) L.pages[0].unshift({ t: "w", id: uid("w"), k: "logo", s: "w" });
+    store.set("phone.logoAdded", true);
+  }
   reconcile();
   save();
   applyLang();
@@ -1352,4 +1472,5 @@
   refreshWeather(false);
   setInterval(() => { if (!paused) refreshWeather(false); }, 10 * 60000);
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(drawAll);
+  setTimeout(() => checkHome(true), 900);
 })();

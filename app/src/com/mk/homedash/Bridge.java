@@ -704,6 +704,50 @@ public class Bridge {
         start(new Intent(Settings.ACTION_SETTINGS));
     }
 
+    static long roleAskAt;
+
+    /** Home app settings, where the user picks the Home app themselves. */
+    static void homeSettings(Context c) {
+        try {
+            c.startActivity(new Intent(Settings.ACTION_HOME_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+        } catch (Exception e) {
+            try { c.startActivity(new Intent(Settings.ACTION_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)); } catch (Exception ignored) { }
+        }
+    }
+
+    /** Whether this app is the phone's Home app (what the Home button opens). */
+    @JavascriptInterface
+    public boolean isDefaultHome() {
+        ResolveInfo r = context.getPackageManager().resolveActivity(
+                new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME), PackageManager.MATCH_DEFAULT_ONLY);
+        return r != null && r.activityInfo != null && context.getPackageName().equals(r.activityInfo.packageName);
+    }
+
+    /**
+     * Ask to become the Home app: Android's own "Set as default home app?" dialog on Android 10+,
+     * the Home app settings page before that (or when the dialog isn't offered).
+     */
+    @JavascriptInterface
+    public void requestDefaultHome() {
+        main.post(new Runnable() {
+            @Override public void run() {
+                if (android.os.Build.VERSION.SDK_INT >= 29 && context instanceof Activity) {
+                    android.app.role.RoleManager rm = context.getSystemService(android.app.role.RoleManager.class);
+                    if (rm != null && rm.isRoleAvailable(android.app.role.RoleManager.ROLE_HOME)
+                            && !rm.isRoleHeld(android.app.role.RoleManager.ROLE_HOME)) {
+                        try {
+                            roleAskAt = System.currentTimeMillis();
+                            ((Activity) context).startActivityForResult(
+                                    rm.createRequestRoleIntent(android.app.role.RoleManager.ROLE_HOME), 77);
+                            return;
+                        } catch (Exception e) { /* fall through to settings */ }
+                    }
+                }
+                homeSettings(context);
+            }
+        });
+    }
+
     @JavascriptInterface
     public void openWifiSettings() {
         start(new Intent(Settings.ACTION_WIFI_SETTINGS));

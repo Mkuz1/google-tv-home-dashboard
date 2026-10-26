@@ -46,6 +46,8 @@
     flavor: () => flavor,
     appsStamp: () => 0,
     setBrightness: (v) => console.log("brightness", v),
+    isDefaultHome: () => /home=1/.test(location.search),
+    requestDefaultHome: () => console.log("requestDefaultHome"),
     insets: () => JSON.stringify({ top: 32, bottom: 18, left: 0, right: 0 }),
     carLocation: () => JSON.stringify({ lat: 25.2048, lon: 55.2708, city: "Dubai", country: "AE", at: Date.now() }),
     schedulePrayerAlerts: (json) => console.log("alerts", json),

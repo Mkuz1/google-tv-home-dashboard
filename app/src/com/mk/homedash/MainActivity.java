@@ -58,6 +58,16 @@ public class MainActivity extends Activity {
     }
 
     @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        // Android answers "no" at once, without asking, after the user has declined it before:
+        // then open the Home app settings so they can still pick this launcher.
+        if (requestCode == 77 && resultCode != RESULT_OK && System.currentTimeMillis() - Bridge.roleAskAt < 700) {
+            Bridge.homeSettings(this);
+        }
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
         leaveSplit();
