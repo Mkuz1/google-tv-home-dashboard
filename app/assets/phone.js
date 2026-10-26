@@ -188,12 +188,21 @@
   // Items fill each page in order, row by row, widgets taking their size; an item that doesn't fit
   // moves to the start of the next page while smaller ones after it still fill the gaps (so folding
   // the phone just pushes things along, nothing is lost and no page is left half empty).
-  const span = (it) => (it.t === "w" ? [Math.min(SIZES[it.s][0], M.cols), Math.min(SIZES[it.s][1], M.rows)] : [1, 1]);
-  const gap = () => ({ t: "g", id: uid("g") });
+  // Unfolded (6 columns) a 4-wide widget spans the whole width instead of leaving a strip beside it.
+  const span = (it) => {
+    if (it.t !== "w") return [1, 1];
+    const w = SIZES[it.s][0];
+    return [w === 4 && M.cols === 6 ? 6 : Math.min(w, M.cols), Math.min(SIZES[it.s][1], M.rows)];
+  };
+  // Empty cells belong to the grid they were made on (4 columns folded, 6-8 unfolded): on the other
+  // one they're left out, so unfolding never scatters holes around the page.
+  const gap = () => ({ t: "g", id: uid("g"), c: M.cols });
+  const offGrid = (it) => it.t === "g" && (it.c || 4) !== M.cols;
   function flow(items) {
     const occ = Array.from({ length: M.rows }, () => new Array(M.cols).fill(false));
     const placed = [], over = [];
     for (const it of items) {
+      if (offGrid(it)) continue;
       const [w, h] = span(it);
       let spot = null;
       for (let r = 0; r + h <= M.rows && !spot; r++) {
@@ -213,10 +222,20 @@
   function normalize() {
     flows = [];
     for (let p = 0; p < L.pages.length; p++) {
+      // Things pushed onto the next page only because this one was full (folded) come back when
+      // there's room again (unfolded), so folding and unfolding gives back the same pages.
+      const next = L.pages[p + 1];
+      while (!drag && next && next.length) {
+        const i = next.findIndex((it) => !offGrid(it)), it = next[i];
+        if (!it || !it.ov || flow(L.pages[p].concat(it)).over.length) break;
+        next.splice(i, 1);
+        L.pages[p].push(it);
+      }
       const f = flow(L.pages[p]);
       // Empty cells that don't fit, or come after everything, mean nothing.
       const over = f.over.filter((it) => it.t !== "g");
-      if (f.over.length) L.pages[p] = f.placed.map((x) => x.it);
+      over.forEach((it) => { it.ov = 1; });
+      if (f.over.length) { const keep = new Set(f.over); L.pages[p] = L.pages[p].filter((it) => !keep.has(it)); }
       if (over.length) {
         if (!L.pages[p + 1]) L.pages[p + 1] = [];
         L.pages[p + 1].unshift(...over);
@@ -224,6 +243,12 @@
       const pg = L.pages[p];
       while (pg.length && pg[pg.length - 1].t === "g") pg.pop();
       flows.push(f.placed.filter((x) => x.it.t !== "g" && pg.includes(x.it)));
+    }
+    // A page emptied that way goes away (outside edit mode, where you may be making one).
+    if (!drag && !has("editing")) {
+      for (let p = L.pages.length - 1; p > 0; p--) {
+        if (!L.pages[p].some((it) => it.t !== "g")) { L.pages.splice(p, 1); flows.splice(p, 1); }
+      }
     }
   }
   const pos = (x) => [M.gridLeft + x.c * M.cellW, M.gridTop + x.r * M.cellH];
@@ -640,6 +665,7 @@
       origin = "home";
     }
     if (!item) return;
+    delete item.ov; // placed by hand from now on
     let float, offX = e.clientX - r.left, offY = e.clientY - r.top;
     if (src) {
       float = el.cloneNode(true);
@@ -1396,6 +1422,7 @@
   });
   // Into the first free place on this page, or at its top if there's none (the rest moves along).
   function addWidget(it) {
+    delete it.ov;
     const p = isLibrary() ? homeCount() - 1 : page;
     const spot = freeSpot(it, p);
     if (!spot || !placeAt(it, p, spot[0], spot[1])) L.pages[p].unshift(it);
@@ -1774,6 +1801,11 @@
   if (!store.get("phone.logoAdded", false)) {
     if (!L.pages.some((pg) => pg.some((it) => it.t === "w" && it.k === "logo"))) L.pages[0].unshift({ t: "w", id: uid("w"), k: "logo", s: "w" });
     store.set("phone.logoAdded", true);
+  }
+  // Once: pages filled before 1.6.1 were filled automatically, so their apps may flow back when unfolded.
+  if (!store.get("phone.ovMigrated", false)) {
+    L.pages.slice(1).forEach((pg) => pg.forEach((it) => { if (it.t === "a") it.ov = 1; }));
+    store.set("phone.ovMigrated", true);
   }
   reconcile();
   save();

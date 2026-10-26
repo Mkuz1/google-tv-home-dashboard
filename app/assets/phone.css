@@ -119,7 +119,7 @@ body.editing .minus { display: flex; }
   opacity: 0; pointer-events: none; transition: opacity .2s;
 }
 /* Like iOS: a Search pill above the dock; the page dots show while you swipe (and in edit mode). */
-body.swiping #dots, body.editing #dots, body.library #dots { opacity: 1; pointer-events: auto; }
+body.swiping #dots, body.editing #dots { opacity: 1; pointer-events: auto; }
 #searchPill {
   position: fixed; left: 50%; bottom: calc(var(--bottom) + var(--dock-h, 96px) + 18px); transform: translateX(-50%); z-index: 5;
   height: 30px; padding: 0 14px; border-radius: 15px; display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 600;
@@ -140,7 +140,8 @@ body.swiping #searchPill, body.editing #searchPill, body.library #searchPill { o
 /* Dock icons sit in the middle of the glass bar (their tile is exactly the bar's height). */
 #dock .tile { height: var(--dock-h); padding-top: 0; justify-content: center; }
 body.library #dock { transform: translateY(140%); opacity: 0; pointer-events: none; }
-body.library #dots { opacity: .9; }
+/* The App Library is the last page: no dots over its boxes (they show again while swiping). */
+body.library:not(.swiping) #dots { opacity: 0; pointer-events: none; }
 
 /* ---------- edit bar ---------- */
 #editBar {
