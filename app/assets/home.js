@@ -447,6 +447,12 @@
     if (!wasLong) handle("ok");
   });
 
+  function openTop(id) {
+    try { if (id === "tbWifi") TV.openWifiSettings(); else TV.openSettings(); } catch (e) {}
+  }
+  // A remote with a pointer, or a touch screen, clicks the buttons directly.
+  TOP.forEach((id) => $(id).addEventListener("click", () => openTop(id)));
+
   function handle(k) {
     if (zone === "grid") {
       const it = list()[cur().idx];
@@ -458,7 +464,8 @@
       if (k === "left") topIdx = Math.max(0, topIdx - 1);
       else if (k === "right") topIdx = Math.min(TOP.length - 1, topIdx + 1);
       else if (k === "down" || k === "back") zone = "grid";
-      else if (k === "ok") (TOP[topIdx] === "tbWifi" ? TV.openWifiSettings : TV.openSettings)();
+      // Called on TV itself: a bridge method taken off its object can't be called.
+      else if (k === "ok") openTop(TOP[topIdx]);
     } else if (zone === "pop") {
       if (k === "left") popIdx = Math.max(0, popIdx - 1);
       else if (k === "right") popIdx = Math.min(popActions.length - 1, popIdx + 1);

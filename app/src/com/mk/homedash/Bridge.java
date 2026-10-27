@@ -701,7 +701,35 @@ public class Bridge {
 
     @JavascriptInterface
     public void openSettings() {
-        start(new Intent(Settings.ACTION_SETTINGS));
+        startFirst(new Intent(Settings.ACTION_SETTINGS),
+                new Intent().setClassName("com.android.tv.settings", "com.android.tv.settings.MainSettings"));
+    }
+
+    /**
+     * Opens the first of these screens the device has. TVs (Google TV, Android TV) don't all have
+     * the phone's settings screens, e.g. no Wi-Fi page under ACTION_WIFI_SETTINGS.
+     */
+    private void startFirst(final Intent... intents) {
+        main.post(new Runnable() {
+            @Override public void run() {
+                PackageManager pm = context.getPackageManager();
+                for (Intent i : intents) {
+                    i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    if (i.resolveActivity(pm) == null) continue;
+                    try {
+                        context.startActivity(i);
+                        return;
+                    } catch (Exception ignored) { }
+                }
+                // None found (or hidden from us): just try them in turn.
+                for (Intent i : intents) {
+                    try {
+                        context.startActivity(i);
+                        return;
+                    } catch (Exception ignored) { }
+                }
+            }
+        });
     }
 
     /* Phone: other apps' widgets (AppWidgets). */
@@ -781,7 +809,11 @@ public class Bridge {
 
     @JavascriptInterface
     public void openWifiSettings() {
-        start(new Intent(Settings.ACTION_WIFI_SETTINGS));
+        startFirst(new Intent(Settings.ACTION_WIFI_SETTINGS),
+                new Intent().setClassName("com.android.tv.settings", "com.android.tv.settings.connectivity.NetworkActivity"),
+                new Intent(Settings.ACTION_WIRELESS_SETTINGS),
+                new Intent(Settings.ACTION_SETTINGS),
+                new Intent().setClassName("com.android.tv.settings", "com.android.tv.settings.MainSettings"));
     }
 
     /** {type: "wifi" | "ethernet" | "none", level: 0-4}. */
