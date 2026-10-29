@@ -48,6 +48,85 @@
     $("tbWifi").innerHTML = wifiIcon(net);
   }
 
+  /* ---------------- glance: time, dates, next prayer, weather ---------------- */
+  // Redrawn once a minute at most, so it costs the TV nothing between minutes.
+  const D = window.DASH;
+  const glDateFmt = new Intl.DateTimeFormat("en-GB", { weekday: "long", day: "numeric", month: "long" });
+  let glHijriFmt;
+  try { glHijriFmt = new Intl.DateTimeFormat("ar-u-ca-islamic-umalqura-nu-latn", { day: "numeric", month: "long", year: "numeric" }); } catch (e) {}
+  let glKey = "", glDay = "", glToday = null, glTomorrow = null;
+
+  function tickGlance(force) {
+    if (!C.homeGlance) return;
+    const now = new Date();
+    const key = now.toDateString() + now.getHours() + ":" + now.getMinutes();
+    if (key === glKey && !force) return;
+    glKey = key;
+    if (now.toDateString() !== glDay) {
+      glDay = now.toDateString();
+      $("glDate").textContent = glDateFmt.format(now);
+      $("glHijri").textContent = glHijriFmt ? glHijriFmt.format(now) : "";
+      glToday = prayerTimes(now, C);
+      const t = new Date(now); t.setDate(t.getDate() + 1);
+      glTomorrow = prayerTimes(t, C);
+      $("glPrList").innerHTML = D.PRAYERS.filter(([k]) => k !== "sunrise").map(([k, en]) =>
+        `<li data-k="${k}"><span class="n">${en}</span><span class="t">${D.hm(glToday[k])}</span></li>`).join("");
+    }
+    $("glTime").textContent = D.hm(now);
+    $("glAmpm").textContent = D.ampm(now);
+
+    const next = D.nextPrayer(now, glToday, glTomorrow);
+    $("glPrName").textContent = next.name;
+    $("glPrAr").textContent = D.PRAYERS.find((p) => p[0] === next.key)[2];
+    $("glPrWhen").innerHTML = `${D.hm(next.time)} ${D.ampm(next.time)} · in <b>${D.inMinutes(next.minutes)}</b>`;
+    for (const li of $("glPrList").children) {
+      const k = li.dataset.k;
+      // After Isha the next prayer is tomorrow's Fajr: show the whole row as done, Fajr lit.
+      li.classList.toggle("next", k === next.key);
+      li.classList.toggle("past", glToday[k] <= now && k !== next.key);
+    }
+    $("glChips").innerHTML = D.dayReminders(now, glToday, C).map((c) => `<div class="gl-chip">${c}</div>`).join("");
+  }
+
+  // Shares the screensaver's cached forecast, so the two don't each fetch it.
+  const weatherCache = {
+    get() { try { return JSON.parse(localStorage.getItem("weather")); } catch (e) { return null; } },
+    set(v) { try { localStorage.setItem("weather", JSON.stringify(v)); } catch (e) {} },
+  };
+  function renderGlanceWeather(d, stale) {
+    const c = d.current, dd = d.daily;
+    $("glWIcon").innerHTML = D.weatherIcon(c.weather_code, c.is_day === 1);
+    $("glTemp").textContent = Math.round(c.temperature_2m) + "°";
+    $("glCity").textContent = C.city || "Weather";
+    $("glCond").textContent = (D.WMO[c.weather_code] || "") + (stale ? " · offline" : "");
+    $("glHL").textContent = `H ${Math.round(dd.temperature_2m_max[0])}°  ·  L ${Math.round(dd.temperature_2m_min[0])}°`;
+  }
+  async function loadGlanceWeather() {
+    if (!C.homeGlance) return;
+    const cached = weatherCache.get();
+    if (cached) renderGlanceWeather(cached.data);
+    if (cached && Date.now() - cached.at < C.weatherMinutes * 60000) return;
+    try {
+      const r = await fetch(D.weatherUrl(C), { cache: "no-store" });
+      if (!r.ok) throw new Error(r.status);
+      const data = await r.json();
+      weatherCache.set({ at: Date.now(), data });
+      renderGlanceWeather(data);
+    } catch (e) {
+      if (cached) renderGlanceWeather(cached.data, true);
+    }
+  }
+
+  function startGlance() {
+    $("glance").hidden = !C.homeGlance;
+    document.body.classList.toggle("has-glance", !!C.homeGlance);
+    if (!C.homeGlance) return;
+    D.checkLocation(C, TV);
+    tickGlance(true);
+    loadGlanceWeather();
+    setInterval(loadGlanceWeather, C.weatherMinutes * 60000);
+  }
+
   /* ---------------- backdrop tinted by the focused app ---------------- */
   // A soft glow in the app's brand colour (its most vivid colour, ignoring white/black/grey).
   let ambFront = "ambA", ambPkg = null, ambTimer = null;
@@ -497,12 +576,15 @@
     if (i >= 0) { view.main.idx = i; renderFocus(); }
     updateNetwork();
     tickClock();
+    tickGlance(true);
+    loadGlanceWeather();
   };
 
   /* ---------------- start ---------------- */
   fit();
   tickClock();
-  setInterval(tickClock, 5000);
+  startGlance();
+  setInterval(() => { tickClock(); tickGlance(); }, 5000);
   updateNetwork();
   setInterval(updateNetwork, 15000);
   loadApps();

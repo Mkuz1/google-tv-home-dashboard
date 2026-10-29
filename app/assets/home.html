@@ -23,6 +23,30 @@
       </button>
     </header>
 
+    <!-- Glance: what you want to know before opening an app -->
+    <section id="glance" class="glass-lite" hidden>
+      <div class="gl-col gl-time">
+        <div class="gl-clock"><span id="glTime">--:--</span><span id="glAmpm"></span></div>
+        <div class="gl-date" id="glDate"></div>
+        <div class="gl-hijri" id="glHijri" dir="rtl"></div>
+        <div class="gl-chips" id="glChips"></div>
+      </div>
+      <div class="gl-sep"></div>
+      <div class="gl-col gl-prayer">
+        <div class="gl-label">Next Prayer</div>
+        <div class="gl-next"><span class="en" id="glPrName"></span><span class="ar" id="glPrAr"></span></div>
+        <div class="gl-when" id="glPrWhen"></div>
+        <ol class="gl-list" id="glPrList"></ol>
+      </div>
+      <div class="gl-sep"></div>
+      <div class="gl-col gl-weather">
+        <div class="gl-label" id="glCity">Weather</div>
+        <div class="gl-wnow"><div class="gl-wicon" id="glWIcon"></div><div class="gl-temp" id="glTemp">--°</div></div>
+        <div class="gl-cond" id="glCond"></div>
+        <div class="gl-hl" id="glHL"></div>
+      </div>
+    </section>
+
     <section id="grid"></section>
 
     <!-- Open folder: a Liquid Glass platter over the dimmed home screen -->
@@ -42,6 +66,8 @@
 
   <script src="bridge-mock.js"></script>
   <script src="config.js"></script>
+  <script src="praytimes.js"></script>
+  <script src="dash.js"></script>
   <script src="home.js"></script>
 </body>
 </html>
