@@ -144,7 +144,7 @@ All keys are optional; anything left out uses the default in [`app/assets/config
 | `prayer.ishaMinutes` | Isha a fixed time after Maghrib (Umm al-Qura: 90) |
 | `prayer.asrFactor` | 1 = Shafi'i/Maliki/Hanbali, 2 = Hanafi |
 | `prayer.offsets` | Minutes added per prayer, to match your local authority |
-| `logoText` | Text at the top of the screensaver and on the car home (default `"M&D"`); `&` is drawn in gold; `""` hides it |
+| `logoText` | Text at the top of the screensaver, the TV home screen and the car home (default `"M&D"`); `&` is drawn in gold; `""` hides it |
 | `worldClocks` | List of `{ "city", "zone" }` (IANA time zones) |
 | `prayerAlert` | `enabled`, `minutesBefore`, `minutesAfter` (TV screensaver and car banner) |
 | `nightAuto`, `nightLevel` | Car only: night mode from Maghrib to sunrise (default on), and how dark (1 eye comfort, 2 night) |

@@ -1,5 +1,6 @@
 @font-face { font-family: "Inter"; src: url("fonts/Inter.ttf"); font-weight: 100 900; }
 @font-face { font-family: "Amiri"; src: url("fonts/Amiri-Regular.ttf"); font-weight: 400; }
+@font-face { font-family: "Amiri"; src: url("fonts/Amiri-Bold.ttf"); font-weight: 700; }
 
 :root {
   --ink: #FFFFFF;
@@ -64,6 +65,19 @@ body.scrolled #topbar { opacity: 0; transform: translateY(-24px); }
   background: linear-gradient(180deg, #FFFFFF, #E9ECF1); color: #111; transform: scale(1.14);
   box-shadow: inset 0 1px 0 #fff, 0 10px 26px rgba(0,0,0,.4);
 }
+
+/* ---------- logo at the top centre, as on the screensaver ---------- */
+#logo {
+  position: absolute; top: 56px; left: 50%; transform: translateX(-50%);
+  display: flex; align-items: center; gap: 20px; text-shadow: 0 2px 18px rgba(0,0,0,.45);
+  transition: opacity .35s var(--ease), transform .35s var(--ease);
+}
+#logo[hidden] { display: none; }
+#logo .mono { font-family: "Amiri", serif; font-weight: 700; font-size: 48px; letter-spacing: 6px; line-height: 1; }
+#logo .mono em { font-style: normal; font-weight: 400; color: var(--gold); margin: 0 8px; font-size: 40px; }
+#logo .rule { width: 52px; height: 1.5px; background: linear-gradient(90deg, rgba(226,188,116,0), var(--gold)); }
+#logo .rule:last-child { background: linear-gradient(90deg, var(--gold), rgba(226,188,116,0)); }
+body.scrolled #logo, body.folder-open #logo { opacity: 0; transform: translate(-50%, -24px); }
 
 /* ---------- glance: time, dates, next prayer, weather above the apps ---------- */
 /* The backdrop under it is a smooth glow, so a blur would look the same: the panel is the

@@ -117,6 +117,13 @@
     }
   }
 
+  // The same logo text as the screensaver (logoText; "" hides it).
+  function renderLogo() {
+    const text = (C.logoText || "").trim();
+    $("logo").hidden = !text;
+    $("logo").innerHTML = D.logoHtml(text);
+  }
+
   function startGlance() {
     $("glance").hidden = !C.homeGlance;
     document.body.classList.toggle("has-glance", !!C.homeGlance);
@@ -583,6 +590,7 @@
   /* ---------------- start ---------------- */
   fit();
   tickClock();
+  renderLogo();
   startGlance();
   setInterval(() => { tickClock(); tickGlance(); }, 5000);
   updateNetwork();
