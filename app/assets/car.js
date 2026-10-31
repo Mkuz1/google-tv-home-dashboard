@@ -175,7 +175,7 @@
     }
     const hidden = new Set(store.get("home.hidden", []));
     const exclude = new Set(C.homeExclude);
-    const visible = installed.filter((a) => !exclude.has(a.pkg) && !hidden.has(a.pkg));
+    const visible = installed.filter((a) => !exclude.has(a.package || a.pkg) && !hidden.has(a.pkg));
     const byPkg = Object.fromEntries(visible.map((a) => [a.pkg, a]));
     layout = store.get("home.layout", null) || C.homeOrder.slice();
     const used = new Set();

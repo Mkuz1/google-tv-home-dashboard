@@ -56,6 +56,8 @@
     placeAppWidgets: (json) => { window.__aw = json; },
     appWidgetShot: () => {},
     deleteAppWidget: (id) => console.log("delete widget", id),
+    backupLayout: (json) => { window.__backup = json; return true; },
+    restoreLayout: () => setTimeout(() => window.onLayoutPicked && window.onLayoutPicked(window.__backup || "{}"), 200),
     isDefaultHome: () => /home=1/.test(location.search),
     requestDefaultHome: () => console.log("requestDefaultHome"),
     insets: () => JSON.stringify({ top: 32, bottom: 18, left: 0, right: 0 }),

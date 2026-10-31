@@ -552,3 +552,10 @@ body.rtl .mn-name { font-family: "Amiri", serif; }
 .aw-info { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
 .tb-zikr.kh-t { font-size: clamp(15px, min(11cqh, 6cqw), 28px); }
 .tb.s .tb-zikr.kh-t { font-size: clamp(13px, 9cqh, 20px); }
+
+/* Customize: rows with several buttons */
+.set-row.col { flex-direction: column; align-items: stretch; gap: 10px; }
+.set-row.col .seg { align-self: flex-start; }
+.set-btns { display: flex; flex-wrap: wrap; gap: 8px; }
+.set-btn.ghost { background: rgba(255,255,255,0.12); color: var(--ink); box-shadow: inset 0 1px 0 rgba(255,255,255,.25); }
+#restoreSheet { align-items: center; text-align: center; padding-bottom: calc(var(--bottom) + 22px); }

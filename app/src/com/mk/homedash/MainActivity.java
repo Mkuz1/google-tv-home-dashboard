@@ -73,6 +73,7 @@ public class MainActivity extends Activity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (AppWidgets.instance != null && AppWidgets.instance.onResult(requestCode, resultCode, data)) return;
+        if (requestCode == Bridge.REQ_RESTORE) { if (resultCode == RESULT_OK) Bridge.restorePicked(this, data); return; }
         // Android answers "no" at once, without asking, after the user has declined it before:
         // then open the Home app settings so they can still pick this launcher.
         if (requestCode == 77 && resultCode != RESULT_OK && System.currentTimeMillis() - Bridge.roleAskAt < 700) {

@@ -58,6 +58,13 @@
       islamic: "Islamic", general: "General", resetCount: "Reset Counter", today: "Today", inDays: (n) => (n === 1 ? "Tomorrow" : `in ${n} days`),
       setHome: "Make MK Launcher your Home app", setHomeSub: "So the Home button and swiping up always bring you here, with your pages, widgets and prayer times.",
       setHomeBtn: "Set as Home app", notNow: "Not now", homeApp: "Home app", homeAppOn: "MK Launcher is your Home app", homeAppOff: "Not your Home app yet", setBtn: "Set",
+      arrange: "Arrange apps", arrangeSub: "Sorts the apps and folders on your pages (widgets stay)", byName: "A–Z", byUse: "Most used", byNew: "Newest",
+      undo: "Undo", arranged: "Apps arranged", undone: "Arrangement undone",
+      newApps: "New apps", newAppsSub: "Where a newly installed app goes", inOrder: "In A–Z order", atEnd: "Last page",
+      backup: "Layout backup", backupSub: "Your pages, folders and dock are also saved automatically to Downloads › MK Launcher",
+      backupNow: "Back up", restore: "Restore", backedUp: "Saved to Downloads › MK Launcher", backupFail: "Couldn't save the backup",
+      restored: "Layout restored", badBackup: "That file isn't an MK Launcher backup",
+      restoreTitle: "Restore your layout?", restoreSub: "If you used MK Launcher before, pick “MK Launcher layout.json” in Downloads › MK Launcher to get your pages, folders and dock back.",
       groups: ["Social", "Entertainment", "Photo & Video", "Productivity & Finance", "Travel", "News & Reading", "Games", "Utilities"],
     },
     ar: {
@@ -90,6 +97,13 @@
       islamic: "إسلامية", general: "عامة", resetCount: "تصفير العداد", today: "اليوم", inDays: (n) => (n === 1 ? "غداً" : n === 2 ? "بعد يومين" : `بعد ${n} ${n <= 10 ? "أيام" : "يوماً"}`),
       setHome: "اجعل MK Launcher التطبيق الرئيسي", setHomeSub: "ليعيدك زر الرئيسية دائماً إلى صفحاتك وأدواتك ومواقيت الصلاة.",
       setHomeBtn: "تعيين كتطبيق رئيسي", notNow: "ليس الآن", homeApp: "التطبيق الرئيسي", homeAppOn: "MK Launcher هو التطبيق الرئيسي", homeAppOff: "ليس التطبيق الرئيسي بعد", setBtn: "تعيين",
+      arrange: "ترتيب التطبيقات", arrangeSub: "يرتّب التطبيقات والمجلدات في صفحاتك (تبقى الأدوات مكانها)", byName: "أ–ي", byUse: "الأكثر استخداماً", byNew: "الأحدث",
+      undo: "تراجع", arranged: "تم ترتيب التطبيقات", undone: "تم التراجع عن الترتيب",
+      newApps: "التطبيقات الجديدة", newAppsSub: "أين يوضع التطبيق المثبت حديثاً", inOrder: "حسب الترتيب الأبجدي", atEnd: "الصفحة الأخيرة",
+      backup: "نسخة احتياطية للتخطيط", backupSub: "تُحفظ صفحاتك ومجلداتك والشريط السفلي تلقائياً أيضاً في التنزيلات › MK Launcher",
+      backupNow: "نسخ احتياطي", restore: "استعادة", backedUp: "تم الحفظ في التنزيلات › MK Launcher", backupFail: "تعذّر حفظ النسخة الاحتياطية",
+      restored: "تمت استعادة التخطيط", badBackup: "هذا الملف ليس نسخة احتياطية من MK Launcher",
+      restoreTitle: "استعادة تخطيطك؟", restoreSub: "إذا استخدمت MK Launcher من قبل، اختر «MK Launcher layout.json» من التنزيلات › MK Launcher لاستعادة صفحاتك ومجلداتك.",
       groups: ["تواصل اجتماعي", "ترفيه", "صور وفيديو", "إنتاجية ومال", "سفر", "أخبار وقراءة", "ألعاب", "أدوات"],
     },
   };
@@ -132,12 +146,15 @@
     try { appsStamp = TV.appsStamp(); } catch (e) {}
     try { installed = JSON.parse(TV.apps()) || []; } catch (e) { installed = []; }
     const exclude = new Set(C.homeExclude);
-    installed = installed.filter((a) => !exclude.has(a.pkg)).sort((a, b) => a.label.localeCompare(b.label));
+    installed = installed.filter((a) => !exclude.has(a.package || a.pkg)).sort((a, b) => a.label.localeCompare(b.label));
     byPkg = Object.fromEntries(installed.map((a) => [a.pkg, a]));
   }
   // Recently opened apps feed Search and the App Library's Suggestions.
+  const uses = store.get("phone.uses", {});
   function launch(pkg) {
     TV.launch(pkg);
+    uses[pkg] = (uses[pkg] || 0) + 1;
+    store.set("phone.uses", uses);
     store.set("phone.recent", [pkg].concat(store.get("phone.recent", []).filter((p) => p !== pkg)).slice(0, 12));
     setTimeout(() => { if (isLibrary()) renderLibrary(); }, 500);
   }
@@ -152,7 +169,8 @@
   const uid = (p) => p + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
   const appItem = (p) => ({ t: "a", id: "a:" + p, p });
   function defaultLayout() {
-    const dock = C.dockApps.filter((p) => byPkg[p]).slice(0, 4);
+    const dial = installed.find((a) => a.dialer);
+    const dock = [...new Set([dial && dial.pkg].concat(C.dockApps).filter((p) => p && byPkg[p]))].slice(0, 4);
     const rest = installed.map((a) => a.pkg).filter((p) => !dock.includes(p));
     return {
       pages: [[{ t: "w", id: uid("w"), k: "logo", s: "w" }, { t: "w", id: uid("w"), k: "clock", s: "m" }, { t: "w", id: uid("w"), k: "prayer", s: "m" }, ...rest.map(appItem)]],
@@ -175,13 +193,73 @@
     }
     L.dock = L.dock.filter((p) => byPkg[p] && !seen.has(p));
     L.dock.forEach((p) => seen.add(p));
-    const fresh = installed.filter((a) => !seen.has(a.pkg) && !removed.has(a.pkg)).map((a) => appItem(a.pkg));
-    if (fresh.length) L.pages[L.pages.length - 1].push(...fresh);
     if (!L.pages.length) L.pages.push([]);
+    const fresh = installed.filter((a) => !seen.has(a.pkg) && !removed.has(a.pkg)).map((a) => appItem(a.pkg));
+    for (const it of fresh) {
+      // A new app goes into its A–Z place among the apps on your pages (or at the end, if you chose that).
+      let at = null;
+      if (store.get("phone.newApps", "abc") === "abc") {
+        const name = byPkg[it.p].label;
+        for (let p = 0; p < L.pages.length && !at; p++) {
+          const i = L.pages[p].findIndex((x) => x.t === "a" && byPkg[x.p] && byPkg[x.p].label.localeCompare(name, undefined, { sensitivity: "base" }) > 0);
+          if (i >= 0) at = [p, i];
+        }
+      }
+      if (at) L.pages[at[0]].splice(at[1], 0, it);
+      else L.pages[L.pages.length - 1].push(it);
+    }
   }
   function save() {
     store.set("phone.layout", L);
     store.set("phone.removed", [...removed]);
+    clearTimeout(backupT);
+    backupT = setTimeout(() => writeBackup(false), 8000);
+  }
+  // A copy in Downloads/MK Launcher survives even uninstalling the launcher (restore it in Customize).
+  let backupT = null;
+  function writeBackup(say) {
+    let ok = false;
+    try { ok = TV.backupLayout(JSON.stringify({ app: "MK Launcher", v: 1, at: Date.now(), layout: L, removed: [...removed], lang })); } catch (e) {}
+    if (say) toast(T(ok ? "backedUp" : "backupFail"));
+  }
+  window.onLayoutPicked = (text) => {
+    let d = null;
+    try { d = JSON.parse(text); } catch (e) {}
+    if (!d || d.app !== "MK Launcher" || !d.layout || !Array.isArray(d.layout.pages)) return toast(T("badBackup"));
+    L = { pages: d.layout.pages, dock: d.layout.dock || [] };
+    removed = new Set(d.removed || []);
+    reconcile();
+    save();
+    closeSheets();
+    render();
+    goPage(0, false);
+    toast(T("restored"));
+  };
+  // Sort the apps and folders on your pages: by name, by how often you open them, or newest first.
+  let undoL = null;
+  function arrange(mode) {
+    undoL = JSON.parse(JSON.stringify({ L, page }));
+    const items = [], pages = L.pages.map((pg) => pg.filter((it) => it.t === "w"));
+    for (const pg of L.pages) for (const it of pg) if (it.t === "a" || it.t === "f") { delete it.ov; items.push(it); }
+    const name = (it) => (it.t === "f" ? it.name : (byPkg[it.p] || { label: it.p }).label);
+    const used = (it) => (it.t === "f" ? it.apps.reduce((n, p) => n + (uses[p] || 0), 0) : uses[it.p] || 0);
+    const when = (it) => (it.t === "f" ? Math.max(0, ...it.apps.map((p) => (byPkg[p] && byPkg[p].installed) || 0)) : (byPkg[it.p] && byPkg[it.p].installed) || 0);
+    const abc = (a, b) => name(a).localeCompare(name(b), undefined, { sensitivity: "base" });
+    items.sort(mode === "use" ? (a, b) => used(b) - used(a) || abc(a, b) : mode === "new" ? (a, b) => when(b) - when(a) || abc(a, b) : abc);
+    let p = 0;
+    for (const it of items) {
+      for (;;) {
+        if (!pages[p]) pages[p] = [];
+        pages[p].push(it);
+        if (!flow(pages[p]).over.length) break;
+        pages[p].pop();
+        p++;
+      }
+    }
+    L.pages = pages.filter((pg, i) => i === 0 || pg.length);
+    save();
+    render();
+    goPage(0, false);
   }
 
   /* ---------------- grid flow ---------------- */
@@ -1557,12 +1635,30 @@
   });
 
   function openSettings() {
-    const alertsOn = C.prayerAlert.enabled, isHome = defaultHome();
+    const alertsOn = C.prayerAlert.enabled, isHome = defaultHome(), newApps = store.get("phone.newApps", "abc");
     $("settingsList").innerHTML =
       `<div class="set-row"><div><div class="set-name">${T("homeApp")}</div><div class="set-sub">${T(isHome ? "homeAppOn" : "homeAppOff")}</div></div>` +
       (isHome ? `<div class="set-ok">✓</div>` : `<button class="set-btn" id="setHomeRow">${T("setBtn")}</button>`) + `</div>` +
       `<div class="set-row"><div><div class="set-name">${T("language")}</div></div><div class="seg" id="segLang"><button data-v="en" class="${lang === "en" ? "on" : ""}">English</button><button data-v="ar" class="${lang === "ar" ? "on" : ""}">العربية</button></div></div>` +
-      `<div class="set-row"><div><div class="set-name">${T("alerts")}</div><div class="set-sub">${T("alertsSub")}</div></div><div class="seg" id="segAlerts"><button data-v="1" class="${alertsOn ? "on" : ""}">${T("on")}</button><button data-v="0" class="${alertsOn ? "" : "on"}">${T("off")}</button></div></div>`;
+      `<div class="set-row"><div><div class="set-name">${T("alerts")}</div><div class="set-sub">${T("alertsSub")}</div></div><div class="seg" id="segAlerts"><button data-v="1" class="${alertsOn ? "on" : ""}">${T("on")}</button><button data-v="0" class="${alertsOn ? "" : "on"}">${T("off")}</button></div></div>` +
+      `<div class="set-row col"><div><div class="set-name">${T("arrange")}</div><div class="set-sub">${T("arrangeSub")}</div></div><div class="set-btns" id="rowArrange"><button class="set-btn" data-m="abc">${T("byName")}</button><button class="set-btn" data-m="use">${T("byUse")}</button><button class="set-btn" data-m="new">${T("byNew")}</button>${undoL ? `<button class="set-btn ghost" data-m="undo">${T("undo")}</button>` : ""}</div></div>` +
+      `<div class="set-row col"><div><div class="set-name">${T("newApps")}</div><div class="set-sub">${T("newAppsSub")}</div></div><div class="seg" id="segNew"><button data-v="abc" class="${newApps === "abc" ? "on" : ""}">${T("inOrder")}</button><button data-v="end" class="${newApps === "end" ? "on" : ""}">${T("atEnd")}</button></div></div>` +
+      `<div class="set-row col"><div><div class="set-name">${T("backup")}</div><div class="set-sub">${T("backupSub")}</div></div><div class="set-btns" id="rowBackup"><button class="set-btn" data-b="save">${T("backupNow")}</button><button class="set-btn ghost" data-b="load">${T("restore")}</button></div></div>`;
+    $("rowArrange").addEventListener("click", (e) => {
+      const b = e.target.closest("button");
+      if (!b) return;
+      if (b.dataset.m === "undo") {
+        if (undoL) { L = undoL.L; save(); render(); goPage(undoL.page, false); undoL = null; toast(T("undone")); }
+      } else { arrange(b.dataset.m); toast(T("arranged")); }
+      openSettings();
+    });
+    $("segNew").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) { store.set("phone.newApps", b.dataset.v); openSettings(); } });
+    $("rowBackup").addEventListener("click", (e) => {
+      const b = e.target.closest("button");
+      if (!b) return;
+      if (b.dataset.b === "save") writeBackup(true);
+      else { try { TV.restoreLayout(); } catch (er) {} }
+    });
     if ($("setHomeRow")) $("setHomeRow").addEventListener("click", () => { closeSheets(); askHome(); });
     $("segLang").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) { lang = b.dataset.v; store.set("phone.lang", lang); applyLang(); openSettings(); } });
     $("segAlerts").addEventListener("click", (e) => {
@@ -1719,6 +1815,8 @@
     $("homeLogo").innerHTML = D.logoHtml(C.logoText || "M&D");
     openSheet("homeSheet");
   }
+  $("restoreYes").addEventListener("click", () => { closeSheets(); try { TV.restoreLayout(); } catch (e) {} });
+  $("restoreNo").addEventListener("click", () => { closeSheets(); setTimeout(() => checkHome(true), 400); });
   $("homeSet").addEventListener("click", () => { closeSheets(); askHome(); });
   $("homeLater").addEventListener("click", () => { store.set("phone.homeSnooze", Date.now()); closeSheets(); });
 
@@ -1796,6 +1894,7 @@
   measure();
   loadApps();
   removed = new Set(store.get("phone.removed", []));
+  const firstRun = !store.get("phone.layout", null);
   L = store.get("phone.layout", null) || defaultLayout();
   // Once: the M&D logo at the top of the first page, for layouts made before it existed.
   if (!store.get("phone.logoAdded", false)) {
@@ -1818,5 +1917,7 @@
   refreshWeather(false);
   setInterval(() => { if (!paused) refreshWeather(false); }, 10 * 60000);
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(drawAll);
-  setTimeout(() => checkHome(true), 900);
+  // A fresh install: offer to bring back a layout saved by an earlier one; else ask to be the Home app.
+  if (firstRun) setTimeout(() => openSheet("restoreSheet"), 700);
+  else setTimeout(() => checkHome(true), 900);
 })();

@@ -35,7 +35,7 @@ window.CONFIG = {
   ],
   // Apps that never appear on the home screen (other launchers, this app).
   homeExclude: [
-    "com.mk.homedash", "com.mk.carlauncher", "com.spocky.projengmenu", "com.overdevs.at4k", "com.luegete28.appsdrawerfree",
+    "com.mk.homedash", "com.mk.carlauncher", "com.mk.phonelauncher", "com.spocky.projengmenu", "com.overdevs.at4k", "com.luegete28.appsdrawerfree",
     "com.google.android.apps.tv.launcherx", "com.google.android.tvlauncher",
   ],
 

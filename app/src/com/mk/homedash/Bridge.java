@@ -495,18 +495,42 @@ public class Bridge {
         String[] categories = car
                 ? new String[] {Intent.CATEGORY_LAUNCHER}
                 : new String[] {Intent.CATEGORY_LEANBACK_LAUNCHER, Intent.CATEGORY_LAUNCHER};
+        // Touch screens: every launcher icon, even several from one package (e.g. Phone and Contacts
+        // are one package on many phones). The package's main one keeps the package name as its key
+        // (so saved layouts still match), any other is "package/activity". TV: one per package.
+        ActivityInfo dial = null;
+        if (car) {
+            try {
+                ResolveInfo d = pm.resolveActivity(new Intent(Intent.ACTION_DIAL), PackageManager.MATCH_DEFAULT_ONLY);
+                if (d != null) dial = d.activityInfo;
+            } catch (Exception ignored) { }
+        }
+        Map<String, String> mainOf = new HashMap<>();
         for (String cat : categories) {
             Intent q = new Intent(Intent.ACTION_MAIN).addCategory(cat);
             List<ResolveInfo> list = pm.queryIntentActivities(q, 0);
             for (ResolveInfo ri : list) {
                 String pkg = ri.activityInfo.packageName;
-                if (!seen.add(pkg)) continue;
+                String key = pkg;
+                if (car) {
+                    if (!mainOf.containsKey(pkg)) {
+                        Intent li = pm.getLaunchIntentForPackage(pkg);
+                        mainOf.put(pkg, li != null && li.getComponent() != null ? li.getComponent().getClassName() : ri.activityInfo.name);
+                    }
+                    if (!ri.activityInfo.name.equals(mainOf.get(pkg))) key = pkg + "/" + ri.activityInfo.name;
+                }
+                if (!seen.add(key)) continue;
                 try {
                     String icon = iconFor(ri.activityInfo);
                     ApplicationInfo ai = ri.activityInfo.applicationInfo;
                     JSONObject o = new JSONObject();
-                    o.put("pkg", pkg);
+                    o.put("pkg", key);
+                    o.put("package", pkg);
                     o.put("label", ri.loadLabel(pm).toString());
+                    if (dial != null && dial.packageName.equals(pkg) && (dial.name.equals(ri.activityInfo.name)
+                            || dial.name.equals(ri.activityInfo.targetActivity) || ri.activityInfo.name.toLowerCase().contains("dial"))) {
+                        o.put("dialer", true);
+                    }
                     o.put("banner", icon.startsWith("B"));
                     o.put("small", icon.startsWith("I"));
                     o.put("system", (ai.flags & ApplicationInfo.FLAG_SYSTEM) != 0);
@@ -526,6 +550,14 @@ public class Bridge {
     @JavascriptInterface
     public boolean launch(String pkg) {
         PackageManager pm = context.getPackageManager();
+        int slash = pkg.indexOf('/');
+        if (slash > 0) {
+            // One of several launcher icons of a package: open that exact one.
+            start(new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER)
+                    .setClassName(pkg.substring(0, slash), pkg.substring(slash + 1))
+                    .addFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED));
+            return true;
+        }
         Intent i = car ? null : pm.getLeanbackLaunchIntentForPackage(pkg);
         if (i == null) i = pm.getLaunchIntentForPackage(pkg);
         if (i == null) return false;
@@ -696,6 +728,7 @@ public class Bridge {
     /** Opens the system "Uninstall this app?" confirmation. */
     @JavascriptInterface
     public void uninstall(String pkg) {
+        if (pkg.indexOf('/') > 0) pkg = pkg.substring(0, pkg.indexOf('/'));
         start(new Intent(Intent.ACTION_DELETE, Uri.parse("package:" + pkg)));
     }
 
@@ -761,6 +794,74 @@ public class Bridge {
     @JavascriptInterface
     public void deleteAppWidget(int id) {
         if (AppWidgets.instance != null) AppWidgets.instance.delete(id);
+    }
+
+    /*
+     * Phone: a copy of the home screen layout in Downloads/MK Launcher, which stays even if the
+     * launcher is uninstalled, and Restore to read one back (Android's file picker).
+     */
+    static final int REQ_RESTORE = 88;
+    private static Bridge picker;
+
+    @JavascriptInterface
+    public boolean backupLayout(String json) {
+        if (android.os.Build.VERSION.SDK_INT < 29) return false;
+        try {
+            android.content.ContentResolver cr = context.getContentResolver();
+            Uri col = android.provider.MediaStore.Downloads.EXTERNAL_CONTENT_URI;
+            String name = "MK Launcher layout.json", dir = "Download/MK Launcher/";
+            Uri uri = null;
+            try (android.database.Cursor c = cr.query(col, new String[] {android.provider.MediaStore.MediaColumns._ID},
+                    android.provider.MediaStore.MediaColumns.DISPLAY_NAME + "=? AND " + android.provider.MediaStore.MediaColumns.RELATIVE_PATH + "=?",
+                    new String[] {name, dir}, null)) {
+                if (c != null && c.moveToFirst()) uri = android.content.ContentUris.withAppendedId(col, c.getLong(0));
+            }
+            if (uri == null) {
+                android.content.ContentValues v = new android.content.ContentValues();
+                v.put(android.provider.MediaStore.MediaColumns.DISPLAY_NAME, name);
+                v.put(android.provider.MediaStore.MediaColumns.MIME_TYPE, "application/json");
+                v.put(android.provider.MediaStore.MediaColumns.RELATIVE_PATH, dir);
+                uri = cr.insert(col, v);
+            }
+            if (uri == null) return false;
+            try (java.io.OutputStream out = cr.openOutputStream(uri, "wt")) {
+                out.write(json.getBytes(StandardCharsets.UTF_8));
+            }
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    @JavascriptInterface
+    public void restoreLayout() {
+        if (!(context instanceof Activity)) return;
+        picker = this;
+        main.post(new Runnable() {
+            @Override public void run() {
+                Intent i = new Intent(Intent.ACTION_OPEN_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType("*/*");
+                try { ((Activity) context).startActivityForResult(i, REQ_RESTORE); } catch (Exception ignored) { }
+            }
+        });
+    }
+
+    /** From MainActivity.onActivityResult: hands the picked file's text to window.onLayoutPicked. */
+    static void restorePicked(Context c, Intent data) {
+        final Bridge b = picker;
+        picker = null;
+        if (b == null || data == null || data.getData() == null || b.view == null) return;
+        try (InputStream in = c.getContentResolver().openInputStream(data.getData())) {
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            byte[] buf = new byte[8192];
+            int n;
+            while (in != null && (n = in.read(buf)) > 0 && out.size() < 4_000_000) out.write(buf, 0, n);
+            final String text = JSONObject.quote(out.toString("UTF-8"));
+            b.main.post(new Runnable() {
+                @Override public void run() {
+                    ((WebView) b.view).evaluateJavascript("window.onLayoutPicked && window.onLayoutPicked(" + text + ")", null);
+                }
+            });
+        } catch (Exception ignored) { }
     }
 
     static long roleAskAt;
