@@ -5,7 +5,7 @@
      foldables too: the grid follows the screen as you fold, unfold or turn it. -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.mk.phonelauncher"
-    android:versionCode="10"
+    android:versionCode="11"
     android:versionName="1.7.0">
 
     <uses-permission android:name="android.permission.INTERNET" />

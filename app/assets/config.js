@@ -26,6 +26,9 @@ window.CONFIG = {
   // Azkar schedule (24h clock, start hour inclusive).
   azkar: { morningFrom: 4, generalFrom: 12, eveningFrom: 17 },
 
+  // Home screen: a glance panel above the apps (time, Hijri date, next prayer, weather).
+  homeGlance: true,
+
   // Home screen: starting order (top row first). Reorder, group into folders or hide on
   // the TV by long-pressing OK on an app; those changes are remembered on the TV.
   homeOrder: [

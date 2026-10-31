@@ -747,7 +747,9 @@ public class Bridge {
             @Override public void run() {
                 PackageManager pm = context.getPackageManager();
                 for (Intent i : intents) {
-                    i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    // CLEAR_TASK: if Settings is still open in the background, start it afresh on this
+                    // page instead of bringing back whatever page it was left on.
+                    i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                     if (i.resolveActivity(pm) == null) continue;
                     try {
                         context.startActivity(i);

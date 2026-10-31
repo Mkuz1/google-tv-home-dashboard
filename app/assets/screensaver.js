@@ -292,25 +292,9 @@
     img.src = url;
   }
 
-  /* ---------------- location (auto) ---------------- */
-  // Look the TV's city up once a day; on the very first lookup, reload to use it.
-  function checkLocation() {
-    if (C.location !== "auto") return;
-    if (C.located && Date.now() - C.locationAt < 24 * 3600000) return;
-    try { TV.locate(); } catch (e) { return; }
-    if (C.located) return;
-    let tries = 0;
-    const poll = setInterval(() => {
-      let loc = null;
-      try { loc = JSON.parse(TV.location()); } catch (e) {}
-      if (loc) { clearInterval(poll); location.reload(); }
-      else if (++tries > 12) clearInterval(poll);
-    }, 5000);
-  }
-
   /* ---------------- start ---------------- */
   document.documentElement.style.setProperty("--night-dim", C.nightMode.dim);
-  checkLocation();
+  window.DASH.checkLocation(C, TV);
   renderLogo();
   fit();
   tick();

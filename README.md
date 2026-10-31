@@ -21,7 +21,8 @@ Two APKs are built from the same code:
 ## Features
 
 **Home screen**
-- Apple TV layout: apps five to a row, a soft glow in the selected app's brand colour, glass capsule with clock, Wi-Fi and Settings.
+- Apple TV layout: apps five to a row, a soft glow in the selected app's brand colour, glass capsule with Wi-Fi and Settings.
+- **Glance panel** above the apps: a large clock, Gregorian and Hijri date, the next prayer with a countdown and all five times, and today's weather; the Al-Kahf and white days reminders show there too. It slides away when you scroll down to more apps.
 - **Hold OK** on an app (or press Play/Pause) for a small glass menu: **Move**, **Add to Folder**, **Hide**, **Delete** (apps you installed).
 - **Folders** like Apple TV: glass tiles previewing up to nine apps, named automatically (Entertainment, Games, Sony…), with Rename, Move and Remove Folder.
 - Smooth on TV hardware: every tile is GPU-composited and only transform/opacity animate.
@@ -146,13 +147,14 @@ All keys are optional; anything left out uses the default in [`app/assets/config
 | `prayer.ishaMinutes` | Isha a fixed time after Maghrib (Umm al-Qura: 90) |
 | `prayer.asrFactor` | 1 = Shafi'i/Maliki/Hanbali, 2 = Hanafi |
 | `prayer.offsets` | Minutes added per prayer, to match your local authority |
-| `logoText` | Text at the top of the screensaver and on the car home (default `"M&D"`); `&` is drawn in gold; `""` hides it |
+| `logoText` | Text at the top of the screensaver, the TV home screen and the car home (default `"M&D"`); `&` is drawn in gold; `""` hides it |
 | `worldClocks` | List of `{ "city", "zone" }` (IANA time zones) |
 | `prayerAlert` | `enabled`, `minutesBefore`, `minutesAfter` (TV screensaver and car banner) |
 | `nightAuto`, `nightLevel` | Car only: night mode from Maghrib to sunrise (default on), and how dark (1 eye comfort, 2 night) |
 | `nightMode` | `enabled`, `dim` (0–1) |
 | `reminders` | `kahf`, `whiteDays` |
 | `azkar` | `morningFrom`, `generalFrom`, `eveningFrom` (hours) |
+| `homeGlance` | TV home screen: the glance panel above the apps (default `true`; `false` shows the clock in the top capsule instead) |
 | `homeOrder`, `homeExclude` | Starting app order, and apps never shown |
 | `useAlbums`, `mixScenes`, `photoSeconds`, `albumRefreshHours`, `weatherMinutes` | Screensaver photos and refresh |
 

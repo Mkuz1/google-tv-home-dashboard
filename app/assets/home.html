@@ -15,6 +15,8 @@
   </div>
 
   <main id="stage">
+    <div id="logo" hidden></div>
+
     <header id="topbar" class="glass">
       <div id="clock"></div>
       <button class="tb" id="tbWifi" aria-label="Wi-Fi"></button>
@@ -22,6 +24,30 @@
         <svg viewBox="0 0 24 24"><path fill="currentColor" d="M19.14 12.94a7.07 7.07 0 0 0 .05-.94 7.07 7.07 0 0 0-.05-.94l2.03-1.58a.48.48 0 0 0 .12-.61l-1.92-3.32a.48.48 0 0 0-.59-.21l-2.39.96a7.03 7.03 0 0 0-1.62-.94l-.36-2.54a.48.48 0 0 0-.48-.41h-3.84a.48.48 0 0 0-.47.41l-.36 2.54a7.36 7.36 0 0 0-1.62.94l-2.39-.96a.48.48 0 0 0-.59.21L2.74 8.87a.47.47 0 0 0 .12.61l2.03 1.58a7.4 7.4 0 0 0 0 1.88l-2.03 1.58a.48.48 0 0 0-.12.61l1.92 3.32c.12.21.37.3.59.21l2.39-.96c.5.38 1.04.7 1.62.94l.36 2.54c.05.24.25.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54a7.36 7.36 0 0 0 1.62-.94l2.39.96c.22.08.47 0 .59-.21l1.92-3.32a.48.48 0 0 0-.12-.61zM12 15.6A3.6 3.6 0 1 1 12 8.4a3.6 3.6 0 0 1 0 7.2z"/></svg>
       </button>
     </header>
+
+    <!-- Glance: what you want to know before opening an app -->
+    <section id="glance" class="glass-lite" hidden>
+      <div class="gl-col gl-time">
+        <div class="gl-clock"><span id="glTime">--:--</span><span id="glAmpm"></span></div>
+        <div class="gl-date" id="glDate"></div>
+        <div class="gl-hijri" id="glHijri" dir="rtl"></div>
+        <div class="gl-chips" id="glChips"></div>
+      </div>
+      <div class="gl-sep"></div>
+      <div class="gl-col gl-prayer">
+        <div class="gl-label">Next Prayer</div>
+        <div class="gl-next"><span class="en" id="glPrName"></span><span class="ar" id="glPrAr"></span></div>
+        <div class="gl-when" id="glPrWhen"></div>
+        <ol class="gl-list" id="glPrList"></ol>
+      </div>
+      <div class="gl-sep"></div>
+      <div class="gl-col gl-weather">
+        <div class="gl-label" id="glCity">Weather</div>
+        <div class="gl-wnow"><div class="gl-wicon" id="glWIcon"></div><div class="gl-temp" id="glTemp">--°</div></div>
+        <div class="gl-cond" id="glCond"></div>
+        <div class="gl-hl" id="glHL"></div>
+      </div>
+    </section>
 
     <section id="grid"></section>
 
@@ -42,6 +68,8 @@
 
   <script src="bridge-mock.js"></script>
   <script src="config.js"></script>
+  <script src="praytimes.js"></script>
+  <script src="dash.js"></script>
   <script src="home.js"></script>
 </body>
 </html>
